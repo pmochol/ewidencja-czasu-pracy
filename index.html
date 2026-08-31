@@ -54,7 +54,7 @@ h1{
   flex-wrap:wrap
 }
 
-button,select{
+button,select,input{
   font:inherit
 }
 
@@ -74,10 +74,6 @@ button.gray{
 
 button.green{
   background:#15803d
-}
-
-button.orange{
-  background:#d97706
 }
 
 select{
@@ -160,7 +156,6 @@ td select{
   border-radius:5px
 }
 
-/* Checkbox */
 .checkbox-cell{
   width:42px;
   text-align:center
@@ -214,7 +209,73 @@ td select{
   display:block
 }
 
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0007;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:20
+}
+
+.hidden{
+  display:none
+}
+
+.modal-box{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+  max-width:430px;
+  width:100%;
+  box-shadow:0 10px 35px #0004
+}
+
+.modal-box h2{
+  margin:0 0 8px;
+  font-size:20px
+}
+
+.modal-box p{
+  font-size:13px;
+  color:#64748b;
+  margin:0 0 16px
+}
+
+.time-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.time-grid label{
+  font-size:12px;
+  color:#475569
+}
+
+.time-grid input{
+  display:block;
+  width:100%;
+  margin-top:5px;
+  padding:9px;
+  border:1px solid #cbd5e1;
+  border-radius:6px
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:18px
+}
+
+
 @media(max-width:850px){
+
   .summary{
     grid-template-columns:repeat(2,1fr)
   }
@@ -228,7 +289,9 @@ td select{
   }
 }
 
+
 @media(max-width:550px){
+
   .summary{
     grid-template-columns:1fr
   }
@@ -249,12 +312,15 @@ td select{
     padding:5px 4px
   }
 
-  /* Na telefonie trochę mniej ważne kolumny */
-  th:nth-child(2),
-  td:nth-child(2){
-    white-space:nowrap
+  .time-grid{
+    grid-template-columns:1fr
+  }
+
+  .modal-box{
+    padding:16px
   }
 }
+
 </style>
 
 </head>
@@ -262,13 +328,18 @@ td select{
 <body>
 
 <header>
+
 <div class="head">
 
   <div>
     <h1>⏱ Ewidencja czasu pracy</h1>
-    <div class="sub">
-      Roczna ewidencja • automatyczny zapis w przeglądarce
-    </div>
+
+```
+<div class="sub">
+  Roczna ewidencja • automatyczny zapis w przeglądarce
+</div>
+```
+
   </div>
 
   <div class="controls">
@@ -279,8 +350,8 @@ td select{
   <select id="year"></select>
 </label>
 
-<button class="green" onclick="applySelected()">
-  Ustaw 07:00–15:00 dla zaznaczonych
+<button class="green" onclick="openTimeModal()">
+  Ustaw godziny dla zaznaczonych
 </button>
 
 <button class="gray" onclick="clearSelection()">
@@ -295,36 +366,119 @@ td select{
   </div>
 
 </div>
+
 </header>
+
+<!-- MODAL WYBORU GODZIN -->
+
+<div id="timeModal" class="modal hidden">
+
+  <div class="modal-box">
+
+```
+<h2>Ustaw godziny dla zaznaczonych</h2>
+
+<p>
+  Wybrane godziny zostaną ustawione tylko dla zaznaczonych dni.
+</p>
+
+
+<div class="time-grid">
+
+  <label>
+    Od
+    <input id="selectedFrom" type="time" value="07:00">
+  </label>
+
+  <label>
+    Do
+    <input id="selectedTo" type="time" value="15:00">
+  </label>
+
+</div>
+
+
+<div class="modal-actions">
+
+  <button class="gray" onclick="closeTimeModal()">
+    Anuluj
+  </button>
+
+  <button class="green" onclick="applySelected()">
+    Ustaw godziny
+  </button>
+
+</div>
+```
+
+  </div>
+
+</div>
 
 <main>
 
 <div id="selectionInfo" class="selection-info">
-  Zaznaczono: <b id="selectedCount">0</b> dni
+  Zaznaczono:
+  <b id="selectedCount">0</b>
+  dni
 </div>
 
 <div class="summary">
 
   <div class="card">
-    <div class="label">Przepracowane godziny</div>
-    <div class="value" id="hours">0:00</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Dni pracy</div>
-    <div class="value" id="days">0</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Delegacje</div>
-    <div class="value" id="delegations">0</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Zapis</div>
-    <div class="value" id="saved" style="font-size:15px">
-      Gotowe
+    <div class="label">
+      Przepracowane godziny
     </div>
+
+```
+<div class="value" id="hours">
+  0:00
+</div>
+```
+
+  </div>
+
+  <div class="card">
+    <div class="label">
+      Dni pracy
+    </div>
+
+```
+<div class="value" id="days">
+  0
+</div>
+```
+
+  </div>
+
+  <div class="card">
+    <div class="label">
+      Delegacje
+    </div>
+
+```
+<div class="value" id="delegations">
+  0
+</div>
+```
+
+  </div>
+
+  <div class="card">
+    <div class="label">
+      Zapis
+    </div>
+
+```
+<div class="value"
+     id="saved"
+     style="font-size:15px">
+
+  Gotowe
+
+</div>
+```
+
   </div>
 
 </div>
@@ -350,6 +504,7 @@ const months=[
   "Grudzień"
 ];
 
+
 const days=[
   "Nd",
   "Pn",
@@ -359,6 +514,7 @@ const days=[
   "Pt",
   "Sb"
 ];
+
 
 const holidays={
   "01-01":"Nowy Rok",
@@ -377,11 +533,14 @@ const holidays={
   "12-26":"Drugi dzień Świąt"
 };
 
+
 const now=new Date();
+
 const ys=document.getElementById("year");
 
 
-/* Rok */
+/* Lista lat */
+
 for(let y=2024;y<=2035;y++){
 
   let o=document.createElement("option");
@@ -394,31 +553,45 @@ for(let y=2024;y<=2035;y++){
   }
 
   ys.appendChild(o);
+
 }
 
+
 ys.onchange=function(){
+
   clearSelection();
+
   render();
+
 };
 
 
 /* Klucz daty */
+
 function key(y,m,d){
+
   return y+"-"+
     String(m+1).padStart(2,"0")+"-"+
     String(d).padStart(2,"0");
+
 }
 
 
-/* Pobranie danych */
+/* Dane */
+
 function data(){
+
   return JSON.parse(
-    localStorage.getItem("worktime_"+ys.value)||"{}"
+    localStorage.getItem(
+      "worktime_"+ys.value
+    )||"{}"
   );
+
 }
 
 
 /* Zapis */
+
 function save(d){
 
   localStorage.setItem(
@@ -426,11 +599,15 @@ function save(d){
     JSON.stringify(d)
   );
 
-  document.getElementById("saved").textContent="Zapisano";
+  document.getElementById(
+    "saved"
+  ).textContent="Zapisano";
+
 }
 
 
 /* Minuty */
+
 function mins(t){
 
   if(!t){
@@ -440,94 +617,132 @@ function mins(t){
   let a=t.split(":");
 
   return +a[0]*60 + +a[1];
+
 }
 
 
-/* Czas pracy */
+/* Czas */
+
 function dur(a,b){
 
   let x=mins(a);
   let y=mins(b);
 
-  return x!==null && y!==null && y>=x
+  return x!==null &&
+         y!==null &&
+         y>=x
     ? y-x
     : 0;
+
 }
 
 
-/* Format czasu */
+/* Format */
+
 function fmt(n){
 
   return Math.floor(n/60)+":"+
     String(n%60).padStart(2,"0");
+
 }
 
 
 /* Święto */
+
 function holiday(date){
 
   return holidays[
-    String(date.getMonth()+1).padStart(2,"0")+"-"+
+    String(date.getMonth()+1).padStart(2,"0")+
+    "-"+
     String(date.getDate()).padStart(2,"0")
   ]||"";
+
 }
 
 
 /* Weekend */
+
 function weekend(date){
 
   return date.getDay()===0 ||
          date.getDay()===6;
+
 }
 
 
-/* Aktualizacja informacji o zaznaczeniu */
+/* Informacja o zaznaczeniu */
+
 function updateSelectionInfo(){
 
   const selected=
     document.querySelectorAll(
-      '.day-checkbox:checked'
+      ".day-checkbox:checked"
     ).length;
+
 
   document.getElementById(
     "selectedCount"
   ).textContent=selected;
 
+
   const info=
-    document.getElementById("selectionInfo");
+    document.getElementById(
+      "selectionInfo"
+    );
+
 
   if(selected>0){
+
     info.classList.add("visible");
+
   }else{
+
     info.classList.remove("visible");
+
   }
+
 }
 
 
-/* Zaznacz/odznacz wszystkie dni w miesiącu */
+/* Zaznacz cały miesiąc */
+
 function toggleMonth(checkbox){
 
-  const table=checkbox.closest("table");
+  const table=
+    checkbox.closest("table");
+
 
   table
     .querySelectorAll(".day-checkbox")
     .forEach(cb=>{
-      cb.checked=checkbox.checked;
+
+      cb.checked=
+        checkbox.checked;
+
     });
 
+
   updateSelectionInfo();
+
 }
 
 
 /* Render */
+
 function render(){
 
   let y=+ys.value;
+
   let d=data();
 
-  let box=document.getElementById("months");
+  let box=
+    document.getElementById(
+      "months"
+    );
+
 
   box.innerHTML="";
+
 
   let all=0;
   let wd=0;
@@ -536,27 +751,37 @@ function render(){
 
   for(let m=0;m<12;m++){
 
-    let sec=document.createElement("section");
+    let sec=
+      document.createElement(
+        "section"
+      );
 
     sec.className="month";
 
 
-    /* Nagłówek miesiąca */
     sec.innerHTML=
-      "<h2>"+months[m]+" "+y+"</h2>";
+      "<h2>"+
+      months[m]+" "+y+
+      "</h2>";
 
 
-    let tab=document.createElement("table");
+    let tab=
+      document.createElement(
+        "table"
+      );
 
 
     tab.innerHTML=
       "<thead>"+
       "<tr>"+
+
       '<th class="checkbox-cell">'+
-      '<input type="checkbox" class="select-all" '+
+      '<input type="checkbox" '+
+      'class="select-all" '+
       'title="Zaznacz cały miesiąc" '+
       'onchange="toggleMonth(this)">'+
       "</th>"+
+
       "<th>Data</th>"+
       "<th>Dzień</th>"+
       "<th>Od</th>"+
@@ -564,28 +789,58 @@ function render(){
       "<th>Godziny</th>"+
       "<th>Rodzaj</th>"+
       "<th>Uwagi</th>"+
+
       "</tr>"+
       "</thead>"+
+
       "<tbody></tbody>";
 
 
-    let tb=tab.querySelector("tbody");
+    let tb=
+      tab.querySelector(
+        "tbody"
+      );
+
 
     let mt=0;
 
     let n=
-      new Date(y,m+1,0).getDate();
+      new Date(
+        y,
+        m+1,
+        0
+      ).getDate();
 
 
-    for(let day=1;day<=n;day++){
+    for(
+      let day=1;
+      day<=n;
+      day++
+    ){
 
-      let dt=new Date(y,m,day);
+      let dt=
+        new Date(
+          y,
+          m,
+          day
+        );
 
-      let k=key(y,m,day);
 
-      let r=d[k]||{};
+      let k=
+        key(
+          y,
+          m,
+          day
+        );
 
-      let hol=holiday(dt);
+
+      let r=
+        d[k]||{};
+
+
+      let hol=
+        holiday(dt);
+
 
       let type=
         r.type ||
@@ -597,151 +852,227 @@ function render(){
           :"Praca"
         );
 
-      let h=dur(r.from,r.to);
+
+      let h=
+        dur(
+          r.from,
+          r.to
+        );
 
 
       mt+=h;
       all+=h;
 
+
       if(h){
         wd++;
       }
 
-      if(h && type==="Delegacja"){
+
+      if(
+        h &&
+        type==="Delegacja"
+      ){
+
         del++;
+
       }
 
 
-      let tr=document.createElement("tr");
+      let tr=
+        document.createElement(
+          "tr"
+        );
 
 
       if(
         dt.toDateString()===
         now.toDateString()
       ){
-        tr.id="today-row";
+
+        tr.id=
+          "today-row";
+
       }
 
 
       if(weekend(dt)){
-        tr.className="weekend";
+
+        tr.className=
+          "weekend";
+
       }
 
+
       if(hol){
-        tr.className+=" holiday";
+
+        tr.className+=
+          " holiday";
+
       }
 
 
       tr.innerHTML=
 
-        /* Checkbox */
         '<td class="checkbox-cell">'+
+
           '<input type="checkbox" '+
           'class="day-checkbox" '+
           'data-k="'+k+'">'+
-        '</td>'+
 
-        /* Data */
+        "</td>"+
+
+
         "<td><b>"+
-          String(day).padStart(2,"0")+
+
+          String(day)
+            .padStart(2,"0")+
+
           "."+
-          String(m+1).padStart(2,"0")+
+
+          String(m+1)
+            .padStart(2,"0")+
+
           "."+
+
           y+
+
         "</b></td>"+
 
-        /* Dzień */
+
         "<td>"+
+
           days[dt.getDay()]+
+
           (hol?" ★":"")+
+
         "</td>"+
 
-        /* Od */
+
         '<td>'+
+
           '<input type="time" '+
-          'value="'+(r.from||"")+'" '+
-          'data-k="'+k+'" '+
+          'value="'+
+          (r.from||"")+
+          '" data-k="'+k+'" '+
           'data-f="from">'+
+
         "</td>"+
 
-        /* Do */
+
         '<td>'+
+
           '<input type="time" '+
-          'value="'+(r.to||"")+'" '+
-          'data-k="'+k+'" '+
+          'value="'+
+          (r.to||"")+
+          '" data-k="'+k+'" '+
           'data-f="to">'+
+
         "</td>"+
 
-        /* Godziny */
+
         '<td class="hours">'+
+
           fmt(h)+
+
         "</td>"+
 
-        /* Rodzaj */
+
         '<td>'+
-          '<select data-k="'+k+'" data-f="type">'+
-            [
-              "Praca",
-              "Delegacja",
-              "Urlop",
-              "L4",
-              "Święto",
-              "Wolne"
-            ]
-            .map(x=>
-              "<option "+
-              (x===type?"selected":"")+
-              ">"+x+"</option>"
-            )
-            .join("")+
+
+          '<select '+
+          'data-k="'+k+'" '+
+          'data-f="type">'+
+
+          [
+            "Praca",
+            "Delegacja",
+            "Urlop",
+            "L4",
+            "Święto",
+            "Wolne"
+          ]
+
+          .map(x=>
+
+            "<option "+
+            (x===type
+              ?"selected"
+              :"")+
+            ">"+
+            x+
+            "</option>"
+
+          ).join("")+
+
           "</select>"+
+
         "</td>"+
 
-        /* Uwagi */
+
         '<td>'+
+
           '<input type="text" '+
           'placeholder="np. Kraków" '+
           'value="'+
           (r.note||"")
-            .replaceAll('"',"&quot;")+
+            .replaceAll(
+              '"',
+              "&quot;"
+            )+
           '" data-k="'+k+'" '+
           'data-f="note">'+
+
         "</td>";
 
 
       tb.appendChild(tr);
+
     }
 
 
     sec.appendChild(tab);
 
 
-    let t=document.createElement("div");
+    let t=
+      document.createElement(
+        "div"
+      );
+
 
     t.className="total";
 
-    t.textContent="Suma: "+fmt(mt);
+    t.textContent=
+      "Suma: "+fmt(mt);
+
 
     sec.appendChild(t);
 
 
     box.appendChild(sec);
+
   }
 
 
-  document.getElementById("hours").textContent=
-    fmt(all);
+  document.getElementById(
+    "hours"
+  ).textContent=fmt(all);
 
-  document.getElementById("days").textContent=
-    wd;
 
-  document.getElementById("delegations").textContent=
-    del;
+  document.getElementById(
+    "days"
+  ).textContent=wd;
+
+
+  document.getElementById(
+    "delegations"
+  ).textContent=del;
 
 
   /*
-    Obsługa pól Od / Do / Rodzaj / Uwagi
+    Obsługa pól tabeli
   */
+
   document
     .querySelectorAll(
       "input[data-k],select[data-k]"
@@ -751,42 +1082,53 @@ function render(){
       e.onchange=()=>{
 
         let k=e.dataset.k;
+
         let f=e.dataset.f;
 
-        d[k]=d[k]||{};
 
-        d[k][f]=e.value;
+        d[k]=
+          d[k]||{};
+
+
+        d[k][f]=
+          e.value;
+
 
         save(d);
 
         render();
+
       };
 
     });
 
 
   /*
-    Obsługa checkboxów.
-    Checkbox nie powoduje renderowania,
-    więc można zaznaczać wiele dni.
+    Checkboxy
   */
+
   document
-    .querySelectorAll(".day-checkbox")
+    .querySelectorAll(
+      ".day-checkbox"
+    )
     .forEach(cb=>{
 
-      cb.onchange=updateSelectionInfo;
+      cb.onchange=
+        updateSelectionInfo;
 
     });
 
 
   updateSelectionInfo();
+
 }
 
 
 /*
-  USTAW 07:00–15:00 DLA ZAZNACZONYCH
+  Otwórz wybór godzin
 */
-function applySelected(){
+
+function openTimeModal(){
 
   const selected=
     document.querySelectorAll(
@@ -797,14 +1139,85 @@ function applySelected(){
   if(selected.length===0){
 
     alert(
-      "Najpierw zaznacz dni, dla których chcesz ustawić 07:00–15:00."
+      "Najpierw zaznacz dni, dla których chcesz ustawić godziny."
     );
 
     return;
+
   }
 
 
-  const y=+ys.value;
+  document
+    .getElementById(
+      "timeModal"
+    )
+    .classList
+    .remove("hidden");
+
+}
+
+
+/*
+  Zamknij wybór godzin
+*/
+
+function closeTimeModal(){
+
+  document
+    .getElementById(
+      "timeModal"
+    )
+    .classList
+    .add("hidden");
+
+}
+
+
+/*
+  Ustaw wybrane godziny
+*/
+
+function applySelected(){
+
+  const selected=
+    document.querySelectorAll(
+      ".day-checkbox:checked"
+    );
+
+
+  const from=
+    document.getElementById(
+      "selectedFrom"
+    ).value;
+
+
+  const to=
+    document.getElementById(
+      "selectedTo"
+    ).value;
+
+
+  if(!from || !to){
+
+    alert(
+      "Wybierz godzinę rozpoczęcia i zakończenia."
+    );
+
+    return;
+
+  }
+
+
+  if(from>=to){
+
+    alert(
+      "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia."
+    );
+
+    return;
+
+  }
+
 
   const d=data();
 
@@ -816,8 +1229,10 @@ function applySelected(){
 
     d[k]={
       ...(d[k]||{}),
-      from:"07:00",
-      to:"15:00",
+
+      from:from,
+      to:to,
+
       type:"Praca"
     };
 
@@ -826,36 +1241,50 @@ function applySelected(){
 
   save(d);
 
+  closeTimeModal();
+
   render();
+
 }
 
 
 /*
-  Odznacz wszystkie checkboxy
+  Odznacz wszystkie
 */
+
 function clearSelection(){
 
   document
-    .querySelectorAll(".day-checkbox")
+    .querySelectorAll(
+      ".day-checkbox"
+    )
     .forEach(cb=>{
+
       cb.checked=false;
+
     });
 
 
   document
-    .querySelectorAll(".select-all")
+    .querySelectorAll(
+      ".select-all"
+    )
     .forEach(cb=>{
+
       cb.checked=false;
+
     });
 
 
   updateSelectionInfo();
+
 }
 
 
 /*
-  Wyczyść cały rok
+  Wyczyść rok
 */
+
 function clearYear(){
 
   if(
@@ -869,22 +1298,30 @@ function clearYear(){
       "worktime_"+ys.value
     );
 
+
     clearSelection();
 
     render();
+
   }
+
 }
 
 
 /* Start */
+
 render();
 
 
 /* Przewiń do dzisiejszego dnia */
+
 setTimeout(function(){
 
   const row=
-    document.getElementById("today-row");
+    document.getElementById(
+      "today-row"
+    );
+
 
   if(row){
 
@@ -896,6 +1333,27 @@ setTimeout(function(){
   }
 
 },100);
+
+
+/*
+  Zamknięcie modala po kliknięciu
+  poza jego zawartością
+*/
+
+document
+  .getElementById("timeModal")
+  .addEventListener(
+    "click",
+    function(e){
+
+      if(e.target===this){
+
+        closeTimeModal();
+
+      }
+
+    }
+  );
 
 </script>
 
