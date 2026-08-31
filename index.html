@@ -7,7 +7,10 @@
 <title>Ewidencja czasu pracy</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box
+}
 
 body{
   margin:0;
@@ -54,7 +57,9 @@ h1{
   flex-wrap:wrap
 }
 
-button,select,input{
+button,
+select,
+input{
   font:inherit
 }
 
@@ -66,6 +71,10 @@ button{
   color:white;
   font-weight:bold;
   cursor:pointer
+}
+
+button:hover{
+  opacity:.9
 }
 
 button.gray{
@@ -146,7 +155,8 @@ th{
   color:#475569
 }
 
-th,td{
+th,
+td{
   padding:7px;
   border-bottom:1px solid #e5e7eb;
   text-align:left
@@ -235,7 +245,7 @@ td select{
   background:white;
   border-radius:12px;
   padding:20px;
-  max-width:430px;
+  max-width:450px;
   width:100%;
   box-shadow:0 10px 35px #0004
 }
@@ -262,13 +272,19 @@ td select{
   color:#475569
 }
 
-.time-grid input{
+.time-grid input,
+.time-grid select{
   display:block;
   width:100%;
   margin-top:5px;
   padding:9px;
   border:1px solid #cbd5e1;
-  border-radius:6px
+  border-radius:6px;
+  background:white
+}
+
+.modal-type{
+  margin-top:12px
 }
 
 .modal-actions{
@@ -289,9 +305,11 @@ td select{
     font-size:12px
   }
 
-  th,td{
+  th,
+  td{
     padding:5px 4px
   }
+
 }
 
 
@@ -313,7 +331,8 @@ td select{
     flex:1
   }
 
-  th,td{
+  th,
+  td{
     padding:5px 4px
   }
 
@@ -324,6 +343,7 @@ td select{
   .modal-box{
     padding:16px
   }
+
 }
 
 </style>
@@ -352,27 +372,42 @@ td select{
 
 ```
 <label>
+
   Rok:
+
   <select id="year"></select>
+
 </label>
 
 
-<button class="green" onclick="openTimeModal()">
-  Ustaw godziny dla zaznaczonych
+<button
+  class="green"
+  onclick="openTimeModal()"
+>
+  Ustaw dla zaznaczonych
 </button>
 
 
-<button class="red" onclick="clearSelected()">
+<button
+  class="red"
+  onclick="clearSelected()"
+>
   Wyczyść dla zaznaczonych
 </button>
 
 
-<button class="gray" onclick="clearSelection()">
+<button
+  class="gray"
+  onclick="clearSelection()"
+>
   Odznacz wszystkie
 </button>
 
 
-<button class="gray" onclick="clearYear()">
+<button
+  class="gray"
+  onclick="clearYear()"
+>
   Wyczyść rok
 </button>
 ```
@@ -383,46 +418,111 @@ td select{
 
 </header>
 
-<!-- MODAL WYBORU GODZIN -->
+<!-- MODAL -->
 
-<div id="timeModal" class="modal hidden">
+<div
+  id="timeModal"
+  class="modal hidden"
+>
 
   <div class="modal-box">
 
 ```
-<h2>Ustaw godziny dla zaznaczonych</h2>
+<h2>
+  Ustaw dla zaznaczonych
+</h2>
+
 
 <p>
-  Wybrane godziny zostaną ustawione tylko dla zaznaczonych dni.
+  Ustaw godziny oraz rodzaj dla wszystkich zaznaczonych dni.
 </p>
 
 
 <div class="time-grid">
 
+
   <label>
+
     Od
-    <input id="selectedFrom" type="time" value="">
+
+    <input
+      id="selectedFrom"
+      type="time"
+      value=""
+    >
+
   </label>
 
 
   <label>
+
     Do
-    <input id="selectedTo" type="time" value="">
+
+    <input
+      id="selectedTo"
+      type="time"
+      value=""
+    >
+
   </label>
+
 
 </div>
 
 
+<label class="modal-type">
+
+  Rodzaj
+
+  <select id="selectedType">
+
+    <option value="Praca">
+      Praca
+    </option>
+
+    <option value="Delegacja">
+      Delegacja
+    </option>
+
+    <option value="Urlop">
+      Urlop
+    </option>
+
+    <option value="L4">
+      L4
+    </option>
+
+    <option value="Święto">
+      Święto
+    </option>
+
+    <option value="Wolne">
+      Wolne
+    </option>
+
+  </select>
+
+</label>
+
+
 <div class="modal-actions">
 
-  <button class="gray" onclick="closeTimeModal()">
+
+  <button
+    class="gray"
+    onclick="closeTimeModal()"
+  >
     Anuluj
   </button>
 
 
-  <button class="green" onclick="applySelected()">
-    Ustaw godziny
+  <button
+    class="green"
+    onclick="applySelected()"
+  >
+    Ustaw
   </button>
+
 
 </div>
 ```
@@ -433,9 +533,17 @@ td select{
 
 <main>
 
-<div id="selectionInfo" class="selection-info">
+<div
+  id="selectionInfo"
+  class="selection-info"
+>
 
-Zaznaczono: <b id="selectedCount">0</b>
+Zaznaczono:
+
+  <b id="selectedCount">
+    0
+  </b>
+
 dni
 
 </div>
@@ -449,7 +557,10 @@ dni
   Przepracowane godziny
 </div>
 
-<div class="value" id="hours">
+<div
+  class="value"
+  id="hours"
+>
   0:00
 </div>
 ```
@@ -463,7 +574,10 @@ dni
   Dni pracy
 </div>
 
-<div class="value" id="days">
+<div
+  class="value"
+  id="days"
+>
   0
 </div>
 ```
@@ -477,7 +591,10 @@ dni
   Delegacje
 </div>
 
-<div class="value" id="delegations">
+<div
+  class="value"
+  id="delegations"
+>
   0
 </div>
 ```
@@ -511,6 +628,11 @@ dni
 <script>
 
 
+/* ================================
+   PODSTAWOWE DANE
+================================ */
+
+
 const months=[
   "Styczeń",
   "Luty",
@@ -539,21 +661,46 @@ const days=[
 
 
 const holidays={
+
   "01-01":"Nowy Rok",
+
   "01-06":"Trzech Króli",
+
   "04-05":"Wielkanoc",
+
   "04-06":"Poniedziałek Wielkanocny",
+
   "05-01":"Święto Pracy",
+
   "05-03":"3 Maja",
+
   "05-24":"Zielone Świątki",
+
   "06-04":"Boże Ciało",
+
   "08-15":"Wniebowzięcie",
+
   "11-01":"Wszystkich Świętych",
+
   "11-11":"Niepodległość",
+
   "12-24":"Wigilia",
+
   "12-25":"Boże Narodzenie",
+
   "12-26":"Drugi dzień Świąt"
+
 };
+
+
+const types=[
+  "Praca",
+  "Delegacja",
+  "Urlop",
+  "L4",
+  "Święto",
+  "Wolne"
+];
 
 
 const now=new Date();
@@ -562,7 +709,11 @@ const ys=
   document.getElementById("year");
 
 
-/* Lista lat */
+
+/* ================================
+   LISTA LAT
+================================ */
+
 
 for(let y=2024;y<=2035;y++){
 
@@ -570,10 +721,13 @@ for(let y=2024;y<=2035;y++){
     document.createElement("option");
 
   o.value=y;
+
   o.textContent=y;
 
   if(y===now.getFullYear()){
+
     o.selected=true;
+
   }
 
   ys.appendChild(o);
@@ -590,38 +744,62 @@ ys.onchange=function(){
 };
 
 
-/* Klucz daty */
+
+/* ================================
+   KLUCZ DATY
+================================ */
+
 
 function key(y,m,d){
 
   return y+"-"+
-    String(m+1).padStart(2,"0")+"-"+
+
+    String(m+1).padStart(2,"0")+
+
+    "-"+
+
     String(d).padStart(2,"0");
 
 }
 
 
-/* Dane */
+
+/* ================================
+   DANE
+================================ */
+
 
 function data(){
 
   return JSON.parse(
+
     localStorage.getItem(
+
       "worktime_"+ys.value
+
     )||"{}"
+
   );
 
 }
 
 
-/* Zapis */
+
+/* ================================
+   ZAPIS
+================================ */
+
 
 function save(d){
 
   localStorage.setItem(
+
     "worktime_"+ys.value,
+
     JSON.stringify(d)
+
   );
+
 
   document.getElementById(
     "saved"
@@ -630,114 +808,179 @@ function save(d){
 }
 
 
-/* Minuty */
+
+/* ================================
+   MINUTY
+================================ */
+
 
 function mins(t){
 
   if(!t){
+
     return null;
+
   }
 
+
   let a=t.split(":");
+
 
   return +a[0]*60 + +a[1];
 
 }
 
 
-/* Czas */
+
+/* ================================
+   CZAS
+================================ */
+
 
 function dur(a,b){
 
   let x=mins(a);
+
   let y=mins(b);
 
+
   return x!==null &&
+
          y!==null &&
+
          y>=x
+
     ? y-x
+
     : 0;
 
 }
 
 
-/* Format */
+
+/* ================================
+   FORMAT CZASU
+================================ */
+
 
 function fmt(n){
 
   return Math.floor(n/60)+":"+
+
     String(n%60).padStart(2,"0");
 
 }
 
 
-/* Święto */
+
+/* ================================
+   ŚWIĘTO
+================================ */
+
 
 function holiday(date){
 
   return holidays[
-    String(date.getMonth()+1).padStart(2,"0")+
+
+    String(
+      date.getMonth()+1
+    ).padStart(2,"0")+
+
     "-"+
-    String(date.getDate()).padStart(2,"0")
+
+    String(
+      date.getDate()
+    ).padStart(2,"0")
+
   ]||"";
 
 }
 
 
-/* Weekend */
+
+/* ================================
+   WEEKEND
+================================ */
+
 
 function weekend(date){
 
   return date.getDay()===0 ||
+
          date.getDay()===6;
 
 }
 
 
-/* Informacja o zaznaczeniu */
+
+/* ================================
+   INFORMACJA O ZAZNACZENIU
+================================ */
+
 
 function updateSelectionInfo(){
 
   const selected=
+
     document.querySelectorAll(
+
       ".day-checkbox:checked"
+
     ).length;
 
 
   document.getElementById(
+
     "selectedCount"
+
   ).textContent=selected;
 
 
   const info=
+
     document.getElementById(
+
       "selectionInfo"
+
     );
 
 
   if(selected>0){
 
-    info.classList.add("visible");
+    info.classList.add(
+      "visible"
+    );
 
   }else{
 
-    info.classList.remove("visible");
+    info.classList.remove(
+      "visible"
+    );
 
   }
 
 }
 
 
-/* Zaznacz cały miesiąc */
+
+/* ================================
+   ZAZNACZ CAŁY MIESIĄC
+================================ */
+
 
 function toggleMonth(checkbox){
 
   const table=
+
     checkbox.closest("table");
 
 
   table
-    .querySelectorAll(".day-checkbox")
+
+    .querySelectorAll(
+      ".day-checkbox"
+    )
+
     .forEach(cb=>{
 
       cb.checked=
@@ -751,7 +994,11 @@ function toggleMonth(checkbox){
 }
 
 
-/* Render */
+
+/* ================================
+   RENDER
+================================ */
+
 
 function render(){
 
@@ -759,7 +1006,9 @@ function render(){
 
   let d=data();
 
+
   let box=
+
     document.getElementById(
       "months"
     );
@@ -769,70 +1018,110 @@ function render(){
 
 
   let all=0;
+
   let wd=0;
+
   let del=0;
+
 
 
   for(let m=0;m<12;m++){
 
+
     let sec=
+
       document.createElement(
         "section"
       );
+
 
     sec.className="month";
 
 
     sec.innerHTML=
+
       "<h2>"+
-      months[m]+" "+y+
+
+      months[m]+
+
+      " "+
+
+      y+
+
       "</h2>";
 
 
+
     let tab=
+
       document.createElement(
         "table"
       );
 
 
+
     tab.innerHTML=
+
       "<thead>"+
+
       "<tr>"+
 
+
       '<th class="checkbox-cell">'+
+
       '<input type="checkbox" '+
+
       'class="select-all" '+
+
       'title="Zaznacz cały miesiąc" '+
+
       'onchange="toggleMonth(this)">'+
+
       "</th>"+
 
+
       "<th>Data</th>"+
+
       "<th>Dzień</th>"+
+
       "<th>Od</th>"+
+
       "<th>Do</th>"+
+
       "<th>Godziny</th>"+
+
       "<th>Rodzaj</th>"+
+
       "<th>Uwagi</th>"+
 
+
       "</tr>"+
+
       "</thead>"+
+
 
       "<tbody></tbody>";
 
 
+
     let tb=
-      tab.querySelector("tbody");
+
+      tab.querySelector(
+        "tbody"
+      );
 
 
     let mt=0;
 
 
     let n=
+
       new Date(
         y,
         m+1,
         0
       ).getDate();
+
 
 
     for(
@@ -841,7 +1130,9 @@ function render(){
       day++
     ){
 
+
       let dt=
+
         new Date(
           y,
           m,
@@ -850,6 +1141,7 @@ function render(){
 
 
       let k=
+
         key(
           y,
           m,
@@ -858,25 +1150,36 @@ function render(){
 
 
       let r=
+
         d[k]||{};
 
 
       let hol=
+
         holiday(dt);
 
 
       let type=
+
         r.type ||
+
         (
+
           hol
-          ?"Święto"
-          :weekend(dt)
-          ?"Wolne"
-          :"Praca"
+
+          ? "Święto"
+
+          : weekend(dt)
+
+          ? "Wolne"
+
+          : "Praca"
+
         );
 
 
       let h=
+
         dur(
           r.from,
           r.to
@@ -884,11 +1187,14 @@ function render(){
 
 
       mt+=h;
+
       all+=h;
 
 
       if(h){
+
         wd++;
+
       }
 
 
@@ -902,8 +1208,13 @@ function render(){
       }
 
 
+
       let tr=
-        document.createElement("tr");
+
+        document.createElement(
+          "tr"
+        );
+
 
 
       if(
@@ -911,23 +1222,27 @@ function render(){
         now.toDateString()
       ){
 
-        tr.id="today-row";
+        tr.id=
+          "today-row";
 
       }
 
 
       if(weekend(dt)){
 
-        tr.className="weekend";
+        tr.className=
+          "weekend";
 
       }
 
 
       if(hol){
 
-        tr.className+=" holiday";
+        tr.className+=
+          " holiday";
 
       }
+
 
 
       tr.innerHTML=
@@ -935,7 +1250,9 @@ function render(){
         '<td class="checkbox-cell">'+
 
           '<input type="checkbox" '+
+
           'class="day-checkbox" '+
+
           'data-k="'+k+'">'+
 
         "</td>"+
@@ -970,9 +1287,13 @@ function render(){
         '<td>'+
 
           '<input type="time" '+
+
           'value="'+
           (r.from||"")+
-          '" data-k="'+k+'" '+
+          '" '+
+
+          'data-k="'+k+'" '+
+
           'data-f="from">'+
 
         "</td>"+
@@ -981,9 +1302,13 @@ function render(){
         '<td>'+
 
           '<input type="time" '+
+
           'value="'+
           (r.to||"")+
-          '" data-k="'+k+'" '+
+          '" '+
+
+          'data-k="'+k+'" '+
+
           'data-f="to">'+
 
         "</td>"+
@@ -999,29 +1324,30 @@ function render(){
         '<td>'+
 
           '<select '+
+
           'data-k="'+k+'" '+
+
           'data-f="type">'+
 
-          [
-            "Praca",
-            "Delegacja",
-            "Urlop",
-            "L4",
-            "Święto",
-            "Wolne"
-          ]
 
-          .map(x=>
+          types.map(x=>
 
             "<option "+
-            (x===type
-              ?"selected"
-              :"")+
+
+            (
+              x===type
+              ? "selected"
+              : ""
+            )+
+
             ">"+
+
             x+
+
             "</option>"
 
           ).join("")+
+
 
           "</select>"+
 
@@ -1031,17 +1357,23 @@ function render(){
         '<td>'+
 
           '<input type="text" '+
+
           'placeholder="np. Kraków" '+
+
           'value="'+
+
           (r.note||"")
             .replaceAll(
               '"',
               "&quot;"
             )+
+
           '" data-k="'+k+'" '+
+
           'data-f="note">'+
 
         "</td>";
+
 
 
       tb.appendChild(tr);
@@ -1049,10 +1381,13 @@ function render(){
     }
 
 
+
     sec.appendChild(tab);
 
 
+
     let t=
+
       document.createElement(
         "div"
       );
@@ -1062,7 +1397,11 @@ function render(){
 
 
     t.textContent=
-      "Suma: "+fmt(mt);
+
+      "Suma: "+
+
+      fmt(mt);
+
 
 
     sec.appendChild(t);
@@ -1073,33 +1412,45 @@ function render(){
   }
 
 
+
   document.getElementById(
     "hours"
-  ).textContent=fmt(all);
+  ).textContent=
+
+    fmt(all);
 
 
   document.getElementById(
     "days"
-  ).textContent=wd;
+  ).textContent=
+
+    wd;
 
 
   document.getElementById(
     "delegations"
-  ).textContent=del;
+  ).textContent=
+
+    del;
+
 
 
   /*
     Obsługa pól tabeli.
-    Celowo pomijamy checkboxy.
+    Checkboxy są pomijane.
   */
 
   document
+
     .querySelectorAll(
       "input[data-k]:not(.day-checkbox), select[data-k]"
     )
+
     .forEach(e=>{
 
+
       e.onchange=()=>{
+
 
         let k=e.dataset.k;
 
@@ -1123,15 +1474,19 @@ function render(){
     });
 
 
+
   /*
-    Obsługa checkboxów.
+    Obsługa checkboxów
   */
 
   document
+
     .querySelectorAll(
       ".day-checkbox"
     )
+
     .forEach(cb=>{
+
 
       cb.onchange=
         updateSelectionInfo;
@@ -1144,22 +1499,30 @@ function render(){
 }
 
 
-/*
-  Otwórz okno wyboru godzin
-*/
+
+/* ================================
+   OTWÓRZ MODAL
+================================ */
+
 
 function openTimeModal(){
 
+
   const selected=
+
     document.querySelectorAll(
+
       ".day-checkbox:checked"
+
     );
 
 
   if(selected.length===0){
 
     alert(
-      "Najpierw zaznacz dni, dla których chcesz ustawić godziny."
+
+      "Najpierw zaznacz dni, dla których chcesz ustawić godziny i rodzaj."
+
     );
 
     return;
@@ -1167,100 +1530,155 @@ function openTimeModal(){
   }
 
 
+
   /*
-    Pobierz ostatnio użyte godziny.
+    Ostatnio użyte godziny.
     Domyślnie 07:00–15:00.
   */
 
   const lastFrom=
+
     localStorage.getItem(
       "worktime_last_from"
     ) || "07:00";
 
 
   const lastTo=
+
     localStorage.getItem(
       "worktime_last_to"
     ) || "15:00";
 
 
+  /*
+    Ostatnio użyty rodzaj.
+    Domyślnie Praca.
+  */
+
+  const lastType=
+
+    localStorage.getItem(
+      "worktime_last_type"
+    ) || "Praca";
+
+
+
   document.getElementById(
     "selectedFrom"
-  ).value=lastFrom;
+  ).value=
+
+    lastFrom;
 
 
   document.getElementById(
     "selectedTo"
-  ).value=lastTo;
+  ).value=
+
+    lastTo;
+
+
+  document.getElementById(
+    "selectedType"
+  ).value=
+
+    lastType;
+
 
 
   document
+
     .getElementById(
       "timeModal"
     )
+
     .classList
+
     .remove("hidden");
 
 }
 
 
-/*
-  ZAMKNIJ OKNO WYBORU GODZIN
 
-  Tej funkcji brakowało w poprzedniej wersji.
-*/
+/* ================================
+   ZAMKNIJ MODAL
+================================ */
+
 
 function closeTimeModal(){
 
   document
+
     .getElementById(
       "timeModal"
     )
+
     .classList
+
     .add("hidden");
 
 }
 
 
-/*
-  Ustaw wybrane godziny
-*/
+
+/* ================================
+   ZASTOSUJ DLA ZAZNACZONYCH
+================================ */
+
 
 function applySelected(){
 
+
   const selected=
+
     document.querySelectorAll(
+
       ".day-checkbox:checked"
+
     );
 
 
   const from=
+
     document.getElementById(
       "selectedFrom"
     ).value;
 
 
   const to=
+
     document.getElementById(
       "selectedTo"
     ).value;
 
 
+  const type=
+
+    document.getElementById(
+      "selectedType"
+    ).value;
+
+
+
   if(!from || !to){
 
     alert(
+
       "Wybierz godzinę rozpoczęcia i zakończenia."
+
     );
 
     return;
 
   }
+
 
 
   if(from>=to){
 
     alert(
+
       "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia."
+
     );
 
     return;
@@ -1268,54 +1686,93 @@ function applySelected(){
   }
 
 
+
   /*
-    Zapamiętaj ostatnio użyte godziny.
+    Zapamiętaj ostatnie godziny.
   */
 
   localStorage.setItem(
+
     "worktime_last_from",
+
     from
+
   );
 
 
   localStorage.setItem(
+
     "worktime_last_to",
+
     to
+
   );
+
+
+
+  /*
+    Zapamiętaj ostatni rodzaj.
+  */
+
+  localStorage.setItem(
+
+    "worktime_last_type",
+
+    type
+
+  );
+
 
 
   const d=data();
 
 
+
   selected.forEach(cb=>{
+
 
     const k=cb.dataset.k;
 
 
     d[k]={
+
       ...(d[k]||{}),
 
       from:from,
+
       to:to,
 
-      type:"Praca"
+      type:type
+
     };
 
+
   });
+
 
 
   save(d);
 
 
+
   /*
-    Najpierw zamykamy modal.
+    Zamknij modal.
   */
 
   closeTimeModal();
 
 
+
   /*
-    Następnie odświeżamy tabelę.
+    Odznacz wszystkie.
+  */
+
+  clearSelection();
+
+
+
+  /*
+    Odśwież tabelę.
   */
 
   render();
@@ -1323,22 +1780,30 @@ function applySelected(){
 }
 
 
-/*
-  WYCZYŚĆ DLA ZAZNACZONYCH
-*/
+
+/* ================================
+   WYCZYŚĆ DLA ZAZNACZONYCH
+================================ */
+
 
 function clearSelected(){
 
+
   const selected=
+
     document.querySelectorAll(
+
       ".day-checkbox:checked"
+
     );
 
 
   if(selected.length===0){
 
     alert(
+
       "Najpierw zaznacz dni, które chcesz wyczyścić."
+
     );
 
     return;
@@ -1346,12 +1811,19 @@ function clearSelected(){
   }
 
 
+
   if(
+
     !confirm(
+
       "Czy na pewno wyczyścić wpisy dla "+
+
       selected.length+
+
       " zaznaczonych dni?"
+
     )
+
   ){
 
     return;
@@ -1359,17 +1831,19 @@ function clearSelected(){
   }
 
 
+
   const d=data();
 
 
+
   selected.forEach(cb=>{
+
 
     const k=cb.dataset.k;
 
 
     /*
-      Usuwamy cały wpis dla dnia.
-      Dzięki temu wraca do stanu domyślnego.
+      Usunięcie całego wpisu.
     */
 
     delete d[k];
@@ -1377,42 +1851,53 @@ function clearSelected(){
   });
 
 
+
   save(d);
 
 
   clearSelection();
+
 
   render();
 
 }
 
 
-/*
-  Odznacz wszystkie
-*/
+
+/* ================================
+   ODZNACZ WSZYSTKIE
+================================ */
+
 
 function clearSelection(){
 
+
   document
+
     .querySelectorAll(
       ".day-checkbox"
     )
+
     .forEach(cb=>{
 
       cb.checked=false;
 
     });
+
 
 
   document
+
     .querySelectorAll(
       ".select-all"
     )
+
     .forEach(cb=>{
 
       cb.checked=false;
 
     });
+
 
 
   updateSelectionInfo();
@@ -1420,26 +1905,39 @@ function clearSelection(){
 }
 
 
-/*
-  Wyczyść cały rok
-*/
+
+/* ================================
+   WYCZYŚĆ CAŁY ROK
+================================ */
+
 
 function clearYear(){
 
+
   if(
+
     confirm(
+
       "Wyczyścić wszystkie wpisy dla "+
+
       ys.value+
+
       "?"
+
     )
+
   ){
 
+
     localStorage.removeItem(
+
       "worktime_"+ys.value
+
     );
 
 
     clearSelection();
+
 
     render();
 
@@ -1448,18 +1946,25 @@ function clearYear(){
 }
 
 
-/* Start */
+
+/* ================================
+   START
+================================ */
+
 
 render();
 
 
+
 /*
-  Przewiń do dzisiejszego dnia
+  Przewiń do dzisiejszego dnia.
 */
 
 setTimeout(function(){
 
+
   const row=
+
     document.getElementById(
       "today-row"
     );
@@ -1468,25 +1973,35 @@ setTimeout(function(){
   if(row){
 
     row.scrollIntoView({
+
       behavior:"auto",
+
       block:"center"
+
     });
 
   }
 
+
 },100);
 
 
-/*
-  Zamknij modal po kliknięciu
-  poza jego zawartością.
-*/
+
+/* ================================
+   KLIKNIĘCIE POZA MODALEM
+================================ */
+
 
 document
+
   .getElementById("timeModal")
+
   .addEventListener(
+
     "click",
+
     function(e){
+
 
       if(e.target===this){
 
@@ -1494,17 +2009,24 @@ document
 
       }
 
+
     }
+
   );
 
 
-/*
-  Zamknij modal klawiszem ESC.
-*/
+
+/* ================================
+   ESC
+================================ */
+
 
 document.addEventListener(
+
   "keydown",
+
   function(e){
+
 
     if(e.key==="Escape"){
 
@@ -1512,7 +2034,9 @@ document.addEventListener(
 
     }
 
+
   }
+
 );
 
 </script>
