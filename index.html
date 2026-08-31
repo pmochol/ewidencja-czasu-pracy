@@ -76,6 +76,10 @@ button.green{
   background:#15803d
 }
 
+button.red{
+  background:#b91c1c
+}
+
 select{
   padding:8px;
   border-radius:6px;
@@ -211,6 +215,7 @@ td select{
 
 
 /* MODAL */
+
 .modal{
   position:fixed;
   inset:0;
@@ -332,9 +337,10 @@ td select{
 <div class="head">
 
   <div>
-    <h1>⏱ Ewidencja czasu pracy</h1>
 
 ```
+<h1>⏱ Ewidencja czasu pracy</h1>
+
 <div class="sub">
   Roczna ewidencja • automatyczny zapis w przeglądarce
 </div>
@@ -350,13 +356,21 @@ td select{
   <select id="year"></select>
 </label>
 
+
 <button class="green" onclick="openTimeModal()">
   Ustaw godziny dla zaznaczonych
 </button>
 
+
+<button class="red" onclick="clearSelected()">
+  Wyczyść dla zaznaczonych
+</button>
+
+
 <button class="gray" onclick="clearSelection()">
   Odznacz wszystkie
 </button>
+
 
 <button class="gray" onclick="clearYear()">
   Wyczyść rok
@@ -390,6 +404,7 @@ td select{
     <input id="selectedFrom" type="time" value="">
   </label>
 
+
   <label>
     Do
     <input id="selectedTo" type="time" value="">
@@ -403,6 +418,7 @@ td select{
   <button class="gray" onclick="closeTimeModal()">
     Anuluj
   </button>
+
 
   <button class="green" onclick="applySelected()">
     Ustaw godziny
@@ -418,19 +434,21 @@ td select{
 <main>
 
 <div id="selectionInfo" class="selection-info">
-  Zaznaczono:
-  <b id="selectedCount">0</b>
-  dni
+
+Zaznaczono: <b id="selectedCount">0</b>
+dni
+
 </div>
 
 <div class="summary">
 
   <div class="card">
-    <div class="label">
-      Przepracowane godziny
-    </div>
 
 ```
+<div class="label">
+  Przepracowane godziny
+</div>
+
 <div class="value" id="hours">
   0:00
 </div>
@@ -439,11 +457,12 @@ td select{
   </div>
 
   <div class="card">
-    <div class="label">
-      Dni pracy
-    </div>
 
 ```
+<div class="label">
+  Dni pracy
+</div>
+
 <div class="value" id="days">
   0
 </div>
@@ -452,11 +471,12 @@ td select{
   </div>
 
   <div class="card">
-    <div class="label">
-      Delegacje
-    </div>
 
 ```
+<div class="label">
+  Delegacje
+</div>
+
 <div class="value" id="delegations">
   0
 </div>
@@ -465,17 +485,18 @@ td select{
   </div>
 
   <div class="card">
-    <div class="label">
-      Zapis
-    </div>
 
 ```
-<div class="value"
-     id="saved"
-     style="font-size:15px">
+<div class="label">
+  Zapis
+</div>
 
+<div
+  class="value"
+  id="saved"
+  style="font-size:15px"
+>
   Gotowe
-
 </div>
 ```
 
@@ -488,6 +509,7 @@ td select{
 </main>
 
 <script>
+
 
 const months=[
   "Styczeń",
@@ -536,14 +558,16 @@ const holidays={
 
 const now=new Date();
 
-const ys=document.getElementById("year");
+const ys=
+  document.getElementById("year");
 
 
 /* Lista lat */
 
 for(let y=2024;y<=2035;y++){
 
-  let o=document.createElement("option");
+  let o=
+    document.createElement("option");
 
   o.value=y;
   o.textContent=y;
@@ -797,12 +821,11 @@ function render(){
 
 
     let tb=
-      tab.querySelector(
-        "tbody"
-      );
+      tab.querySelector("tbody");
 
 
     let mt=0;
+
 
     let n=
       new Date(
@@ -880,9 +903,7 @@ function render(){
 
 
       let tr=
-        document.createElement(
-          "tr"
-        );
+        document.createElement("tr");
 
 
       if(
@@ -890,24 +911,21 @@ function render(){
         now.toDateString()
       ){
 
-        tr.id=
-          "today-row";
+        tr.id="today-row";
 
       }
 
 
       if(weekend(dt)){
 
-        tr.className=
-          "weekend";
+        tr.className="weekend";
 
       }
 
 
       if(hol){
 
-        tr.className+=
-          " holiday";
+        tr.className+=" holiday";
 
       }
 
@@ -1042,6 +1060,7 @@ function render(){
 
     t.className="total";
 
+
     t.textContent=
       "Suma: "+fmt(mt);
 
@@ -1070,12 +1089,13 @@ function render(){
 
 
   /*
-    Obsługa pól tabeli
+    Obsługa pól tabeli.
+    Celowo pomijamy checkboxy.
   */
 
   document
     .querySelectorAll(
-      "input[data-k],select[data-k]"
+      "input[data-k]:not(.day-checkbox), select[data-k]"
     )
     .forEach(e=>{
 
@@ -1104,7 +1124,7 @@ function render(){
 
 
   /*
-    Checkboxy
+    Obsługa checkboxów.
   */
 
   document
@@ -1125,7 +1145,7 @@ function render(){
 
 
 /*
-  Otwórz wybór godzin
+  Otwórz okno wyboru godzin
 */
 
 function openTimeModal(){
@@ -1149,7 +1169,7 @@ function openTimeModal(){
 
   /*
     Pobierz ostatnio użyte godziny.
-    Jeżeli nie ma zapisanych, użyj 07:00–15:00.
+    Domyślnie 07:00–15:00.
   */
 
   const lastFrom=
@@ -1180,6 +1200,24 @@ function openTimeModal(){
     )
     .classList
     .remove("hidden");
+
+}
+
+
+/*
+  ZAMKNIJ OKNO WYBORU GODZIN
+
+  Tej funkcji brakowało w poprzedniej wersji.
+*/
+
+function closeTimeModal(){
+
+  document
+    .getElementById(
+      "timeModal"
+    )
+    .classList
+    .add("hidden");
 
 }
 
@@ -1229,17 +1267,21 @@ function applySelected(){
 
   }
 
-  /* Zapamiętaj ostatnio użyte godziny */
 
-localStorage.setItem(
-  "worktime_last_from",
-  from
-);
+  /*
+    Zapamiętaj ostatnio użyte godziny.
+  */
 
-localStorage.setItem(
-  "worktime_last_to",
-  to
-);
+  localStorage.setItem(
+    "worktime_last_from",
+    from
+  );
+
+
+  localStorage.setItem(
+    "worktime_last_to",
+    to
+  );
 
 
   const d=data();
@@ -1264,7 +1306,81 @@ localStorage.setItem(
 
   save(d);
 
+
+  /*
+    Najpierw zamykamy modal.
+  */
+
   closeTimeModal();
+
+
+  /*
+    Następnie odświeżamy tabelę.
+  */
+
+  render();
+
+}
+
+
+/*
+  WYCZYŚĆ DLA ZAZNACZONYCH
+*/
+
+function clearSelected(){
+
+  const selected=
+    document.querySelectorAll(
+      ".day-checkbox:checked"
+    );
+
+
+  if(selected.length===0){
+
+    alert(
+      "Najpierw zaznacz dni, które chcesz wyczyścić."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      "Czy na pewno wyczyścić wpisy dla "+
+      selected.length+
+      " zaznaczonych dni?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const d=data();
+
+
+  selected.forEach(cb=>{
+
+    const k=cb.dataset.k;
+
+
+    /*
+      Usuwamy cały wpis dla dnia.
+      Dzięki temu wraca do stanu domyślnego.
+    */
+
+    delete d[k];
+
+  });
+
+
+  save(d);
+
+
+  clearSelection();
 
   render();
 
@@ -1305,7 +1421,7 @@ function clearSelection(){
 
 
 /*
-  Wyczyść rok
+  Wyczyść cały rok
 */
 
 function clearYear(){
@@ -1313,7 +1429,8 @@ function clearYear(){
   if(
     confirm(
       "Wyczyścić wszystkie wpisy dla "+
-      ys.value+"?"
+      ys.value+
+      "?"
     )
   ){
 
@@ -1336,7 +1453,9 @@ function clearYear(){
 render();
 
 
-/* Przewiń do dzisiejszego dnia */
+/*
+  Przewiń do dzisiejszego dnia
+*/
 
 setTimeout(function(){
 
@@ -1359,8 +1478,8 @@ setTimeout(function(){
 
 
 /*
-  Zamknięcie modala po kliknięciu
-  poza jego zawartością
+  Zamknij modal po kliknięciu
+  poza jego zawartością.
 */
 
 document
@@ -1377,6 +1496,24 @@ document
 
     }
   );
+
+
+/*
+  Zamknij modal klawiszem ESC.
+*/
+
+document.addEventListener(
+  "keydown",
+  function(e){
+
+    if(e.key==="Escape"){
+
+      closeTimeModal();
+
+    }
+
+  }
+);
 
 </script>
 
