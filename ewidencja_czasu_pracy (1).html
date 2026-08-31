@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ewidencja czasu pracy</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#20252b;font-family:Arial,sans-serif}
+header{background:#1f2937;color:white;padding:16px 20px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0002}
+.head{max-width:1500px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+h1{margin:0;font-size:23px}.sub{font-size:12px;color:#cbd5e1;margin-top:4px}
+.controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}button,select{font:inherit}
+button{border:0;border-radius:7px;padding:9px 12px;background:#2563eb;color:white;font-weight:bold;cursor:pointer}
+button.gray{background:#4b5563}button.green{background:#15803d}
+select{padding:8px;border-radius:6px;border:1px solid #cbd5e1;background:white}
+main{max-width:1500px;margin:18px auto;padding:0 14px;overflow-x:auto}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.card{background:white;border-radius:9px;padding:15px;box-shadow:0 1px 4px #0001}.label{font-size:12px;color:#6b7280}.value{font-size:23px;font-weight:bold;margin-top:5px}
+.month{background:white;border-radius:9px;margin-bottom:17px;overflow:hidden;box-shadow:0 1px 4px #0001}
+.month h2{margin:0;padding:12px 14px;background:#e9eef5;font-size:17px;border-bottom:1px solid #d8dee7}
+table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f8fafc;color:#475569}
+th,td{padding:7px;border-bottom:1px solid #e5e7eb;text-align:left}td input,td select{width:100%;padding:6px;border:1px solid #d1d5db;border-radius:5px}
+.hours{text-align:center;font-weight:bold}.weekend{background:#fafafa;color:#6b7280}.holiday{background:#fff7ed}
+.total{text-align:right;padding:9px 14px;background:#f8fafc;font-weight:bold}
+@media(max-width:850px){.summary{grid-template-columns:repeat(2,1fr)}table{font-size:12px}}
+@media(max-width:550px){.summary{grid-template-columns:1fr}th,td{padding:5px 4px}}
+
+.modal{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}
+.hidden{display:none}.modal-box{background:white;border-radius:12px;padding:20px;max-width:430px;width:100%;box-shadow:0 10px 35px #0004}
+.modal-box h2{margin:0 0 8px;font-size:20px}.modal-box p{font-size:13px;color:#64748b;margin:0 0 16px}
+.range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.range-grid label{font-size:12px;color:#475569}
+.range-grid input{display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #cbd5e1;border-radius:6px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+@media(max-width:550px){.range-grid{grid-template-columns:1fr}.modal-box{padding:16px}}
+</style>
+</head>
+<body>
+<header><div class="head">
+<div><h1>⏱ Ewidencja czasu pracy</h1><div class="sub">Roczna ewidencja • automatyczny zapis w przeglądarce</div></div>
+<div class="controls">
+<label>Rok: <select id="year"></select></label>
+<button class="green" onclick="openRange()">Ustaw 07:00–15:00 dla zakresu</button>
+<button class="gray" onclick="clearYear()">Wyczyść rok</button>
+</div>
+</div></header>
+
+<div id="rangeModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Ustaw godziny 07:00–15:00</h2>
+    <p>Wybierz zakres dat. Godziny zostaną ustawione tylko dla dni roboczych.</p>
+    <div class="range-grid">
+      <label>Od<input id="rangeFrom" type="date"></label>
+      <label>Do<input id="rangeTo" type="date"></label>
+    </div>
+    <div class="modal-actions">
+      <button class="gray" onclick="closeRange()">Anuluj</button>
+      <button class="green" onclick="applyRange()">Ustaw godziny</button>
+    </div>
+  </div>
+</div>
+<main>
+<div class="summary">
+<div class="card"><div class="label">Przepracowane godziny</div><div class="value" id="hours">0:00</div></div>
+<div class="card"><div class="label">Dni pracy</div><div class="value" id="days">0</div></div>
+<div class="card"><div class="label">Delegacje</div><div class="value" id="delegations">0</div></div>
+<div class="card"><div class="label">Zapis</div><div class="value" id="saved" style="font-size:15px">Gotowe</div></div>
+</div>
+<div id="months"></div>
+</main>
+<script>
+const months=["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+const days=["Nd","Pn","Wt","Śr","Cz","Pt","Sb"];
+const holidays={"01-01":"Nowy Rok","01-06":"Trzech Króli","04-05":"Wielkanoc","04-06":"Poniedziałek Wielkanocny","05-01":"Święto Pracy","05-03":"3 Maja","05-24":"Zielone Świątki","06-04":"Boże Ciało","08-15":"Wniebowzięcie","11-01":"Wszystkich Świętych","11-11":"Niepodległość","12-24":"Wigilia","12-25":"Boże Narodzenie","12-26":"Drugi dzień Świąt"};
+const now=new Date(), ys=document.getElementById("year");
+for(let y=2024;y<=2035;y++){let o=document.createElement("option");o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;ys.appendChild(o)}
+ys.onchange=render;
+function key(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
+function data(){return JSON.parse(localStorage.getItem("worktime_"+ys.value)||"{}")}
+function save(d){localStorage.setItem("worktime_"+ys.value,JSON.stringify(d));document.getElementById("saved").textContent="Zapisano"}
+function mins(t){if(!t)return null;let a=t.split(":");return +a[0]*60+ +a[1]}
+function dur(a,b){let x=mins(a),y=mins(b);return x!==null&&y!==null&&y>=x?y-x:0}
+function fmt(n){return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")}
+function holiday(date){return holidays[String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0")]||""}
+function weekend(date){return date.getDay()===0||date.getDay()===6}
+function render(){
+ let y=+ys.value,d=data(),box=document.getElementById("months");box.innerHTML="",all=0,wd=0,del=0;
+ for(let m=0;m<12;m++){
+  let sec=document.createElement("section");sec.className="month";sec.innerHTML="<h2>"+months[m]+" "+y+"</h2>";
+  let tab=document.createElement("table");tab.innerHTML="<thead><tr><th>Data</th><th>Dzień</th><th>Od</th><th>Do</th><th>Godziny</th><th>Rodzaj</th><th>Uwagi</th></tr></thead><tbody></tbody>";
+  let tb=tab.querySelector("tbody"),mt=0,n=new Date(y,m+1,0).getDate();
+  for(let day=1;day<=n;day++){
+   let dt=new Date(y,m,day),k=key(y,m,day),r=d[k]||{},hol=holiday(dt),type=r.type||(hol?"Święto":weekend(dt)?"Wolne":"Praca"),h=dur(r.from,r.to);
+   mt+=h;all+=h;if(h)wd++;if(h&&type==="Delegacja")del++;
+   let tr=document.createElement("tr");if(dt.toDateString()===now.toDateString())tr.id="today-row";if(weekend(dt))tr.className="weekend";if(hol)tr.className+=" holiday";
+   tr.innerHTML="<td><b>"+String(day).padStart(2,"0")+"."+String(m+1).padStart(2,"0")+"."+y+"</b></td><td>"+days[dt.getDay()]+(hol?" ★":"")+"</td>"+
+   '<td><input type="time" value="'+(r.from||"")+'" data-k="'+k+'" data-f="from"></td>'+
+   '<td><input type="time" value="'+(r.to||"")+'" data-k="'+k+'" data-f="to"></td>'+
+   '<td class="hours">'+fmt(h)+'</td>'+
+   '<td><select data-k="'+k+'" data-f="type">'+["Praca","Delegacja","Urlop","L4","Święto","Wolne"].map(x=>"<option "+(x===type?"selected":"")+">"+x+"</option>").join("")+"</select></td>"+
+   '<td><input type="text" placeholder="np. Kraków" value="'+(r.note||"").replaceAll('"',"&quot;")+'" data-k="'+k+'" data-f="note"></td>';
+   tb.appendChild(tr);
+  }
+  sec.appendChild(tab);let t=document.createElement("div");t.className="total";t.textContent="Suma: "+fmt(mt);sec.appendChild(t);box.appendChild(sec);
+ }
+ document.getElementById("hours").textContent=fmt(all);document.getElementById("days").textContent=wd;document.getElementById("delegations").textContent=del;
+ document.querySelectorAll("[data-k]").forEach(e=>e.onchange=()=>{let k=e.dataset.k,f=e.dataset.f;d[k]=d[k]||{};d[k][f]=e.value;save(d);render()});
+}
+function openRange(){
+ const y=+ys.value;
+ document.getElementById("rangeFrom").value=y+"-01-01";
+ document.getElementById("rangeTo").value=y+"-12-31";
+ document.getElementById("rangeModal").classList.remove("hidden");
+}
+function closeRange(){document.getElementById("rangeModal").classList.add("hidden")}
+function applyRange(){
+ const from=document.getElementById("rangeFrom").value;
+ const to=document.getElementById("rangeTo").value;
+ if(!from||!to||from>to){alert("Wybierz prawidłowy zakres dat.");return}
+ const y=+ys.value,d=data();
+ let cur=new Date(from+"T12:00:00"),end=new Date(to+"T12:00:00");
+ while(cur<=end){
+   if(cur.getFullYear()===y&&!weekend(cur)&&!holiday(cur)){
+     const k=key(y,cur.getMonth(),cur.getDate());
+     d[k]={...(d[k]||{}),from:"07:00",to:"15:00",type:"Praca"};
+   }
+   cur.setDate(cur.getDate()+1);
+ }
+ save(d);closeRange();render();
+}
+function clearYear(){if(confirm("Wyczyścić wszystkie wpisy dla "+ys.value+"?")){localStorage.removeItem("worktime_"+ys.value);render()}}
+render();
+setTimeout(function(){
+ const row=document.getElementById("today-row");
+ if(row) row.scrollIntoView({behavior:"auto",block:"center"});
+},100);
+</script>
+</body>
+</html>
