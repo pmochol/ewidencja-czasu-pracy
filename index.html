@@ -387,12 +387,12 @@ td select{
 
   <label>
     Od
-    <input id="selectedFrom" type="time" value="07:00">
+    <input id="selectedFrom" type="time" value="">
   </label>
 
   <label>
     Do
-    <input id="selectedTo" type="time" value="15:00">
+    <input id="selectedTo" type="time" value="">
   </label>
 
 </div>
@@ -1147,28 +1147,39 @@ function openTimeModal(){
   }
 
 
+  /*
+    Pobierz ostatnio użyte godziny.
+    Jeżeli nie ma zapisanych, użyj 07:00–15:00.
+  */
+
+  const lastFrom=
+    localStorage.getItem(
+      "worktime_last_from"
+    ) || "07:00";
+
+
+  const lastTo=
+    localStorage.getItem(
+      "worktime_last_to"
+    ) || "15:00";
+
+
+  document.getElementById(
+    "selectedFrom"
+  ).value=lastFrom;
+
+
+  document.getElementById(
+    "selectedTo"
+  ).value=lastTo;
+
+
   document
     .getElementById(
       "timeModal"
     )
     .classList
     .remove("hidden");
-
-}
-
-
-/*
-  Zamknij wybór godzin
-*/
-
-function closeTimeModal(){
-
-  document
-    .getElementById(
-      "timeModal"
-    )
-    .classList
-    .add("hidden");
 
 }
 
@@ -1217,6 +1228,18 @@ function applySelected(){
     return;
 
   }
+
+  /* Zapamiętaj ostatnio użyte godziny */
+
+localStorage.setItem(
+  "worktime_last_from",
+  from
+);
+
+localStorage.setItem(
+  "worktime_last_to",
+  to
+);
 
 
   const d=data();
