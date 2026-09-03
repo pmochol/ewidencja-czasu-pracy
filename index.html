@@ -1,23 +1,42 @@
 <!doctype html>
 
 <html lang="pl">
+
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Ewidencja czasu pracy</title>
+
+<!-- ExcelJS - tworzenie i formatowanie plików Excel -->
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <style>
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  overflow-x:hidden;
 }
 
 body{
-  margin:0;
   background:#f3f5f7;
   color:#20252b;
-  font-family:Arial,sans-serif
+  font-family:Arial,sans-serif;
 }
+
+
+/* =========================================================
+   HEADER
+========================================================= */
 
 header{
   background:#1f2937;
@@ -26,7 +45,7 @@ header{
   position:sticky;
   top:0;
   z-index:5;
-  box-shadow:0 2px 8px #0002
+  box-shadow:0 2px 8px #0002;
 }
 
 .head{
@@ -36,31 +55,37 @@ header{
   justify-content:space-between;
   align-items:center;
   gap:15px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 h1{
   margin:0;
-  font-size:23px
+  font-size:23px;
 }
 
 .sub{
   font-size:12px;
   color:#cbd5e1;
-  margin-top:4px
+  margin-top:4px;
 }
 
 .controls{
   display:flex;
   gap:7px;
   align-items:center;
-  flex-wrap:wrap
+  flex-wrap:wrap;
+}
+
+.controls label{
+  display:flex;
+  align-items:center;
+  gap:5px;
 }
 
 button,
 select,
 input{
-  font:inherit
+  font:inherit;
 }
 
 button{
@@ -70,143 +95,77 @@ button{
   background:#2563eb;
   color:white;
   font-weight:bold;
-  cursor:pointer
+  cursor:pointer;
 }
 
 button:hover{
-  opacity:.9
+  opacity:.9;
 }
 
 button.gray{
-  background:#4b5563
+  background:#4b5563;
 }
 
 button.green{
-  background:#15803d
+  background:#15803d;
 }
 
 button.red{
-  background:#b91c1c
+  background:#b91c1c;
 }
 
 select{
   padding:8px;
   border-radius:6px;
   border:1px solid #cbd5e1;
-  background:white
+  background:white;
 }
+
+
+/* =========================================================
+   MAIN
+========================================================= */
 
 main{
   max-width:1500px;
   margin:18px auto;
   padding:0 14px;
-  overflow-x:auto
 }
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
 
 .summary{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:12px;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .card{
   background:white;
   border-radius:9px;
   padding:15px;
-  box-shadow:0 1px 4px #0001
+  box-shadow:0 1px 4px #0001;
 }
 
 .label{
   font-size:12px;
-  color:#6b7280
+  color:#6b7280;
 }
 
 .value{
   font-size:23px;
   font-weight:bold;
-  margin-top:5px
+  margin-top:5px;
 }
 
-.month{
-  background:white;
-  border-radius:9px;
-  margin-bottom:17px;
-  overflow:hidden;
-  box-shadow:0 1px 4px #0001
-}
 
-.month h2{
-  margin:0;
-  padding:12px 14px;
-  background:#e9eef5;
-  font-size:17px;
-  border-bottom:1px solid #d8dee7
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px
-}
-
-th{
-  background:#f8fafc;
-  color:#475569
-}
-
-th,
-td{
-  padding:7px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:left
-}
-
-td input,
-td select{
-  width:100%;
-  padding:6px;
-  border:1px solid #d1d5db;
-  border-radius:5px
-}
-
-.checkbox-cell{
-  width:42px;
-  text-align:center
-}
-
-.checkbox-cell input{
-  width:18px;
-  height:18px;
-  cursor:pointer
-}
-
-.select-all{
-  width:18px !important;
-  height:18px;
-  cursor:pointer
-}
-
-.hours{
-  text-align:center;
-  font-weight:bold
-}
-
-.weekend{
-  background:#fafafa;
-  color:#6b7280
-}
-
-.holiday{
-  background:#fff7ed
-}
-
-.total{
-  text-align:right;
-  padding:9px 14px;
-  background:#f8fafc;
-  font-weight:bold
-}
+/* =========================================================
+   SELECTION INFO
+========================================================= */
 
 .selection-info{
   background:#eff6ff;
@@ -216,17 +175,150 @@ td select{
   padding:10px 13px;
   margin-bottom:14px;
   font-size:13px;
-  display:none
+  display:none;
 }
 
 .selection-info.visible{
-  display:block
+  display:block;
 }
 
 
-/* ================================
-   MODAL
-================================ */
+/* =========================================================
+   MONTH
+========================================================= */
+
+.month{
+  background:white;
+  border-radius:9px;
+  margin-bottom:17px;
+  box-shadow:0 1px 4px #0001;
+  overflow:hidden;
+}
+
+.month h2{
+  margin:0;
+  padding:12px 14px;
+  background:#e9eef5;
+  font-size:17px;
+  border-bottom:1px solid #d8dee7;
+}
+
+
+/*
+  WAŻNE:
+  Tabela ma minimalną szerokość.
+  Dzięki temu na telefonie powstaje
+  rzeczywisty poziomy scroll.
+*/
+
+.month-scroll{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+
+.month-scroll::-webkit-scrollbar{
+  height:8px;
+}
+
+.month-scroll::-webkit-scrollbar-track{
+  background:#e5e7eb;
+}
+
+.month-scroll::-webkit-scrollbar-thumb{
+  background:#9ca3af;
+  border-radius:5px;
+}
+
+table{
+  width:100%;
+  min-width:1050px;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+
+th,
+td{
+  padding:7px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+}
+
+td input,
+td select{
+  width:100%;
+  padding:6px;
+  border:1px solid #d1d5db;
+  border-radius:5px;
+}
+
+.checkbox-cell{
+  width:42px;
+  text-align:center;
+}
+
+.checkbox-cell input{
+  width:18px;
+  height:18px;
+  cursor:pointer;
+}
+
+.select-all{
+  width:18px !important;
+  height:18px;
+  cursor:pointer;
+}
+
+.hours{
+  text-align:center;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.weekend{
+  background:#fafafa;
+  color:#6b7280;
+}
+
+.holiday{
+  background:#fff7ed;
+}
+
+.total{
+  text-align:right;
+  padding:9px 14px;
+  background:#f8fafc;
+  font-weight:bold;
+}
+
+
+/* =========================================================
+   MOBILE SCROLL INFO
+========================================================= */
+
+.mobile-scroll-info{
+  display:none;
+  padding:7px 12px;
+  background:#f8fafc;
+  color:#64748b;
+  font-size:11px;
+  border-top:1px solid #e5e7eb;
+  text-align:center;
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
 
 .modal{
   position:fixed;
@@ -236,11 +328,11 @@ td select{
   align-items:center;
   justify-content:center;
   padding:18px;
-  z-index:20
+  z-index:20;
 }
 
 .hidden{
-  display:none
+  display:none !important;
 }
 
 .modal-box{
@@ -249,108 +341,212 @@ td select{
   padding:20px;
   max-width:450px;
   width:100%;
-  box-shadow:0 10px 35px #0004
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 10px 35px #0004;
 }
 
 .modal-box h2{
   margin:0 0 8px;
-  font-size:20px
+  font-size:20px;
 }
 
 .modal-box p{
   font-size:13px;
   color:#64748b;
-  margin:0 0 16px
+  margin:0 0 16px;
 }
 
 .time-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px
+  gap:10px;
 }
 
 .time-grid label{
   font-size:12px;
-  color:#475569
+  color:#475569;
 }
 
-.time-grid input,
-.time-grid select{
+.time-grid input{
   display:block;
   width:100%;
   margin-top:5px;
   padding:9px;
   border:1px solid #cbd5e1;
   border-radius:6px;
-  background:white
 }
 
 .modal-type{
   display:block;
-  margin-top:12px
+  margin-top:12px;
+}
+
+.modal-type select{
+  display:block;
+  width:100%;
+  margin-top:5px;
 }
 
 .modal-actions{
   display:flex;
   justify-content:flex-end;
   gap:8px;
-  margin-top:18px
+  margin-top:18px;
 }
 
-.hours-info{
-  margin-top:10px;
+.excel-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.excel-buttons button{
+  width:100%;
+}
+
+.excel-month-label{
+  display:block;
   font-size:12px;
-  color:#64748b
+  color:#475569;
+  margin-bottom:14px;
 }
 
+.excel-month-label select{
+  display:block;
+  width:100%;
+  margin-top:5px;
+}
+
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+.backup-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.backup-buttons button{
+  width:100%;
+}
+
+.backup-info{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:10px;
+  margin-top:12px;
+  font-size:12px;
+  color:#64748b;
+  line-height:1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
 @media(max-width:850px){
 
   .summary{
-    grid-template-columns:repeat(2,1fr)
+    grid-template-columns:repeat(2,1fr);
   }
 
-  table{
-    font-size:12px
+  .mobile-scroll-info{
+    display:block;
   }
 
-  th,
-  td{
-    padding:5px 4px
+  .controls{
+    width:100%;
+  }
+
+  .controls button{
+    flex:1;
+  }
+
+}
+
+@media(max-width:550px){
+
+  header{
+    padding:12px;
+  }
+
+  h1{
+    font-size:20px;
+  }
+
+  .summary{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .card{
+    padding:12px;
+  }
+
+  .value{
+    font-size:20px;
+  }
+
+  main{
+    padding:0 8px;
+  }
+
+  .controls{
+    gap:5px;
+  }
+
+  .controls button{
+    font-size:11px;
+    padding:8px 7px;
+  }
+
+  .controls label{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .time-grid{
+    grid-template-columns:1fr;
+  }
+
+  .modal-box{
+    padding:16px;
   }
 
 }
 
 
-@media(max-width:550px){
+/* =========================================================
+   PRINT
+========================================================= */
 
-  .summary{
-    grid-template-columns:1fr
+@media print{
+
+  header,
+  .selection-info,
+  button,
+  .controls,
+  .mobile-scroll-info{
+    display:none !important;
   }
 
-  .head{
-    align-items:flex-start
+  body{
+    background:white;
   }
 
-  .controls{
-    width:100%
+  main{
+    max-width:none;
+    margin:0;
   }
 
-  .controls button{
-    flex:1
-  }
-
-  th,
-  td{
-    padding:5px 4px
-  }
-
-  .time-grid{
-    grid-template-columns:1fr
-  }
-
-  .modal-box{
-    padding:16px
+  .month{
+    box-shadow:none;
+    page-break-inside:avoid;
   }
 
 }
@@ -361,279 +557,440 @@ td select{
 
 <body>
 
+<!-- =======================================================
+     HEADER
+======================================================= -->
+
 <header>
 
 <div class="head">
 
-  <div>
+<div>
 
-```
 <h1>⏱ Ewidencja czasu pracy</h1>
 
 <div class="sub">
-  Roczna ewidencja • automatyczny zapis w przeglądarce
+Roczna ewidencja • dane zapisywane lokalnie w przeglądarce
 </div>
-```
 
-  </div>
+</div>
 
-  <div class="controls">
+<div class="controls">
 
-```
 <label>
 
-  Rok:
+Rok:
 
-  <select id="year"></select>
+<select id="year"></select>
 
 </label>
 
-
 <button
-  class="green"
-  onclick="openTimeModal()"
->
-  Ustaw dla zaznaczonych
+class="green"
+onclick="openTimeModal()">
+
+Ustaw dla zaznaczonych
+
 </button>
 
-
 <button
-  class="red"
-  onclick="clearSelected()"
->
-  Wyczyść dla zaznaczonych
+class="gray"
+onclick="clearSelection()">
+
+Odznacz wszystkie
+
 </button>
 
-
 <button
-  class="gray"
-  onclick="clearSelection()"
->
-  Odznacz wszystkie
+class="gray"
+onclick="clearSelectedData()">
+
+Wyczyść dla zaznaczonych
+
 </button>
 
+<button
+class="green"
+onclick="openExcelModal()">
+
+📊 Excel
+
+</button>
 
 <button
-  class="gray"
-  onclick="clearYear()"
->
-  Wyczyść rok
-</button>
-```
+class="gray"
+onclick="openBackupModal()">
 
-  </div>
+💾 Backup
+
+</button>
+
+</div>
 
 </div>
 
 </header>
 
-<!-- ================================
-     MODAL
-================================ -->
+<!-- =======================================================
+     MODAL GODZINY
+======================================================= -->
 
 <div
-  id="timeModal"
-  class="modal hidden"
->
+id="timeModal"
+class="modal hidden">
 
-  <div class="modal-box">
+<div class="modal-box">
 
-```
 <h2>
-  Ustaw dla zaznaczonych
+Ustaw dla zaznaczonych
 </h2>
 
-
 <p>
-  Ustaw godziny oraz rodzaj dla wszystkich zaznaczonych dni.
+Wybrane ustawienia zostaną zastosowane do wszystkich zaznaczonych dni.
 </p>
-
 
 <div class="time-grid">
 
+<label>
 
-  <label>
+Od
 
-    Od
-
-    <input
-      id="selectedFrom"
-      type="time"
-      value=""
-    >
-
-  </label>
-
-
-  <label>
-
-    Do
-
-    <input
-      id="selectedTo"
-      type="time"
-      value=""
-    >
-
-  </label>
-
-
-</div>
-
-
-<label class="modal-type">
-
-  Rodzaj
-
-  <select id="selectedType">
-
-    <option value="Praca">
-      Praca
-    </option>
-
-    <option value="Delegacja">
-      Delegacja
-    </option>
-
-    <option value="Urlop">
-      Urlop
-    </option>
-
-    <option value="L4">
-      L4
-    </option>
-
-    <option value="Święto">
-      Święto
-    </option>
-
-    <option value="Wolne">
-      Wolne
-    </option>
-
-  </select>
+<input
+id="selectedFrom"
+type="time">
 
 </label>
 
+<label>
 
-<div class="hours-info" id="modalHoursInfo">
-  Czas pracy: 8:00
+Do
+
+<input
+id="selectedTo"
+type="time">
+
+</label>
+
 </div>
 
+<label class="modal-type">
+
+Rodzaj
+
+<select id="selectedType">
+
+<option value="Praca">
+Praca
+</option>
+
+<option value="Delegacja">
+Delegacja
+</option>
+
+<option value="Urlop">
+Urlop
+</option>
+
+<option value="L4">
+L4
+</option>
+
+<option value="Święto">
+Święto
+</option>
+
+<option value="Wolne">
+Wolne
+</option>
+
+</select>
+
+</label>
+
+<div
+id="modalHoursInfo"
+style="margin-top:10px;font-size:12px;color:#64748b">
+
+Czas pracy: —
+
+</div>
 
 <div class="modal-actions">
 
+<button
+class="gray"
+onclick="closeTimeModal()">
 
-  <button
-    class="gray"
-    onclick="closeTimeModal()"
-  >
-    Anuluj
-  </button>
+Anuluj
 
+</button>
 
-  <button
-    class="green"
-    onclick="applySelected()"
-  >
-    Ustaw
-  </button>
+<button
+class="green"
+onclick="applySelected()">
 
+Ustaw
 
-</div>
-```
-
-  </div>
+</button>
 
 </div>
+
+</div>
+
+</div>
+
+<!-- =======================================================
+     MODAL EXCEL
+======================================================= -->
+
+<div
+id="excelModal"
+class="modal hidden">
+
+<div class="modal-box">
+
+<h2>
+📊 Eksport do Excela
+</h2>
+
+<p>
+Wybierz zakres danych do eksportu.
+</p>
+
+<label class="excel-month-label">
+
+Miesiąc:
+
+<select id="excelMonth">
+
+<option value="0">Styczeń</option>
+<option value="1">Luty</option>
+<option value="2">Marzec</option>
+<option value="3">Kwiecień</option>
+<option value="4">Maj</option>
+<option value="5">Czerwiec</option>
+<option value="6">Lipiec</option>
+<option value="7">Sierpień</option>
+<option value="8">Wrzesień</option>
+<option value="9">Październik</option>
+<option value="10">Listopad</option>
+<option value="11">Grudzień</option>
+
+</select>
+
+</label>
+
+<div class="excel-buttons">
+
+<button
+class="green"
+onclick="exportYear()">
+
+📅 Cały rok <br> <small>Podsumowanie + 12 miesięcy</small>
+
+</button>
+
+<button
+class="green"
+onclick="exportMonth()">
+
+📆 Wybrany miesiąc
+
+</button>
+
+<button
+class="green"
+onclick="exportSelected()">
+
+☑ Zaznaczone dni
+
+</button>
+
+</div>
+
+<div class="modal-actions">
+
+<button
+class="gray"
+onclick="closeExcelModal()">
+
+Anuluj
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =======================================================
+     MODAL BACKUP
+======================================================= -->
+
+<div
+id="backupModal"
+class="modal hidden">
+
+<div class="modal-box">
+
+<h2>
+💾 Backup danych
+</h2>
+
+<p>
+Zapisz lub przywróć całą ewidencję pracy.
+</p>
+
+<div class="backup-buttons">
+
+<button
+class="green"
+onclick="downloadBackup()">
+
+💾 Zapisz backup
+
+</button>
+
+<button
+class="green"
+onclick="document.getElementById('backupFile').click()">
+
+↩ Przywróć backup
+
+</button>
+
+<input
+id="backupFile"
+type="file"
+accept=".json,application/json"
+style="display:none"
+onchange="restoreBackup(this)">
+
+</div>
+
+<div class="backup-info">
+
+<b>Backup zawiera:</b><br>
+
+• wszystkie zapisane lata<br>
+• godziny pracy<br>
+• rodzaje dni<br>
+• uwagi<br>
+• ostatnio używane ustawienia godzin
+
+<br><br>
+
+Plik backupu jest zwykłym plikiem JSON i można go przechowywać np. na komputerze, pendrive lub w chmurze.
+
+</div>
+
+<div class="modal-actions">
+
+<button
+class="gray"
+onclick="closeBackupModal()">
+
+Zamknij
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =======================================================
+     MAIN
+======================================================= -->
 
 <main>
 
 <div
-  id="selectionInfo"
-  class="selection-info"
->
+id="selectionInfo"
+class="selection-info">
 
 Zaznaczono:
 
-  <b id="selectedCount">
-    0
-  </b>
+<b id="selectedCount">
+0
+</b>
 
 dni
 
 </div>
 
+<!-- =======================================================
+     PODSUMOWANIE
+======================================================= -->
+
 <div class="summary">
 
-  <div class="card">
+<div class="card">
 
-```
 <div class="label">
-  Przepracowane godziny
+Przepracowane godziny
 </div>
 
 <div
-  class="value"
-  id="hours"
->
-  0:00
+class="value"
+id="hours">
+
+0:00
+
 </div>
-```
 
-  </div>
+</div>
 
-  <div class="card">
+<div class="card">
 
-```
 <div class="label">
-  Dni pracy
+Dni pracy
 </div>
 
 <div
-  class="value"
-  id="days"
->
-  0
+class="value"
+id="days">
+
+0
+
 </div>
-```
 
-  </div>
+</div>
 
-  <div class="card">
+<div class="card">
 
-```
 <div class="label">
-  Delegacje
+Delegacje
 </div>
 
 <div
-  class="value"
-  id="delegations"
->
-  0
+class="value"
+id="delegations">
+
+0
+
 </div>
-```
 
-  </div>
+</div>
 
-  <div class="card">
+<div class="card">
 
-```
 <div class="label">
-  Zapis
+Zapis
 </div>
 
 <div
-  class="value"
-  id="saved"
-  style="font-size:15px"
->
-  Gotowe
-</div>
-```
+class="value"
+id="saved"
+style="font-size:15px">
 
-  </div>
+Gotowe
+
+</div>
+
+</div>
 
 </div>
 
@@ -644,1628 +1001,3203 @@ dni
 <script>
 
 
-/* ================================
+/* =========================================================
    PODSTAWOWE DANE
-================================ */
-
+========================================================= */
 
 const months=[
 
-  "Styczeń",
-  "Luty",
-  "Marzec",
-  "Kwiecień",
-  "Maj",
-  "Czerwiec",
-  "Lipiec",
-  "Sierpień",
-  "Wrzesień",
-  "Październik",
-  "Listopad",
-  "Grudzień"
+"Styczeń",
+"Luty",
+"Marzec",
+"Kwiecień",
+"Maj",
+"Czerwiec",
+"Lipiec",
+"Sierpień",
+"Wrzesień",
+"Październik",
+"Listopad",
+"Grudzień"
 
 ];
 
 
 const days=[
 
-  "Nd",
-  "Pn",
-  "Wt",
-  "Śr",
-  "Cz",
-  "Pt",
-  "Sb"
+"Nd",
+"Pn",
+"Wt",
+"Śr",
+"Cz",
+"Pt",
+"Sb"
 
 ];
 
 
 const types=[
 
-  "Praca",
-  "Delegacja",
-  "Urlop",
-  "L4",
-  "Święto",
-  "Wolne"
+"Praca",
+"Delegacja",
+"Urlop",
+"L4",
+"Święto",
+"Wolne"
 
 ];
 
 
 const holidays={
 
-  "01-01":"Nowy Rok",
-
-  "01-06":"Trzech Króli",
-
-  "04-05":"Wielkanoc",
-
-  "04-06":"Poniedziałek Wielkanocny",
-
-  "05-01":"Święto Pracy",
-
-  "05-03":"3 Maja",
-
-  "05-24":"Zielone Świątki",
-
-  "06-04":"Boże Ciało",
-
-  "08-15":"Wniebowzięcie",
-
-  "11-01":"Wszystkich Świętych",
-
-  "11-11":"Niepodległość",
-
-  "12-24":"Wigilia",
-
-  "12-25":"Boże Narodzenie",
-
-  "12-26":"Drugi dzień Świąt"
+"01-01":"Nowy Rok",
+"01-06":"Trzech Króli",
+"04-05":"Wielkanoc",
+"04-06":"Poniedziałek Wielkanocny",
+"05-01":"Święto Pracy",
+"05-03":"3 Maja",
+"05-24":"Zielone Świątki",
+"06-04":"Boże Ciało",
+"08-15":"Wniebowzięcie",
+"11-01":"Wszystkich Świętych",
+"11-11":"Niepodległość",
+"12-24":"Wigilia",
+"12-25":"Boże Narodzenie",
+"12-26":"Drugi dzień Świąt"
 
 };
 
 
 const now=new Date();
 
-const ys=
-  document.getElementById("year");
+const ys=document.getElementById("year");
 
 
+/* =========================================================
+   LATA
+========================================================= */
 
-/* ================================
-   LISTA LAT
-================================ */
+for(
+let y=2024;
+y<=2035;
+y++
+){
 
+let o=document.createElement("option");
 
-for(let y=2024;y<=2035;y++){
+o.value=y;
 
-  let o=
-    document.createElement("option");
+o.textContent=y;
 
-  o.value=y;
+if(
+y===now.getFullYear()
+){
 
-  o.textContent=y;
+o.selected=true;
 
+}
 
-  if(y===now.getFullYear()){
-
-    o.selected=true;
-
-  }
-
-
-  ys.appendChild(o);
+ys.appendChild(o);
 
 }
 
 
 ys.onchange=function(){
 
-  clearSelection();
+clearSelection();
 
-  render();
+render();
 
 };
 
 
-
-/* ================================
+/* =========================================================
    KLUCZ DATY
-================================ */
-
+========================================================= */
 
 function key(y,m,d){
 
-  return y+"-"+
+return y+"-"+
 
-    String(m+1).padStart(2,"0")+
+String(m+1).padStart(2,"0")+"-"+
 
-    "-"+
-
-    String(d).padStart(2,"0");
+String(d).padStart(2,"0");
 
 }
 
 
-
-/* ================================
-   DANE
-================================ */
-
+/* =========================================================
+   DANE AKTUALNEGO ROKU
+========================================================= */
 
 function data(){
 
-  return JSON.parse(
+return JSON.parse(
 
-    localStorage.getItem(
+localStorage.getItem(
+"worktime_"+ys.value
+)||"{}"
 
-      "worktime_"+ys.value
-
-    )||"{}"
-
-  );
+);
 
 }
 
 
-
-/* ================================
+/* =========================================================
    ZAPIS
-================================ */
-
+========================================================= */
 
 function save(d){
 
-  localStorage.setItem(
+localStorage.setItem(
 
-    "worktime_"+ys.value,
+"worktime_"+ys.value,
 
-    JSON.stringify(d)
+JSON.stringify(d)
 
-  );
+);
 
-
-  document.getElementById(
-    "saved"
-  ).textContent="Zapisano";
+document.getElementById(
+"saved"
+).textContent="Zapisano";
 
 }
 
 
-
-/* ================================
+/* =========================================================
    MINUTY
-================================ */
-
+========================================================= */
 
 function mins(t){
 
-  if(!t){
+if(!t){
 
-    return null;
+return null;
 
-  }
+}
 
+let a=t.split(":");
 
-  let a=t.split(":");
-
-
-  return +a[0]*60 + +a[1];
+return +a[0]*60 + +a[1];
 
 }
 
 
-
-/* ================================
-   CZAS
-================================ */
-
+/* =========================================================
+   CZAS TRWANIA
+========================================================= */
 
 function dur(a,b){
 
-  let x=mins(a);
+let x=mins(a);
 
-  let y=mins(b);
+let y=mins(b);
 
-
-  return x!==null &&
-
-         y!==null &&
-
-         y>=x
-
-    ? y-x
-
-    : 0;
+return x!==null &&
+y!==null &&
+y>=x
+?y-x
+:0;
 
 }
 
 
-
-/* ================================
-   FORMAT
-================================ */
-
+/* =========================================================
+   FORMAT CZASU
+========================================================= */
 
 function fmt(n){
 
-  return Math.floor(n/60)+":"+
+return Math.floor(n/60)+":"+
 
-    String(n%60).padStart(2,"0");
+String(n%60).padStart(2,"0");
 
 }
 
 
-
-/* ================================
+/* =========================================================
    ŚWIĘTO
-================================ */
-
+========================================================= */
 
 function holiday(date){
 
-  return holidays[
+return holidays[
 
-    String(
-      date.getMonth()+1
-    ).padStart(2,"0")+
+String(
+date.getMonth()+1
+).padStart(2,"0")+
 
-    "-"+
+"-"+
 
-    String(
-      date.getDate()
-    ).padStart(2,"0")
+String(
+date.getDate()
+).padStart(2,"0")
 
-  ]||"";
+]||"";
 
 }
 
 
-
-/* ================================
+/* =========================================================
    WEEKEND
-================================ */
-
+========================================================= */
 
 function weekend(date){
 
-  return date.getDay()===0 ||
-
-         date.getDay()===6;
+return date.getDay()===0 ||
+date.getDay()===6;
 
 }
 
 
-
-/* ================================
+/* =========================================================
    INFORMACJA O ZAZNACZENIU
-================================ */
-
+========================================================= */
 
 function updateSelectionInfo(){
 
-  const selected=
+const selected=
 
-    document.querySelectorAll(
-
-      ".day-checkbox:checked"
-
-    ).length;
+document.querySelectorAll(
+".day-checkbox:checked"
+).length;
 
 
-  document.getElementById(
-
-    "selectedCount"
-
-  ).textContent=selected;
+document.getElementById(
+"selectedCount"
+).textContent=selected;
 
 
-  const info=
-
-    document.getElementById(
-
-      "selectionInfo"
-
-    );
+const info=
+document.getElementById(
+"selectionInfo"
+);
 
 
-  if(selected>0){
+if(selected>0){
 
-    info.classList.add(
-      "visible"
-    );
+info.classList.add("visible");
 
-  }else{
+}else{
 
-    info.classList.remove(
-      "visible"
-    );
+info.classList.remove("visible");
 
-  }
+}
 
 }
 
 
-
-/* ================================
-   ZAZNACZ CAŁY MIESIĄC
-================================ */
-
+/* =========================================================
+   ZAZNACZANIE CAŁEGO MIESIĄCA
+========================================================= */
 
 function toggleMonth(checkbox){
 
-  const table=
-
-    checkbox.closest("table");
-
-
-  table
-
-    .querySelectorAll(
-      ".day-checkbox"
-    )
-
-    .forEach(cb=>{
-
-      cb.checked=
-        checkbox.checked;
-
-    });
+const table=
+checkbox.closest("table");
 
 
-  updateSelectionInfo();
+table
+.querySelectorAll(".day-checkbox")
+.forEach(cb=>{
+
+cb.checked=
+checkbox.checked;
+
+});
+
+
+updateSelectionInfo();
 
 }
 
 
-
-/* ================================
-   RENDER
-================================ */
-
+/* =========================================================
+   RENDER TABEL
+========================================================= */
 
 function render(){
 
-  let y=+ys.value;
+let y=+ys.value;
 
-  let d=data();
+let d=data();
 
+let box=
+document.getElementById(
+"months"
+);
 
-  let box=
+box.innerHTML="";
 
-    document.getElementById(
-      "months"
-    );
 
+let all=0;
 
-  box.innerHTML="";
+let wd=0;
 
+let del=0;
 
-  let all=0;
 
-  let wd=0;
+for(
+let m=0;
+m<12;
+m++
+){
 
-  let del=0;
+let sec=
+document.createElement(
+"section"
+);
 
+sec.className="month";
 
 
-  for(let m=0;m<12;m++){
+sec.innerHTML=
 
+"<h2>"+
 
-    let sec=
+months[m]+" "+y+
 
-      document.createElement(
-        "section"
-      );
+"</h2>"+
 
+'<div class="mobile-scroll-info">↔ Przesuń tabelę w bok, aby zobaczyć wszystkie kolumny</div>';
 
-    sec.className="month";
 
+let scroll=
+document.createElement(
+"div"
+);
 
-    sec.innerHTML=
+scroll.className="month-scroll";
 
-      "<h2>"+
 
-      months[m]+
+let tab=
+document.createElement(
+"table"
+);
 
-      " "+
 
-      y+
+tab.innerHTML=
 
-      "</h2>";
+"<thead>"+
 
+"<tr>"+
 
+'<th class="checkbox-cell">'+
 
-    let tab=
+'<input type="checkbox" '+
+'class="select-all" '+
+'title="Zaznacz cały miesiąc" '+
+'onchange="toggleMonth(this)">'+
 
-      document.createElement(
-        "table"
-      );
+"</th>"+
 
+"<th>Data</th>"+
 
+"<th>Dzień</th>"+
 
-    tab.innerHTML=
+"<th>Od</th>"+
 
-      "<thead>"+
+"<th>Do</th>"+
 
-      "<tr>"+
+"<th>Godziny</th>"+
 
+"<th>Rodzaj</th>"+
 
-      '<th class="checkbox-cell">'+
+"<th>Uwagi</th>"+
 
-      '<input type="checkbox" '+
+"</tr>"+
 
-      'class="select-all" '+
+"</thead>"+
 
-      'title="Zaznacz cały miesiąc" '+
+"<tbody></tbody>";
 
-      'onchange="toggleMonth(this)">'+
 
-      "</th>"+
+let tb=
+tab.querySelector("tbody");
 
 
-      "<th>Data</th>"+
+let mt=0;
 
-      "<th>Dzień</th>"+
 
-      "<th>Od</th>"+
+let n=
+new Date(
+y,
+m+1,
+0
+).getDate();
 
-      "<th>Do</th>"+
 
-      "<th>Godziny</th>"+
+for(
+let day=1;
+day<=n;
+day++
+){
 
-      "<th>Rodzaj</th>"+
+let dt=
+new Date(
+y,
+m,
+day
+);
 
-      "<th>Uwagi</th>"+
 
+let k=
+key(
+y,
+m,
+day
+);
 
-      "</tr>"+
 
-      "</thead>"+
+let r=
+d[k]||{};
 
 
-      "<tbody></tbody>";
+let hol=
+holiday(dt);
 
 
+let type=
+r.type ||
 
-    let tb=
+(
+hol
+?"Święto"
+:weekend(dt)
+?"Wolne"
+:"Praca"
+);
 
-      tab.querySelector(
-        "tbody"
-      );
 
+let h=
+dur(
+r.from,
+r.to
+);
 
-    let mt=0;
 
+mt+=h;
 
-    let n=
+all+=h;
 
-      new Date(
-        y,
-        m+1,
-        0
-      ).getDate();
 
+if(h){
 
-
-    for(
-      let day=1;
-      day<=n;
-      day++
-    ){
-
-
-      let dt=
-
-        new Date(
-          y,
-          m,
-          day
-        );
-
-
-      let k=
-
-        key(
-          y,
-          m,
-          day
-        );
-
-
-      let r=
-
-        d[k]||{};
-
-
-      let hol=
-
-        holiday(dt);
-
-
-      let type=
-
-        r.type ||
-
-        (
-
-          hol
-
-          ? "Święto"
-
-          : weekend(dt)
-
-          ? "Wolne"
-
-          : "Praca"
-
-        );
-
-
-      let h=
-
-        dur(
-          r.from,
-          r.to
-        );
-
-
-      mt+=h;
-
-      all+=h;
-
-
-      if(h){
-
-        wd++;
-
-      }
-
-
-      if(
-        h &&
-        type==="Delegacja"
-      ){
-
-        del++;
-
-      }
-
-
-
-      let tr=
-
-        document.createElement(
-          "tr"
-        );
-
-
-
-      if(
-        dt.toDateString()===
-        now.toDateString()
-      ){
-
-        tr.id="today-row";
-
-      }
-
-
-      if(weekend(dt)){
-
-        tr.className=
-          "weekend";
-
-      }
-
-
-      if(hol){
-
-        tr.className+=
-          " holiday";
-
-      }
-
-
-
-      tr.innerHTML=
-
-        '<td class="checkbox-cell">'+
-
-          '<input type="checkbox" '+
-
-          'class="day-checkbox" '+
-
-          'data-k="'+k+'">'+
-
-        "</td>"+
-
-
-        "<td><b>"+
-
-          String(day)
-            .padStart(2,"0")+
-
-          "."+
-
-          String(m+1)
-            .padStart(2,"0")+
-
-          "."+
-
-          y+
-
-        "</b></td>"+
-
-
-        "<td>"+
-
-          days[dt.getDay()]+
-
-          (hol?" ★":"")+
-
-        "</td>"+
-
-
-        '<td>'+
-
-          '<input type="time" '+
-
-          'value="'+
-          (r.from||"")+
-          '" '+
-
-          'data-k="'+k+'" '+
-
-          'data-f="from">'+
-
-        "</td>"+
-
-
-        '<td>'+
-
-          '<input type="time" '+
-
-          'value="'+
-          (r.to||"")+
-          '" '+
-
-          'data-k="'+k+'" '+
-
-          'data-f="to">'+
-
-        "</td>"+
-
-
-        '<td class="hours">'+
-
-          fmt(h)+
-
-        "</td>"+
-
-
-        '<td>'+
-
-          '<select '+
-
-          'data-k="'+k+'" '+
-
-          'data-f="type">'+
-
-
-          types.map(x=>
-
-            "<option "+
-
-            (
-
-              x===type
-
-              ? "selected"
-
-              : ""
-
-            )+
-
-            ">"+
-
-            x+
-
-            "</option>"
-
-          ).join("")+
-
-
-          "</select>"+
-
-        "</td>"+
-
-
-        '<td>'+
-
-          '<input type="text" '+
-
-          'placeholder="np. Kraków" '+
-
-          'value="'+
-
-          (r.note||"")
-            .replaceAll(
-              '"',
-              "&quot;"
-            )+
-
-          '" data-k="'+k+'" '+
-
-          'data-f="note">'+
-
-        "</td>";
-
-
-
-      tb.appendChild(tr);
-
-    }
-
-
-
-    sec.appendChild(tab);
-
-
-
-    let t=
-
-      document.createElement(
-        "div"
-      );
-
-
-    t.className="total";
-
-
-    t.textContent=
-
-      "Suma: "+
-
-      fmt(mt);
-
-
-
-    sec.appendChild(t);
-
-
-    box.appendChild(sec);
-
-  }
-
-
-
-  document.getElementById(
-    "hours"
-  ).textContent=
-
-    fmt(all);
-
-
-  document.getElementById(
-    "days"
-  ).textContent=
-
-    wd;
-
-
-  document.getElementById(
-    "delegations"
-  ).textContent=
-
-    del;
-
-
-
-  /*
-    Obsługa pól tabeli.
-  */
-
-  document
-
-    .querySelectorAll(
-
-      "input[data-k]:not(.day-checkbox), select[data-k]"
-
-    )
-
-    .forEach(e=>{
-
-
-      e.onchange=()=>{
-
-
-        let k=e.dataset.k;
-
-        let f=e.dataset.f;
-
-
-        d[k]=
-          d[k]||{};
-
-
-        /*
-          Jeżeli ręcznie wybierzesz Urlop
-          bezpośrednio w tabeli,
-          automatycznie ustaw 07:00–15:00.
-        */
-
-        if(
-          f==="type" &&
-          e.value==="Urlop"
-        ){
-
-          d[k].type="Urlop";
-
-          d[k].from="07:00";
-
-          d[k].to="15:00";
-
-        }else{
-
-          d[k][f]=e.value;
-
-        }
-
-
-        save(d);
-
-        render();
-
-      };
-
-    });
-
-
-
-  /*
-    Checkboxy.
-  */
-
-  document
-
-    .querySelectorAll(
-      ".day-checkbox"
-    )
-
-    .forEach(cb=>{
-
-
-      cb.onchange=
-
-        updateSelectionInfo;
-
-    });
-
-
-  updateSelectionInfo();
+wd++;
 
 }
 
 
-
-/* ================================
-   OTWÓRZ MODAL
-================================ */
-
-
-function openTimeModal(){
-
-
-  const selected=
-
-    document.querySelectorAll(
-
-      ".day-checkbox:checked"
-
-    );
-
-
-  if(selected.length===0){
-
-    alert(
-
-      "Najpierw zaznacz dni, dla których chcesz ustawić godziny i rodzaj."
-
-    );
-
-    return;
-
-  }
-
-
-
-  /*
-    Ostatnio użyte godziny.
-  */
-
-  const lastFrom=
-
-    localStorage.getItem(
-
-      "worktime_last_from"
-
-    ) || "07:00";
-
-
-  const lastTo=
-
-    localStorage.getItem(
-
-      "worktime_last_to"
-
-    ) || "15:00";
-
-
-
-  /*
-    Ostatnio użyty rodzaj.
-  */
-
-  const lastType=
-
-    localStorage.getItem(
-
-      "worktime_last_type"
-
-    ) || "Praca";
-
-
-
-  document.getElementById(
-
-    "selectedFrom"
-
-  ).value=
-
-    lastFrom;
-
-
-  document.getElementById(
-
-    "selectedTo"
-
-  ).value=
-
-    lastTo;
-
-
-  document.getElementById(
-
-    "selectedType"
-
-  ).value=
-
-    lastType;
-
-
-
-  /*
-    Jeżeli ostatnim wyborem był Urlop,
-    ustaw 07:00–15:00.
-  */
-
-  if(lastType==="Urlop"){
-
-    document.getElementById(
-      "selectedFrom"
-    ).value="07:00";
-
-
-    document.getElementById(
-      "selectedTo"
-    ).value="15:00";
-
-  }
-
-
-  updateModalHours();
-
-
-  document
-
-    .getElementById(
-      "timeModal"
-    )
-
-    .classList
-
-    .remove("hidden");
+if(
+h &&
+type==="Delegacja"
+){
+
+del++;
 
 }
 
 
+let tr=
+document.createElement(
+"tr"
+);
 
-/* ================================
-   ZAMKNIJ MODAL
-================================ */
 
+if(
+dt.toDateString()===
+now.toDateString()
+){
 
-function closeTimeModal(){
-
-  document
-
-    .getElementById(
-      "timeModal"
-    )
-
-    .classList
-
-    .add("hidden");
+tr.id="today-row";
 
 }
 
 
+if(weekend(dt)){
 
-/* ================================
-   ZMIANA RODZAJU W MODALU
-================================ */
+tr.className="weekend";
 
+}
+
+
+if(hol){
+
+tr.className+=" holiday";
+
+}
+
+
+tr.innerHTML=
+
+'<td class="checkbox-cell">'+
+
+'<input type="checkbox" '+
+'class="day-checkbox" '+
+'data-k="'+k+'">'+
+
+"</td>"+
+
+
+"<td><b>"+
+
+String(day)
+.padStart(2,"0")+
+
+"."+
+
+String(m+1)
+.padStart(2,"0")+
+
+"."+
+
+y+
+
+"</b></td>"+
+
+
+"<td>"+
+
+days[dt.getDay()]+
+
+(hol?" ★":"")+
+
+"</td>"+
+
+
+"<td>"+
+
+'<input type="time" '+
+'value="'+
+(r.from||"")+
+'" data-k="'+k+'" '+
+'data-f="from">'+
+
+"</td>"+
+
+
+"<td>"+
+
+'<input type="time" '+
+'value="'+
+(r.to||"")+
+'" data-k="'+k+'" '+
+'data-f="to">'+
+
+"</td>"+
+
+
+'<td class="hours">'+
+
+fmt(h)+
+
+"</td>"+
+
+
+"<td>"+
+
+'<select data-k="'+k+'" data-f="type">'+
+
+types
+.map(x=>
+
+"<option "+
+
+(x===type
+?"selected"
+:"")+
+
+">"+
+
+x+
+
+"</option>"
+
+)
+.join("")+
+
+"</select>"+
+
+"</td>"+
+
+
+"<td>"+
+
+'<input type="text" '+
+'placeholder="np. Kraków" '+
+'value="'+
+(r.note||"")
+.replaceAll(
+'"',
+"&quot;"
+)+
+'" data-k="'+k+'" '+
+'data-f="note">'+
+
+"</td>";
+
+
+tb.appendChild(tr);
+
+}
+
+
+scroll.appendChild(tab);
+
+sec.appendChild(scroll);
+
+
+/* suma miesiąca */
+
+let total=
+document.createElement(
+"div"
+);
+
+total.className="total";
+
+total.textContent=
+"Suma: "+fmt(mt);
+
+sec.appendChild(total);
+
+
+box.appendChild(sec);
+
+}
+
+
+/* =========================================================
+   PODSUMOWANIE
+========================================================= */
+
+document.getElementById(
+"hours"
+).textContent=fmt(all);
+
+
+document.getElementById(
+"days"
+).textContent=wd;
+
+
+document.getElementById(
+"delegations"
+).textContent=del;
+
+
+/* =========================================================
+   OBSŁUGA PÓL
+========================================================= */
 
 document
+.querySelectorAll(
+"input[data-k],select[data-k]"
+)
+.forEach(e=>{
 
-  .getElementById(
-    "selectedType"
-  )
+e.onchange=()=>{
 
-  .addEventListener(
-    "change",
-    function(){
+let k=e.dataset.k;
 
-      /*
-        Urlop zawsze oznacza 8 godzin
-        07:00–15:00.
-      */
-
-      if(this.value==="Urlop"){
-
-        document.getElementById(
-          "selectedFrom"
-        ).value="07:00";
+let f=e.dataset.f;
 
 
-        document.getElementById(
-          "selectedTo"
-        ).value="15:00";
-
-      }
-
-
-      updateModalHours();
-
-    }
-  );
-
-
-
-/* ================================
-   AKTUALIZUJ INFORMACJĘ O GODZINACH
-================================ */
-
-
-function updateModalHours(){
-
-  const from=
-
-    document.getElementById(
-      "selectedFrom"
-    ).value;
-
-
-  const to=
-
-    document.getElementById(
-      "selectedTo"
-    ).value;
-
-
-  const info=
-
-    document.getElementById(
-      "modalHoursInfo"
-    );
-
-
-  if(from && to){
-
-    info.textContent=
-      "Czas pracy: "+
-      fmt(
-        dur(from,to)
-      );
-
-  }else{
-
-    info.textContent=
-      "Czas pracy: —";
-
-  }
-
-}
-
+d[k]=d[k]||{};
 
 
 /*
-  Aktualizuj czas po ręcznej zmianie
-  godziny.
+  URLop = zawsze 07:00–15:00
 */
 
+if(
+f==="type" &&
+e.value==="Urlop"
+){
+
+d[k].type="Urlop";
+
+d[k].from="07:00";
+
+d[k].to="15:00";
+
+}else{
+
+d[k][f]=e.value;
+
+}
+
+
+save(d);
+
+render();
+
+};
+
+});
+
+
+/* =========================================================
+   CHECKBOXY
+========================================================= */
+
 document
+.querySelectorAll(
+".day-checkbox"
+)
+.forEach(cb=>{
 
-  .getElementById(
-    "selectedFrom"
-  )
+cb.onchange=
+updateSelectionInfo;
 
-  .addEventListener(
-    "change",
-    updateModalHours
-  );
+});
+
+
+updateSelectionInfo();
+
+}
+
+
+/* =========================================================
+   MODAL GODZINY
+========================================================= */
+
+function openTimeModal(){
+
+const selected=
+document.querySelectorAll(
+".day-checkbox:checked"
+);
+
+
+if(selected.length===0){
+
+alert(
+"Najpierw zaznacz dni, dla których chcesz ustawić dane."
+);
+
+return;
+
+}
+
+
+const lastFrom=
+localStorage.getItem(
+"worktime_last_from"
+)||"07:00";
+
+
+const lastTo=
+localStorage.getItem(
+"worktime_last_to"
+)||"15:00";
+
+
+const lastType=
+localStorage.getItem(
+"worktime_last_type"
+)||"Praca";
+
+
+document.getElementById(
+"selectedFrom"
+).value=lastFrom;
+
+
+document.getElementById(
+"selectedTo"
+).value=lastTo;
+
+
+document.getElementById(
+"selectedType"
+).value=lastType;
+
+
+if(
+lastType==="Urlop"
+){
+
+document.getElementById(
+"selectedFrom"
+).value="07:00";
+
+document.getElementById(
+"selectedTo"
+).value="15:00";
+
+}
+
+
+updateModalHours();
+
+
+document.getElementById(
+"timeModal"
+).classList.remove(
+"hidden"
+);
+
+}
+
+
+/* =========================================================
+   ZAMKNIJ MODAL GODZIN
+========================================================= */
+
+function closeTimeModal(){
+
+document.getElementById(
+"timeModal"
+).classList.add(
+"hidden"
+);
+
+}
+
+
+/* =========================================================
+   ZMIANA RODZAJU W MODALU
+========================================================= */
+
+document
+.getElementById(
+"selectedType"
+)
+.addEventListener(
+"change",
+function(){
+
+if(
+this.value==="Urlop"
+){
+
+document.getElementById(
+"selectedFrom"
+).value="07:00";
+
+document.getElementById(
+"selectedTo"
+).value="15:00";
+
+}
+
+updateModalHours();
+
+}
+);
+
+
+/* =========================================================
+   INFORMACJA O CZASIE
+========================================================= */
+
+function updateModalHours(){
+
+const from=
+document.getElementById(
+"selectedFrom"
+).value;
+
+
+const to=
+document.getElementById(
+"selectedTo"
+).value;
+
+
+const info=
+document.getElementById(
+"modalHoursInfo"
+);
+
+
+if(from&&to){
+
+info.textContent=
+"Czas pracy: "+fmt(
+dur(from,to)
+);
+
+}else{
+
+info.textContent=
+"Czas pracy: —";
+
+}
+
+}
+
+
+/* =========================================================
+   ZMIANA GODZIN
+========================================================= */
+
+document
+.getElementById(
+"selectedFrom"
+)
+.addEventListener(
+"change",
+updateModalHours
+);
 
 
 document
-
-  .getElementById(
-    "selectedTo"
-  )
-
-  .addEventListener(
-    "change",
-    updateModalHours
-  );
+.getElementById(
+"selectedTo"
+)
+.addEventListener(
+"change",
+updateModalHours
+);
 
 
-
-/* ================================
+/* =========================================================
    ZASTOSUJ DLA ZAZNACZONYCH
-================================ */
-
+========================================================= */
 
 function applySelected(){
 
+const selected=
+document.querySelectorAll(
+".day-checkbox:checked"
+);
 
-  const selected=
 
-    document.querySelectorAll(
+const from=
+document.getElementById(
+"selectedFrom"
+).value;
 
-      ".day-checkbox:checked"
 
-    );
+const to=
+document.getElementById(
+"selectedTo"
+).value;
 
 
-  const from=
+const type=
+document.getElementById(
+"selectedType"
+).value;
 
-    document.getElementById(
-      "selectedFrom"
-    ).value;
 
+let finalFrom=from;
 
-  const to=
+let finalTo=to;
 
-    document.getElementById(
-      "selectedTo"
-    ).value;
 
+/*
+  Urlop zawsze 8 godzin.
+*/
 
-  const type=
+if(
+type==="Urlop"
+){
 
-    document.getElementById(
-      "selectedType"
-    ).value;
+finalFrom="07:00";
 
+finalTo="15:00";
 
+}else{
 
-  if(!type){
+if(
+!finalFrom ||
+!finalTo
+){
 
-    alert(
-      "Wybierz rodzaj."
-    );
+alert(
+"Wybierz godzinę rozpoczęcia i zakończenia."
+);
 
-    return;
-
-  }
-
-
-
-  /*
-    Urlop zawsze ma 07:00–15:00.
-  */
-
-  let finalFrom=from;
-
-  let finalTo=to;
-
-
-  if(type==="Urlop"){
-
-    finalFrom="07:00";
-
-    finalTo="15:00";
-
-  }else{
-
-
-    if(!finalFrom || !finalTo){
-
-      alert(
-
-        "Wybierz godzinę rozpoczęcia i zakończenia."
-
-      );
-
-      return;
-
-    }
-
-
-    if(finalFrom>=finalTo){
-
-      alert(
-
-        "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia."
-
-      );
-
-      return;
-
-    }
-
-  }
-
-
-
-  /*
-    Zapamiętaj ostatnie godziny.
-  */
-
-  localStorage.setItem(
-
-    "worktime_last_from",
-
-    finalFrom
-
-  );
-
-
-  localStorage.setItem(
-
-    "worktime_last_to",
-
-    finalTo
-
-  );
-
-
-  /*
-    Zapamiętaj ostatni rodzaj.
-  */
-
-  localStorage.setItem(
-
-    "worktime_last_type",
-
-    type
-
-  );
-
-
-
-  const d=data();
-
-
-
-  selected.forEach(cb=>{
-
-
-    const k=cb.dataset.k;
-
-
-    d[k]={
-
-      ...(d[k]||{}),
-
-      from:finalFrom,
-
-      to:finalTo,
-
-      type:type
-
-    };
-
-
-  });
-
-
-
-  save(d);
-
-
-
-  /*
-    Zamknij modal.
-  */
-
-  closeTimeModal();
-
-
-
-  /*
-    Odznacz zaznaczenia.
-  */
-
-  clearSelection();
-
-
-
-  /*
-    Odśwież tabelę.
-  */
-
-  render();
+return;
 
 }
 
 
+if(
+finalFrom>=finalTo
+){
 
-/* ================================
-   WYCZYŚĆ DLA ZAZNACZONYCH
-================================ */
+alert(
+"Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia."
+);
 
+return;
 
-function clearSelected(){
-
-
-  const selected=
-
-    document.querySelectorAll(
-
-      ".day-checkbox:checked"
-
-    );
-
-
-  if(selected.length===0){
-
-    alert(
-
-      "Najpierw zaznacz dni, które chcesz wyczyścić."
-
-    );
-
-    return;
-
-  }
-
-
-
-  if(
-
-    !confirm(
-
-      "Czy na pewno wyczyścić wpisy dla "+
-
-      selected.length+
-
-      " zaznaczonych dni?"
-
-    )
-
-  ){
-
-    return;
-
-  }
-
-
-
-  const d=data();
-
-
-
-  selected.forEach(cb=>{
-
-
-    const k=cb.dataset.k;
-
-
-    delete d[k];
-
-  });
-
-
-
-  save(d);
-
-
-  clearSelection();
-
-
-  render();
+}
 
 }
 
 
+/*
+  Zapamiętaj ostatnie ustawienia.
+*/
 
-/* ================================
+localStorage.setItem(
+"worktime_last_from",
+finalFrom
+);
+
+
+localStorage.setItem(
+"worktime_last_to",
+finalTo
+);
+
+
+localStorage.setItem(
+"worktime_last_type",
+type
+);
+
+
+const d=data();
+
+
+selected.forEach(cb=>{
+
+const k=cb.dataset.k;
+
+
+d[k]={
+...(d[k]||{}),
+
+from:finalFrom,
+
+to:finalTo,
+
+type:type
+
+};
+
+});
+
+
+save(d);
+
+
+closeTimeModal();
+
+render();
+
+}
+
+
+/* =========================================================
    ODZNACZ WSZYSTKIE
-================================ */
-
+========================================================= */
 
 function clearSelection(){
 
+document
+.querySelectorAll(
+".day-checkbox"
+)
+.forEach(cb=>{
 
-  document
+cb.checked=false;
 
-    .querySelectorAll(
-      ".day-checkbox"
-    )
-
-    .forEach(cb=>{
-
-      cb.checked=false;
-
-    });
+});
 
 
+document
+.querySelectorAll(
+".select-all"
+)
+.forEach(cb=>{
 
-  document
+cb.checked=false;
 
-    .querySelectorAll(
-      ".select-all"
-    )
-
-    .forEach(cb=>{
-
-      cb.checked=false;
-
-    });
+});
 
 
-
-  updateSelectionInfo();
+updateSelectionInfo();
 
 }
 
 
+/* =========================================================
+   WYCZYŚĆ ZAZNACZONE
+========================================================= */
 
-/* ================================
-   WYCZYŚĆ CAŁY ROK
-================================ */
+function clearSelectedData(){
 
-
-function clearYear(){
-
-
-  if(
-
-    confirm(
-
-      "Wyczyścić wszystkie wpisy dla "+
-
-      ys.value+
-
-      "?"
-
-    )
-
-  ){
+const selected=
+document.querySelectorAll(
+".day-checkbox:checked"
+);
 
 
-    localStorage.removeItem(
+if(selected.length===0){
 
-      "worktime_"+ys.value
+alert(
+"Najpierw zaznacz dni, które chcesz wyczyścić."
+);
 
-    );
-
-
-    clearSelection();
-
-
-    render();
-
-  }
+return;
 
 }
 
 
+if(
+!confirm(
+"Czy na pewno wyczyścić dane dla "+
+selected.length+
+" zaznaczonych dni?"
+)
+){
 
-/* ================================
-   START
-================================ */
+return;
 
+}
+
+
+const d=data();
+
+
+selected.forEach(cb=>{
+
+delete d[cb.dataset.k];
+
+});
+
+
+save(d);
+
+clearSelection();
+
+render();
+
+}
+
+
+/* =========================================================
+   MODAL EXCEL
+========================================================= */
+
+function openExcelModal(){
+
+document.getElementById(
+"excelMonth"
+).value=now.getMonth();
+
+
+document.getElementById(
+"excelModal"
+).classList.remove(
+"hidden"
+);
+
+}
+
+
+function closeExcelModal(){
+
+document.getElementById(
+"excelModal"
+).classList.add(
+"hidden"
+);
+
+}
+
+
+/* =========================================================
+   EXCEL - STYLE
+========================================================= */
+
+function excelHeaderStyle(row){
+
+row.font={
+bold:true,
+color:{
+argb:"FFFFFFFF"
+},
+size:11
+};
+
+
+row.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FF1F4E78"
+}
+};
+
+
+row.alignment={
+vertical:"middle",
+horizontal:"center"
+};
+
+
+row.border={
+
+top:{
+style:"thin",
+color:{
+argb:"FFD9E2F3"
+}
+},
+
+bottom:{
+style:"thin",
+color:{
+argb:"FFD9E2F3"
+}
+},
+
+left:{
+style:"thin",
+color:{
+argb:"FFD9E2F3"
+}
+},
+
+right:{
+style:"thin",
+color:{
+argb:"FFD9E2F3"
+}
+}
+
+};
+
+}
+
+
+function excelTitleStyle(cell){
+
+cell.font={
+bold:true,
+size:16,
+color:{
+argb:"FF1F2937"
+}
+};
+
+}
+
+
+/* =========================================================
+   EXCEL - WIERSZ DANYCH
+========================================================= */
+
+function getExcelRecord(
+y,
+m,
+day,
+d
+){
+
+const dt=
+new Date(
+y,
+m,
+day
+);
+
+
+const k=
+key(
+y,
+m,
+day
+);
+
+
+const r=
+d[k]||{};
+
+
+const hol=
+holiday(dt);
+
+
+const type=
+r.type ||
+
+(
+hol
+?"Święto"
+:weekend(dt)
+?"Wolne"
+:"Praca"
+);
+
+
+const h=
+dur(
+r.from,
+r.to
+);
+
+
+return{
+
+date:dt,
+
+dateText:
+String(day).padStart(2,"0")+
+"."+
+String(m+1).padStart(2,"0")+
+"."+
+y,
+
+dayName:
+days[dt.getDay()],
+
+from:r.from||"",
+
+to:r.to||"",
+
+hours:h,
+
+type:type,
+
+note:r.note||"",
+
+holiday:hol,
+
+weekend:weekend(dt)
+
+};
+
+}
+
+
+/* =========================================================
+   EXCEL - DODAJ MIESIĄC
+========================================================= */
+
+function addMonthSheet(
+workbook,
+y,
+m,
+d,
+sheetName
+){
+
+const ws=
+workbook.addWorksheet(
+sheetName
+);
+
+
+/* szerokości */
+
+ws.columns=[
+
+{
+header:"Data",
+key:"date",
+width:14
+},
+
+{
+header:"Dzień",
+key:"day",
+width:10
+},
+
+{
+header:"Od",
+key:"from",
+width:10
+},
+
+{
+header:"Do",
+key:"to",
+width:10
+},
+
+{
+header:"Godziny",
+key:"hours",
+width:13
+},
+
+{
+header:"Rodzaj",
+key:"type",
+width:16
+},
+
+{
+header:"Uwagi",
+key:"note",
+width:40
+}
+
+];
+
+
+/* tytuł */
+
+ws.mergeCells("A1:G1");
+
+ws.getCell("A1").value=
+"Ewidencja czasu pracy – "+
+months[m]+
+" "+
+y;
+
+excelTitleStyle(
+ws.getCell("A1")
+);
+
+ws.getRow(1).height=25;
+
+
+/* nagłówek */
+
+const header=
+ws.getRow(3);
+
+header.values=[
+
+"Data",
+"Dzień",
+"Od",
+"Do",
+"Godziny",
+"Rodzaj",
+"Uwagi"
+
+];
+
+excelHeaderStyle(header);
+
+header.height=22;
+
+
+let total=0;
+
+let rowNumber=4;
+
+
+/* dni */
+
+const n=
+new Date(
+y,
+m+1,
+0
+).getDate();
+
+
+for(
+let day=1;
+day<=n;
+day++
+){
+
+const r=
+getExcelRecord(
+y,
+m,
+day,
+d
+);
+
+
+total+=r.hours;
+
+
+const row=
+ws.getRow(
+rowNumber
+);
+
+
+row.values=[
+
+r.dateText,
+
+r.dayName,
+
+r.from,
+
+r.to,
+
+r.hours/1440,
+
+r.type,
+
+r.note
+
+];
+
+
+/*
+  Godziny jako czas Excela
+*/
+
+row.getCell(5).numFmt=
+"[h]:mm";
+
+
+/*
+  Centrowanie
+*/
+
+row.getCell(1).alignment={
+horizontal:"center"
+};
+
+row.getCell(2).alignment={
+horizontal:"center"
+};
+
+row.getCell(3).alignment={
+horizontal:"center"
+};
+
+row.getCell(4).alignment={
+horizontal:"center"
+};
+
+row.getCell(5).alignment={
+horizontal:"center"
+};
+
+
+/*
+  Weekend
+*/
+
+if(r.weekend){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFF2F2F2"
+}
+};
+
+});
+
+}
+
+
+/*
+  Święto
+*/
+
+if(r.holiday){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFFCE4D6"
+}
+};
+
+});
+
+}
+
+
+/*
+  Pogrubienie rodzaju
+*/
+
+row.getCell(6).font={
+bold:true
+};
+
+
+rowNumber++;
+
+}
+
+
+/* =======================================================
+   SUMA
+======================================================= */
+
+const totalRow=
+ws.getRow(
+rowNumber+1
+);
+
+
+totalRow.getCell(1).value=
+"SUMA:";
+
+
+totalRow.getCell(1).font={
+bold:true
+};
+
+
+totalRow.getCell(5).value=
+total/1440;
+
+
+totalRow.getCell(5).numFmt=
+"[h]:mm";
+
+
+totalRow.getCell(5).font={
+bold:true
+};
+
+
+totalRow.getCell(5).alignment={
+horizontal:"center"
+};
+
+
+totalRow.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFD9EAF7"
+}
+};
+
+});
+
+
+/* zamrożenie nagłówka */
+
+ws.views=[
+{
+state:"frozen",
+ySplit:3
+}
+];
+
+
+/* filtr */
+
+ws.autoFilter={
+from:"A3",
+to:"G"+(rowNumber-1)
+};
+
+
+/* obramowanie */
+
+for(
+let r=3;
+r<=rowNumber-1;
+r++
+){
+
+for(
+let c=1;
+c<=7;
+c++
+){
+
+ws.getCell(r,c).border={
+
+bottom:{
+style:"hair",
+color:{
+argb:"FFD9E2F3"
+}
+}
+
+};
+
+}
+
+}
+
+
+return{
+
+total:total,
+
+days:rowNumber-4
+
+};
+
+}
+
+
+/* =========================================================
+   EXCEL - PODSUMOWANIE ROKU
+========================================================= */
+
+function addYearSummary(
+workbook,
+y,
+d
+){
+
+const ws=
+workbook.addWorksheet(
+"Podsumowanie roku",
+{
+views:[
+{
+showGridLines:false
+}
+]
+}
+);
+
+
+/* szerokości */
+
+ws.columns=[
+
+{
+width:28
+},
+
+{
+width:20
+},
+
+{
+width:18
+}
+
+];
+
+
+/* tytuł */
+
+ws.mergeCells("A1:C1");
+
+ws.getCell("A1").value=
+"EWIDENCJA CZASU PRACY – "+
+y;
+
+excelTitleStyle(
+ws.getCell("A1")
+);
+
+ws.getCell("A1").alignment={
+horizontal:"center"
+};
+
+ws.getRow(1).height=30;
+
+
+/* nagłówek */
+
+ws.getCell("A3").value=
+"Podsumowanie";
+
+
+ws.getCell("B3").value=
+"Wartość";
+
+
+ws.getCell("C3").value=
+"Uwagi";
+
+
+excelHeaderStyle(
+ws.getRow(3)
+);
+
+
+let total=0;
+
+let workDays=0;
+
+let delegations=0;
+
+let vacation=0;
+
+let sick=0;
+
+let holidaysCount=0;
+
+let free=0;
+
+
+/* miesięczne podsumowanie */
+
+const monthly=[];
+
+
+for(
+let m=0;
+m<12;
+m++
+){
+
+let monthTotal=0;
+
+let monthDays=0;
+
+
+const n=
+new Date(
+y,
+m+1,
+0
+).getDate();
+
+
+for(
+let day=1;
+day<=n;
+day++
+){
+
+const r=
+getExcelRecord(
+y,
+m,
+day,
+d
+);
+
+
+monthTotal+=r.hours;
+
+total+=r.hours;
+
+
+if(r.hours>0){
+
+workDays++;
+
+monthDays++;
+
+}
+
+
+if(
+r.type==="Delegacja"
+){
+
+delegations++;
+
+}
+
+
+if(
+r.type==="Urlop"
+){
+
+vacation++;
+
+}
+
+
+if(
+r.type==="L4"
+){
+
+sick++;
+
+}
+
+
+if(
+r.type==="Święto"
+){
+
+holidaysCount++;
+
+}
+
+
+if(
+r.type==="Wolne"
+){
+
+free++;
+
+}
+
+}
+
+
+monthly.push({
+
+month:months[m],
+
+hours:monthTotal,
+
+days:monthDays
+
+});
+
+}
+
+
+/* podstawowe dane */
+
+const summaryRows=[
+
+[
+"Łączny czas pracy",
+total/1440,
+""
+
+],
+
+[
+"Liczba dni z godzinami",
+workDays,
+""
+
+],
+
+[
+"Delegacje",
+delegations,
+""
+
+],
+
+[
+"Urlop",
+vacation,
+""
+
+],
+
+[
+"L4",
+sick,
+""
+
+],
+
+[
+"Święta",
+holidaysCount,
+""
+
+],
+
+[
+"Wolne",
+free,
+""
+
+]
+
+];
+
+
+let r=4;
+
+
+summaryRows.forEach(values=>{
+
+ws.getRow(r).values=values;
+
+
+ws.getCell(r,1).font={
+bold:true
+};
+
+
+if(
+r===4
+){
+
+ws.getCell(r,2).numFmt=
+"[h]:mm";
+
+}else{
+
+ws.getCell(r,2).numFmt=
+"0";
+
+}
+
+
+r++;
+
+});
+
+
+/* =======================================================
+   PODSUMOWANIE MIESIĘCY
+======================================================= */
+
+r+=2;
+
+
+ws.mergeCells(
+"A"+r+":C"+r
+);
+
+
+ws.getCell(r).value=
+"Podsumowanie miesięczne";
+
+
+ws.getCell(r).font={
+bold:true,
+size:13
+};
+
+
+r++;
+
+
+const monthlyHeader=
+ws.getRow(r);
+
+
+monthlyHeader.values=[
+
+"Miesiąc",
+"Godziny",
+"Dni z godzinami"
+
+];
+
+
+excelHeaderStyle(
+monthlyHeader
+);
+
+
+r++;
+
+
+monthly.forEach(m=>{
+
+const row=
+ws.getRow(r);
+
+
+row.values=[
+
+m.month,
+
+m.hours/1440,
+
+m.days
+
+];
+
+
+row.getCell(2).numFmt=
+"[h]:mm";
+
+
+row.getCell(2).alignment={
+horizontal:"center"
+};
+
+
+row.getCell(3).alignment={
+horizontal:"center"
+};
+
+
+r++;
+
+});
+
+
+/* suma roczna */
+
+r++;
+
+
+ws.getCell(r,1).value=
+"RAZEM";
+
+
+ws.getCell(r,2).value=
+total/1440;
+
+
+ws.getCell(r,2).numFmt=
+"[h]:mm";
+
+
+ws.getCell(r,1).font={
+bold:true
+};
+
+
+ws.getCell(r,2).font={
+bold:true
+};
+
+
+ws.getCell(r,3).value=
+workDays;
+
+
+ws.getCell(r,3).font={
+bold:true
+};
+
+
+ws.getRow(r).eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFD9EAF7"
+}
+};
+
+});
+
+
+/* zamrożenie */
+
+ws.views=[
+{
+state:"frozen",
+ySplit:3
+}
+];
+
+
+return total;
+
+}
+
+
+/* =========================================================
+   EKSPORT CAŁEGO ROKU
+========================================================= */
+
+async function exportYear(){
+
+try{
+
+const y=
++ys.value;
+
+
+const d=
+data();
+
+
+const workbook=
+new ExcelJS.Workbook();
+
+
+workbook.creator=
+"Ewidencja czasu pracy";
+
+
+workbook.created=
+new Date();
+
+
+/*
+  Najpierw podsumowanie
+*/
+
+addYearSummary(
+workbook,
+y,
+d
+);
+
+
+/*
+  Następnie 12 miesięcy
+*/
+
+for(
+let m=0;
+m<12;
+m++
+){
+
+addMonthSheet(
+workbook,
+y,
+m,
+d,
+months[m]
+);
+
+}
+
+
+const buffer=
+await workbook.xlsx.writeBuffer();
+
+
+downloadExcel(
+buffer,
+"Ewidencja_czasu_pracy_"+
+y+
+".xlsx"
+);
+
+
+closeExcelModal();
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Nie udało się utworzyć pliku Excel.\n\n"+
+error.message
+);
+
+}
+
+}
+
+
+/* =========================================================
+   EKSPORT MIESIĄCA
+========================================================= */
+
+async function exportMonth(){
+
+try{
+
+const y=
++ys.value;
+
+
+const m=
++document.getElementById(
+"excelMonth"
+).value;
+
+
+const d=
+data();
+
+
+const workbook=
+new ExcelJS.Workbook();
+
+
+workbook.creator=
+"Ewidencja czasu pracy";
+
+
+addMonthSheet(
+workbook,
+y,
+m,
+d,
+months[m]
+);
+
+
+const buffer=
+await workbook.xlsx.writeBuffer();
+
+
+downloadExcel(
+buffer,
+"Ewidencja_"+
+months[m]+
+"_"+
+y+
+".xlsx"
+);
+
+
+closeExcelModal();
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Nie udało się utworzyć pliku Excel.\n\n"+
+error.message
+);
+
+}
+
+}
+
+
+/* =========================================================
+   EKSPORT ZAZNACZONYCH
+========================================================= */
+
+async function exportSelected(){
+
+try{
+
+const selected=
+document.querySelectorAll(
+".day-checkbox:checked"
+);
+
+
+if(selected.length===0){
+
+alert(
+"Najpierw zaznacz dni, które chcesz wyeksportować."
+);
+
+return;
+
+}
+
+
+const y=
++ys.value;
+
+
+const d=
+data();
+
+
+const workbook=
+new ExcelJS.Workbook();
+
+
+workbook.creator=
+"Ewidencja czasu pracy";
+
+
+const ws=
+workbook.addWorksheet(
+"Zaznaczone dni"
+);
+
+
+ws.columns=[
+
+{
+header:"Data",
+key:"date",
+width:14
+},
+
+{
+header:"Dzień",
+key:"day",
+width:10
+},
+
+{
+header:"Od",
+key:"from",
+width:10
+},
+
+{
+header:"Do",
+key:"to",
+width:10
+},
+
+{
+header:"Godziny",
+key:"hours",
+width:13
+},
+
+{
+header:"Rodzaj",
+key:"type",
+width:16
+},
+
+{
+header:"Uwagi",
+key:"note",
+width:40
+}
+
+];
+
+
+ws.mergeCells("A1:G1");
+
+ws.getCell("A1").value=
+"Zaznaczone dni – "+
+y;
+
+excelTitleStyle(
+ws.getCell("A1")
+);
+
+
+const header=
+ws.getRow(3);
+
+header.values=[
+
+"Data",
+"Dzień",
+"Od",
+"Do",
+"Godziny",
+"Rodzaj",
+"Uwagi"
+
+];
+
+excelHeaderStyle(header);
+
+
+const records=[];
+
+
+selected.forEach(cb=>{
+
+const parts=
+cb.dataset.k.split("-");
+
+
+const m=
++parts[1]-1;
+
+
+const day=
++parts[2];
+
+
+records.push(
+getExcelRecord(
+y,
+m,
+day,
+d
+)
+);
+
+});
+
+
+records.sort(
+(a,b)=>
+a.date-b.date
+);
+
+
+let total=0;
+
+let rowNumber=4;
+
+
+records.forEach(r=>{
+
+total+=r.hours;
+
+
+const row=
+ws.getRow(
+rowNumber
+);
+
+
+row.values=[
+
+r.dateText,
+
+r.dayName,
+
+r.from,
+
+r.to,
+
+r.hours/1440,
+
+r.type,
+
+r.note
+
+];
+
+
+row.getCell(5).numFmt=
+"[h]:mm";
+
+
+row.getCell(5).alignment={
+horizontal:"center"
+};
+
+
+if(r.weekend){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFF2F2F2"
+}
+};
+
+});
+
+}
+
+
+if(r.holiday){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFFCE4D6"
+}
+};
+
+});
+
+}
+
+
+rowNumber++;
+
+});
+
+
+const totalRow=
+ws.getRow(
+rowNumber+1
+);
+
+
+totalRow.getCell(1).value=
+"SUMA:";
+
+
+totalRow.getCell(5).value=
+total/1440;
+
+
+totalRow.getCell(5).numFmt=
+"[h]:mm";
+
+
+totalRow.getCell(1).font={
+bold:true
+};
+
+
+totalRow.getCell(5).font={
+bold:true
+};
+
+
+totalRow.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFD9EAF7"
+}
+};
+
+});
+
+
+ws.views=[
+{
+state:"frozen",
+ySplit:3
+}
+];
+
+
+ws.autoFilter={
+from:"A3",
+to:"G"+(rowNumber-1)
+};
+
+
+const buffer=
+await workbook.xlsx.writeBuffer();
+
+
+downloadExcel(
+buffer,
+"Ewidencja_zaznaczone_"+
+y+
+".xlsx"
+);
+
+
+closeExcelModal();
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Nie udało się utworzyć pliku Excel.\n\n"+
+error.message
+);
+
+}
+
+}
+
+
+/* =========================================================
+   POBIERANIE PLIKU EXCEL
+========================================================= */
+
+function downloadExcel(
+buffer,
+filename
+){
+
+const blob=
+new Blob(
+[buffer],
+{
+type:
+"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+}
+);
+
+
+const url=
+URL.createObjectURL(blob);
+
+
+const a=
+document.createElement("a");
+
+
+a.href=url;
+
+a.download=filename;
+
+document.body.appendChild(a);
+
+a.click();
+
+a.remove();
+
+
+setTimeout(
+()=>URL.revokeObjectURL(url),
+1000
+);
+
+}
+
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+function openBackupModal(){
+
+document.getElementById(
+"backupModal"
+).classList.remove(
+"hidden"
+);
+
+}
+
+
+function closeBackupModal(){
+
+document.getElementById(
+"backupModal"
+).classList.add(
+"hidden"
+);
+
+}
+
+
+/* =========================================================
+   UTWÓRZ BACKUP
+========================================================= */
+
+function downloadBackup(){
+
+const backup={
+
+version:1,
+
+createdAt:
+new Date().toISOString(),
+
+data:{},
+
+settings:{
+
+lastFrom:
+localStorage.getItem(
+"worktime_last_from"
+)||"07:00",
+
+lastTo:
+localStorage.getItem(
+"worktime_last_to"
+)||"15:00",
+
+lastType:
+localStorage.getItem(
+"worktime_last_type"
+)||"Praca"
+
+}
+
+};
+
+
+/*
+  Pobierz wszystkie lata 2024–2035.
+*/
+
+for(
+let y=2024;
+y<=2035;
+y++
+){
+
+const raw=
+localStorage.getItem(
+"worktime_"+y
+);
+
+
+if(raw){
+
+try{
+
+backup.data[y]=
+JSON.parse(raw);
+
+}catch(e){
+
+console.warn(
+"Nie można odczytać danych roku",
+y
+);
+
+}
+
+}
+
+}
+
+
+/*
+  Zamiana na JSON
+*/
+
+const json=
+JSON.stringify(
+backup,
+null,
+2
+);
+
+
+const blob=
+new Blob(
+[json],
+{
+type:"application/json"
+}
+);
+
+
+const url=
+URL.createObjectURL(blob);
+
+
+const a=
+document.createElement("a");
+
+
+const date=
+new Date()
+.toISOString()
+.slice(0,10);
+
+
+a.href=url;
+
+a.download=
+"Ewidencja_backup_"+
+date+
+".json";
+
+
+document.body.appendChild(a);
+
+a.click();
+
+a.remove();
+
+
+setTimeout(
+()=>URL.revokeObjectURL(url),
+1000
+);
+
+
+alert(
+"Backup został zapisany."
+);
+
+}
+
+
+/* =========================================================
+   PRZYWRÓĆ BACKUP
+========================================================= */
+
+function restoreBackup(input){
+
+const file=
+input.files[0];
+
+
+if(!file){
+
+return;
+
+}
+
+
+const reader=
+new FileReader();
+
+
+reader.onload=function(e){
+
+try{
+
+const backup=
+JSON.parse(
+e.target.result
+);
+
+
+/*
+  Podstawowa walidacja.
+*/
+
+if(
+!backup ||
+typeof backup!=="object" ||
+!backup.data ||
+typeof backup.data!=="object"
+){
+
+throw new Error(
+"Nieprawidłowy format pliku backupu."
+);
+
+}
+
+
+const years=
+Object.keys(
+backup.data
+).filter(
+y=>/^\d{4}$/.test(y)
+);
+
+
+if(years.length===0){
+
+throw new Error(
+"Backup nie zawiera danych żadnego roku."
+);
+
+}
+
+
+const message=
+
+"Backup zawiera dane dla lat:\n\n"+
+
+years.join(", ")+
+
+"\n\n"+
+"Przywrócenie zastąpi obecne dane dla tych lat.\n\n"+
+"Czy chcesz kontynuować?";
+
+
+if(
+!confirm(message)
+){
+
+input.value="";
+
+return;
+
+}
+
+
+/*
+  Przywracanie danych.
+*/
+
+years.forEach(y=>{
+
+localStorage.setItem(
+
+"worktime_"+y,
+
+JSON.stringify(
+backup.data[y]
+)
+
+);
+
+});
+
+
+/*
+  Przywrócenie ustawień.
+*/
+
+if(
+backup.settings
+){
+
+if(
+backup.settings.lastFrom
+){
+
+localStorage.setItem(
+"worktime_last_from",
+backup.settings.lastFrom
+);
+
+}
+
+
+if(
+backup.settings.lastTo
+){
+
+localStorage.setItem(
+"worktime_last_to",
+backup.settings.lastTo
+);
+
+}
+
+
+if(
+backup.settings.lastType
+){
+
+localStorage.setItem(
+"worktime_last_type",
+backup.settings.lastType
+);
+
+}
+
+}
+
+
+/*
+  Jeżeli aktualny rok nie jest w backupie,
+  przełącz na pierwszy rok backupu.
+*/
+
+const currentYear=
+String(ys.value);
+
+
+if(
+!years.includes(currentYear)
+){
+
+ys.value=
+years[0];
+
+}
+
+
+clearSelection();
 
 render();
 
 
+alert(
+"Backup został pomyślnie przywrócony."
+);
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Nie udało się przywrócić backupu.\n\n"+
+error.message
+);
+
+}
+
 
 /*
-  Przewiń do dzisiejszego dnia.
+  Pozwól ponownie wybrać ten sam plik.
 */
 
-setTimeout(function(){
+input.value="";
+
+};
 
 
-  const row=
+reader.onerror=function(){
 
-    document.getElementById(
-      "today-row"
-    );
+alert(
+"Nie udało się odczytać pliku backupu."
+);
 
+input.value="";
 
-  if(row){
-
-    row.scrollIntoView({
-
-      behavior:"auto",
-
-      block:"center"
-
-    });
-
-  }
+};
 
 
-},100);
+reader.readAsText(file);
+
+}
 
 
-
-/* ================================
+/* =========================================================
    KLIKNIĘCIE POZA MODALEM
-================================ */
+========================================================= */
+
+document
+.getElementById("timeModal")
+.addEventListener(
+"click",
+function(e){
+
+if(e.target===this){
+
+closeTimeModal();
+
+}
+
+}
+);
 
 
 document
+.getElementById("excelModal")
+.addEventListener(
+"click",
+function(e){
 
-  .getElementById("timeModal")
+if(e.target===this){
 
-  .addEventListener(
+closeExcelModal();
 
-    "click",
+}
 
-    function(e){
-
-
-      if(e.target===this){
-
-        closeTimeModal();
-
-      }
+}
+);
 
 
-    }
+document
+.getElementById("backupModal")
+.addEventListener(
+"click",
+function(e){
 
-  );
+if(e.target===this){
+
+closeBackupModal();
+
+}
+
+}
+);
 
 
-
-/* ================================
-   ESC
-================================ */
-
+/* =========================================================
+   ESC - ZAMYKANIE MODALI
+========================================================= */
 
 document.addEventListener(
+"keydown",
+function(e){
 
-  "keydown",
+if(e.key==="Escape"){
 
-  function(e){
+closeTimeModal();
+
+closeExcelModal();
+
+closeBackupModal();
+
+}
+
+}
+);
 
 
-    if(e.key==="Escape"){
+/* =========================================================
+   START
+========================================================= */
 
-      closeTimeModal();
-
-    }
+render();
 
 
-  }
+/* =========================================================
+   PRZEWIŃ DO DZISIAJ
+========================================================= */
 
+setTimeout(
+function(){
+
+const row=
+document.getElementById(
+"today-row"
+);
+
+
+if(row){
+
+row.scrollIntoView({
+
+behavior:"auto",
+
+block:"center"
+
+});
+
+}
+
+},
+100
 );
 
 </script>
 
 </body>
+
 </html>
