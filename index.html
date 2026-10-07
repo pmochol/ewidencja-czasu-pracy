@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 
 <html lang="pl">
@@ -29,6 +30,12 @@ body{
   background:#f3f5f7;
   color:#20252b;
   font-family:Arial,sans-serif;
+
+  /*
+    Miejsce na przyklejoną belkę.
+    Wartość jest ustawiana automatycznie przez JS.
+  */
+  padding-top:var(--header-height,150px);
 }
 
 
@@ -40,25 +47,27 @@ header{
   background:#1f2937;
   color:white;
   padding:16px 20px;
+
   position:fixed;
   top:0;
   left:0;
   right:0;
-  width:100%;
-  z-index:1000;
-  box-shadow:0 2px 8px #0002;
-}
 
-body{
-  padding-top:var(--header-height,150px);
+  width:100%;
+
+  z-index:1000;
+
+  box-shadow:0 2px 8px #0002;
 }
 
 .head{
   max-width:1500px;
   margin:auto;
+
   display:flex;
   justify-content:space-between;
   align-items:center;
+
   gap:15px;
   flex-wrap:wrap;
 }
@@ -142,17 +151,60 @@ main{
    SUMMARY
 ========================================================= */
 
+/*
+  Podsumowanie pozostaje przyklejone pod górną belką.
+*/
+
 .summary{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:12px;
+
   margin-bottom:18px;
+
+  position:sticky;
+
+  top:var(--header-height,150px);
+
+  z-index:900;
+
+  padding-top:2px;
+  padding-bottom:2px;
+
+  background:#f3f5f7;
+}
+
+
+/*
+  Delikatny cień pozwala odróżnić
+  przyklejone podsumowanie od przewijanej tabeli.
+*/
+
+.summary::after{
+  content:"";
+
+  position:absolute;
+
+  left:0;
+  right:0;
+  bottom:-8px;
+
+  height:8px;
+
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,.08),
+    rgba(0,0,0,0)
+  );
+
+  pointer-events:none;
 }
 
 .card{
   background:white;
   border-radius:9px;
   padding:15px;
+
   box-shadow:0 1px 4px #0001;
 }
 
@@ -177,9 +229,12 @@ main{
   border:1px solid #bfdbfe;
   color:#1e40af;
   border-radius:8px;
+
   padding:10px 13px;
   margin-bottom:14px;
+
   font-size:13px;
+
   display:none;
 }
 
@@ -195,29 +250,36 @@ main{
 .month{
   background:white;
   border-radius:9px;
+
   margin-bottom:17px;
+
   box-shadow:0 1px 4px #0001;
+
   overflow:hidden;
 }
 
 .month h2{
   margin:0;
   padding:12px 14px;
+
   background:#e9eef5;
+
   font-size:17px;
+
   border-bottom:1px solid #d8dee7;
 }
 
 
 /*
-  Tabela ma minimalną szerokość.
-  Na telefonie powstaje rzeczywisty poziomy scroll.
+  Rzeczywisty poziomy scroll na telefonie.
 */
 
 .month-scroll{
   width:100%;
+
   overflow-x:auto;
-  overflow-y:hidden;
+  overflow-y:visible;
+
   -webkit-overflow-scrolling:touch;
 }
 
@@ -234,38 +296,57 @@ main{
   border-radius:5px;
 }
 
+
 table{
   width:100%;
-  min-width:1180px;
+  min-width:1200px;
+
   border-collapse:collapse;
+
   font-size:13px;
 }
+
+
+/*
+  Nagłówek tabeli pozostaje widoczny,
+  ale znajduje się POD belką i podsumowaniem.
+*/
 
 th{
   background:#f8fafc;
   color:#475569;
 
-  /*
-    Nagłówek tabeli zatrzymuje się pod
-    stałą belką główną.
-  */
   position:sticky;
-  top:var(--header-height,150px);
-  z-index:10;
+
+  top:calc(
+    var(--header-height,150px) +
+    var(--summary-height,100px)
+  );
+
+  z-index:100;
+
+  box-shadow:
+    0 1px 0 #d8dee7,
+    0 2px 5px #0001;
 }
 
 th,
 td{
   padding:7px;
+
   border-bottom:1px solid #e5e7eb;
+
   text-align:left;
 }
 
 td input,
 td select{
   width:100%;
+
   padding:6px;
+
   border:1px solid #d1d5db;
+
   border-radius:5px;
 }
 
@@ -283,6 +364,7 @@ td select{
 .select-all{
   width:18px !important;
   height:18px;
+
   cursor:pointer;
 }
 
@@ -291,6 +373,11 @@ td select{
   font-weight:bold;
   white-space:nowrap;
 }
+
+
+/* =========================================================
+   DNI
+========================================================= */
 
 .weekend{
   background:#fafafa;
@@ -301,10 +388,36 @@ td select{
   background:#fff7ed;
 }
 
+
+/*
+  URLOP
+  Delikatny jasnoniebieski kolor.
+  !important zapewnia, że wygra również z
+  kolorem weekendu/święta.
+*/
+
+.month tbody tr.urlop td{
+  background:#eaf4ff !important;
+}
+
+
+/*
+  Dodatkowe lekkie wyróżnienie rodzaju Urlop.
+*/
+
+.month tbody tr.urlop td:nth-child(7){
+  font-weight:bold;
+  color:#2563eb;
+}
+
+
 .total{
   text-align:right;
+
   padding:9px 14px;
+
   background:#f8fafc;
+
   font-weight:bold;
 }
 
@@ -315,11 +428,16 @@ td select{
 
 .mobile-scroll-info{
   display:none;
+
   padding:7px 12px;
+
   background:#f8fafc;
   color:#64748b;
+
   font-size:11px;
+
   border-top:1px solid #e5e7eb;
+
   text-align:center;
 }
 
@@ -330,12 +448,18 @@ td select{
 
 .modal{
   position:fixed;
+
   inset:0;
+
   background:#0007;
+
   display:flex;
+
   align-items:center;
   justify-content:center;
+
   padding:18px;
+
   z-index:2000;
 }
 
@@ -345,67 +469,93 @@ td select{
 
 .modal-box{
   background:white;
+
   border-radius:12px;
+
   padding:20px;
+
   max-width:450px;
+
   width:100%;
+
   max-height:90vh;
+
   overflow-y:auto;
+
   box-shadow:0 10px 35px #0004;
 }
 
 .modal-box h2{
   margin:0 0 8px;
+
   font-size:20px;
 }
 
 .modal-box p{
   font-size:13px;
+
   color:#64748b;
+
   margin:0 0 16px;
 }
 
 .time-grid{
   display:grid;
+
   grid-template-columns:1fr 1fr;
+
   gap:10px;
 }
 
 .time-grid label{
   font-size:12px;
+
   color:#475569;
 }
 
 .time-grid input{
   display:block;
+
   width:100%;
+
   margin-top:5px;
+
   padding:9px;
+
   border:1px solid #cbd5e1;
+
   border-radius:6px;
 }
 
 .modal-type{
   display:block;
+
   margin-top:12px;
 }
 
 .modal-type select{
   display:block;
+
   width:100%;
+
   margin-top:5px;
 }
 
 .modal-actions{
   display:flex;
+
   justify-content:flex-end;
+
   gap:8px;
+
   margin-top:18px;
 }
 
 .excel-buttons{
   display:flex;
+
   flex-direction:column;
+
   gap:9px;
 }
 
@@ -415,14 +565,19 @@ td select{
 
 .excel-month-label{
   display:block;
+
   font-size:12px;
+
   color:#475569;
+
   margin-bottom:14px;
 }
 
 .excel-month-label select{
   display:block;
+
   width:100%;
+
   margin-top:5px;
 }
 
@@ -433,7 +588,9 @@ td select{
 
 .backup-buttons{
   display:flex;
+
   flex-direction:column;
+
   gap:9px;
 }
 
@@ -443,12 +600,19 @@ td select{
 
 .backup-info{
   background:#f8fafc;
+
   border:1px solid #e2e8f0;
+
   border-radius:8px;
+
   padding:10px;
+
   margin-top:12px;
+
   font-size:12px;
+
   color:#64748b;
+
   line-height:1.5;
 }
 
@@ -489,6 +653,7 @@ td select{
 
   .summary{
     grid-template-columns:1fr 1fr;
+
     gap:8px;
   }
 
@@ -510,11 +675,13 @@ td select{
 
   .controls button{
     font-size:11px;
+
     padding:8px 7px;
   }
 
   .controls label{
     width:100%;
+
     justify-content:flex-start;
   }
 
@@ -545,16 +712,30 @@ td select{
 
   body{
     background:white;
+
+    padding-top:0;
   }
 
   main{
     max-width:none;
+
     margin:0;
+  }
+
+  .summary{
+    position:static;
+
+    background:white;
   }
 
   .month{
     box-shadow:none;
+
     page-break-inside:avoid;
+  }
+
+  th{
+    position:static;
   }
 
 }
@@ -563,7 +744,9 @@ td select{
 
 </head>
 
+
 <body>
+
 
 <!-- =======================================================
      HEADER
@@ -583,6 +766,7 @@ Roczna ewidencja • dane zapisywane lokalnie w przeglądarce
 
 </div>
 
+
 <div class="controls">
 
 <label>
@@ -593,6 +777,7 @@ Rok:
 
 </label>
 
+
 <button
 class="green"
 onclick="openTimeModal()">
@@ -600,6 +785,7 @@ onclick="openTimeModal()">
 Ustaw dla zaznaczonych
 
 </button>
+
 
 <button
 class="gray"
@@ -609,6 +795,7 @@ Odznacz wszystkie
 
 </button>
 
+
 <button
 class="gray"
 onclick="clearSelectedData()">
@@ -617,6 +804,7 @@ Wyczyść dla zaznaczonych
 
 </button>
 
+
 <button
 class="green"
 onclick="openExcelModal()">
@@ -624,6 +812,7 @@ onclick="openExcelModal()">
 📊 Excel
 
 </button>
+
 
 <button
 class="gray"
@@ -638,6 +827,7 @@ onclick="openBackupModal()">
 </div>
 
 </header>
+
 
 <!-- =======================================================
      MODAL GODZINY
@@ -657,6 +847,7 @@ Ustaw dla zaznaczonych
 Wybrane ustawienia zostaną zastosowane do wszystkich zaznaczonych dni.
 </p>
 
+
 <div class="time-grid">
 
 <label>
@@ -668,6 +859,7 @@ id="selectedFrom"
 type="time">
 
 </label>
+
 
 <label>
 
@@ -681,6 +873,9 @@ type="time">
 
 </div>
 
+
+<!-- PROJEKT -->
+
 <label class="modal-type">
 
 Projekt
@@ -692,6 +887,9 @@ placeholder="Numer projektu (opcjonalnie)"
 style="display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #cbd5e1;border-radius:6px">
 
 </label>
+
+
+<!-- RODZAJ -->
 
 <label class="modal-type">
 
@@ -727,6 +925,7 @@ Wolne
 
 </label>
 
+
 <div
 id="modalHoursInfo"
 style="margin-top:10px;font-size:12px;color:#64748b">
@@ -734,6 +933,7 @@ style="margin-top:10px;font-size:12px;color:#64748b">
 Czas pracy: —
 
 </div>
+
 
 <div class="modal-actions">
 
@@ -744,6 +944,7 @@ onclick="closeTimeModal()">
 Anuluj
 
 </button>
+
 
 <button
 class="green"
@@ -758,6 +959,7 @@ Ustaw
 </div>
 
 </div>
+
 
 <!-- =======================================================
      MODAL EXCEL
@@ -776,6 +978,7 @@ class="modal hidden">
 <p>
 Wybierz zakres danych do eksportu.
 </p>
+
 
 <label class="excel-month-label">
 
@@ -800,15 +1003,18 @@ Miesiąc:
 
 </label>
 
+
 <div class="excel-buttons">
 
 <button
 class="green"
 onclick="exportYear()">
 
-📅 Cały rok <br> <small>Podsumowanie + 12 miesięcy</small>
+📅 Cały rok <br>
+<small>Podsumowanie + 12 miesięcy</small>
 
 </button>
+
 
 <button
 class="green"
@@ -817,6 +1023,7 @@ onclick="exportMonth()">
 📆 Wybrany miesiąc
 
 </button>
+
 
 <button
 class="green"
@@ -827,6 +1034,7 @@ onclick="exportSelected()">
 </button>
 
 </div>
+
 
 <div class="modal-actions">
 
@@ -843,6 +1051,7 @@ Anuluj
 </div>
 
 </div>
+
 
 <!-- =======================================================
      MODAL BACKUP
@@ -862,6 +1071,7 @@ class="modal hidden">
 Zapisz lub przywróć całą ewidencję pracy.
 </p>
 
+
 <div class="backup-buttons">
 
 <button
@@ -872,6 +1082,7 @@ onclick="downloadBackup()">
 
 </button>
 
+
 <button
 class="green"
 onclick="document.getElementById('backupFile').click()">
@@ -879,6 +1090,7 @@ onclick="document.getElementById('backupFile').click()">
 ↩ Przywróć backup
 
 </button>
+
 
 <input
 id="backupFile"
@@ -889,6 +1101,7 @@ onchange="restoreBackup(this)">
 
 </div>
 
+
 <div class="backup-info">
 
 <b>Backup zawiera:</b><br>
@@ -896,15 +1109,15 @@ onchange="restoreBackup(this)">
 • wszystkie zapisane lata<br>
 • godziny pracy<br>
 • rodzaje dni<br>
-• numery projektów<br>
-• uwagi<br>
-• ostatnio używane ustawienia godzin i projektu
+• uwagi i numery projektów<br>
+• ostatnio używane ustawienia godzin
 
 <br><br>
 
 Plik backupu jest zwykłym plikiem JSON i można go przechowywać np. na komputerze, pendrive lub w chmurze.
 
 </div>
+
 
 <div class="modal-actions">
 
@@ -922,11 +1135,13 @@ Zamknij
 
 </div>
 
+
 <!-- =======================================================
      MAIN
 ======================================================= -->
 
 <main>
+
 
 <div
 id="selectionInfo"
@@ -941,6 +1156,7 @@ Zaznaczono:
 dni
 
 </div>
+
 
 <!-- =======================================================
      PODSUMOWANIE
@@ -964,6 +1180,7 @@ id="hours">
 
 </div>
 
+
 <div class="card">
 
 <div class="label">
@@ -980,6 +1197,7 @@ id="days">
 
 </div>
 
+
 <div class="card">
 
 <div class="label">
@@ -995,6 +1213,7 @@ id="delegations">
 </div>
 
 </div>
+
 
 <div class="card">
 
@@ -1015,9 +1234,11 @@ Gotowe
 
 </div>
 
+
 <div id="months"></div>
 
 </main>
+
 
 <script>
 
@@ -1334,6 +1555,41 @@ updateSelectionInfo();
 
 
 /* =========================================================
+   AKTUALIZACJA POZYCJI STICKY
+========================================================= */
+
+function updateStickyPositions(){
+
+const header=
+document.querySelector("header");
+
+const summary=
+document.querySelector(".summary");
+
+
+if(header){
+
+document.documentElement.style.setProperty(
+"--header-height",
+(header.offsetHeight+12)+"px"
+);
+
+}
+
+
+if(summary){
+
+document.documentElement.style.setProperty(
+"--summary-height",
+(summary.offsetHeight+4)+"px"
+);
+
+}
+
+}
+
+
+/* =========================================================
    RENDER TABEL
 ========================================================= */
 
@@ -1539,14 +1795,25 @@ tr.id="today-row";
 
 if(weekend(dt)){
 
-tr.className="weekend";
+tr.classList.add("weekend");
 
 }
 
 
 if(hol){
 
-tr.className+=" holiday";
+tr.classList.add("holiday");
+
+}
+
+
+/*
+  Urlop ma własne wyróżnienie.
+*/
+
+if(type==="Urlop"){
+
+tr.classList.add("urlop");
 
 }
 
@@ -1644,10 +1911,14 @@ x+
 "</td>"+
 
 
+/*
+  NOWA KOLUMNA PROJEKT
+*/
+
 "<td>"+
 
 '<input type="text" '+
-'placeholder="nr projektu" '+
+'placeholder="np. 12345" '+
 'value="'+
 (r.project||"")
 .replaceAll(
@@ -1746,7 +2017,7 @@ d[k]=d[k]||{};
 
 
 /*
-  URLop = zawsze 07:00–15:00
+  Urlop = zawsze 07:00–15:00
 */
 
 if(
@@ -1794,6 +2065,16 @@ updateSelectionInfo;
 
 updateSelectionInfo();
 
+
+/*
+  Po wyrenderowaniu przelicz wysokości
+  elementów sticky.
+*/
+
+requestAnimationFrame(
+updateStickyPositions
+);
+
 }
 
 
@@ -1838,12 +2119,6 @@ localStorage.getItem(
 )||"Praca";
 
 
-const lastProject=
-localStorage.getItem(
-"worktime_last_project"
-)||"";
-
-
 document.getElementById(
 "selectedFrom"
 ).value=lastFrom;
@@ -1859,9 +2134,16 @@ document.getElementById(
 ).value=lastType;
 
 
+/*
+  Odczytaj ostatni używany projekt.
+*/
+
 document.getElementById(
 "selectedProject"
-).value=lastProject;
+).value=
+localStorage.getItem(
+"worktime_last_project"
+)||"";
 
 
 if(
@@ -2108,6 +2390,10 @@ localStorage.setItem(
 type
 );
 
+
+/*
+  Zapamiętaj ostatni projekt.
+*/
 
 localStorage.setItem(
 "worktime_last_project",
@@ -2453,8 +2739,6 @@ sheetName
 );
 
 
-/* szerokości */
-
 ws.columns=[
 
 {
@@ -2508,8 +2792,6 @@ width:40
 ];
 
 
-/* tytuł */
-
 ws.mergeCells("A1:H1");
 
 ws.getCell("A1").value=
@@ -2524,8 +2806,6 @@ ws.getCell("A1")
 
 ws.getRow(1).height=25;
 
-
-/* nagłówek */
 
 const header=
 ws.getRow(3);
@@ -2552,8 +2832,6 @@ let total=0;
 
 let rowNumber=4;
 
-
-/* dni */
 
 const n=
 new Date(
@@ -2608,17 +2886,9 @@ r.note
 ];
 
 
-/*
-  Godziny jako czas Excela
-*/
-
 row.getCell(5).numFmt=
 "[h]:mm";
 
-
-/*
-  Centrowanie
-*/
 
 row.getCell(1).alignment={
 horizontal:"center"
@@ -2684,8 +2954,25 @@ argb:"FFFCE4D6"
 
 
 /*
-  Pogrubienie rodzaju
+  Urlop
 */
+
+if(r.type==="Urlop"){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFEAF4FF"
+}
+};
+
+});
+
+}
+
 
 row.getCell(6).font={
 bold:true
@@ -2697,9 +2984,7 @@ rowNumber++;
 }
 
 
-/* =======================================================
-   SUMA
-======================================================= */
+/* SUMA */
 
 const totalRow=
 ws.getRow(
@@ -2747,8 +3032,6 @@ argb:"FFD9EAF7"
 });
 
 
-/* zamrożenie nagłówka */
-
 ws.views=[
 {
 state:"frozen",
@@ -2757,15 +3040,11 @@ ySplit:3
 ];
 
 
-/* filtr */
-
 ws.autoFilter={
 from:"A3",
 to:"H"+(rowNumber-1)
 };
 
-
-/* obramowanie */
 
 for(
 let r=3;
@@ -2775,7 +3054,7 @@ r++
 
 for(
 let c=1;
-c<=7;
+c<=8;
 c++
 ){
 
@@ -2829,8 +3108,6 @@ showGridLines:false
 );
 
 
-/* szerokości */
-
 ws.columns=[
 
 {
@@ -2847,8 +3124,6 @@ width:18
 
 ];
 
-
-/* tytuł */
 
 ws.mergeCells("A1:C1");
 
@@ -2867,15 +3142,11 @@ horizontal:"center"
 ws.getRow(1).height=30;
 
 
-/* nagłówek */
-
 ws.getCell("A3").value=
 "Podsumowanie";
 
-
 ws.getCell("B3").value=
 "Wartość";
-
 
 ws.getCell("C3").value=
 "Uwagi";
@@ -2900,8 +3171,6 @@ let holidaysCount=0;
 
 let free=0;
 
-
-/* miesięczne podsumowanie */
 
 const monthly=[];
 
@@ -3014,8 +3283,6 @@ days:monthDays
 }
 
 
-/* podstawowe dane */
-
 const summaryRows=[
 
 [
@@ -3103,10 +3370,6 @@ r++;
 });
 
 
-/* =======================================================
-   PODSUMOWANIE MIESIĘCY
-======================================================= */
-
 r+=2;
 
 
@@ -3185,8 +3448,6 @@ r++;
 });
 
 
-/* suma roczna */
-
 r++;
 
 
@@ -3233,8 +3494,6 @@ argb:"FFD9EAF7"
 
 });
 
-
-/* zamrożenie */
 
 ws.views=[
 {
@@ -3645,6 +3904,23 @@ argb:"FFFCE4D6"
 }
 
 
+if(r.type==="Urlop"){
+
+row.eachCell(cell=>{
+
+cell.fill={
+type:"pattern",
+pattern:"solid",
+fgColor:{
+argb:"FFEAF4FF"
+}
+};
+
+});
+
+}
+
+
 rowNumber++;
 
 });
@@ -3848,10 +4124,6 @@ localStorage.getItem(
 };
 
 
-/*
-  Pobierz wszystkie lata 2024–2035.
-*/
-
 for(
 let y=2024;
 y<=2035;
@@ -3884,10 +4156,6 @@ y
 
 }
 
-
-/*
-  Zamiana na JSON
-*/
 
 const json=
 JSON.stringify(
@@ -3979,10 +4247,6 @@ e.target.result
 );
 
 
-/*
-  Podstawowa walidacja.
-*/
-
 if(
 !backup ||
 typeof backup!=="object" ||
@@ -4036,10 +4300,6 @@ return;
 }
 
 
-/*
-  Przywracanie danych.
-*/
-
 years.forEach(y=>{
 
 localStorage.setItem(
@@ -4054,10 +4314,6 @@ backup.data[y]
 
 });
 
-
-/*
-  Przywrócenie ustawień.
-*/
 
 if(
 backup.settings
@@ -4099,8 +4355,12 @@ backup.settings.lastType
 }
 
 
+/*
+  Przywróć ostatni projekt.
+*/
+
 if(
-backup.settings.lastProject !== undefined
+backup.settings.lastProject!==undefined
 ){
 
 localStorage.setItem(
@@ -4112,11 +4372,6 @@ backup.settings.lastProject
 
 }
 
-
-/*
-  Jeżeli aktualny rok nie jest w backupie,
-  przełącz na pierwszy rok backupu.
-*/
 
 const currentYear=
 String(ys.value);
@@ -4153,10 +4408,6 @@ error.message
 
 }
 
-
-/*
-  Pozwól ponownie wybrać ten sam plik.
-*/
 
 input.value="";
 
@@ -4273,17 +4524,24 @@ document.documentElement.style.setProperty(
 
 }
 
-window.addEventListener(
-"resize",
-updateHeaderHeight
-);
-
-updateHeaderHeight();
-
 
 /* =========================================================
    START
 ========================================================= */
+
+window.addEventListener(
+"resize",
+function(){
+
+updateHeaderHeight();
+
+updateStickyPositions();
+
+}
+);
+
+
+updateHeaderHeight();
 
 render();
 
@@ -4313,6 +4571,8 @@ block:"center"
 
 }
 
+updateStickyPositions();
+
 },
 100
 );
@@ -4322,3 +4582,4 @@ block:"center"
 </body>
 
 </html>
+```
