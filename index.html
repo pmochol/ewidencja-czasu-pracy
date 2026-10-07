@@ -9,8 +9,6 @@
 
 <title>Ewidencja czasu pracy</title>
 
-<!-- ExcelJS - tworzenie i formatowanie plików Excel -->
-
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <style>
@@ -47,10 +45,13 @@ header{
   left:0;
   right:0;
   width:100%;
-  z-index:100;
+  z-index:1000;
   box-shadow:0 2px 8px #0002;
 }
-body{padding-top:var(--header-height,150px)}
+
+body{
+  padding-top:var(--header-height,150px);
+}
 
 .head{
   max-width:1500px;
@@ -209,10 +210,8 @@ main{
 
 
 /*
-  WAŻNE:
   Tabela ma minimalną szerokość.
-  Dzięki temu na telefonie powstaje
-  rzeczywisty poziomy scroll.
+  Na telefonie powstaje rzeczywisty poziomy scroll.
 */
 
 .month-scroll{
@@ -237,7 +236,7 @@ main{
 
 table{
   width:100%;
-  min-width:1050px;
+  min-width:1180px;
   border-collapse:collapse;
   font-size:13px;
 }
@@ -245,9 +244,14 @@ table{
 th{
   background:#f8fafc;
   color:#475569;
+
+  /*
+    Nagłówek tabeli zatrzymuje się pod
+    stałą belką główną.
+  */
   position:sticky;
-  top:0;
-  z-index:2;
+  top:var(--header-height,150px);
+  z-index:10;
 }
 
 th,
@@ -332,7 +336,7 @@ td select{
   align-items:center;
   justify-content:center;
   padding:18px;
-  z-index:20;
+  z-index:2000;
 }
 
 .hidden{
@@ -678,9 +682,15 @@ type="time">
 </div>
 
 <label class="modal-type">
+
 Projekt
-<input id="selectedProject" type="text" placeholder="Numer projektu (opcjonalnie)"
+
+<input
+id="selectedProject"
+type="text"
+placeholder="Numer projektu (opcjonalnie)"
 style="display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #cbd5e1;border-radius:6px">
+
 </label>
 
 <label class="modal-type">
@@ -886,8 +896,9 @@ onchange="restoreBackup(this)">
 • wszystkie zapisane lata<br>
 • godziny pracy<br>
 • rodzaje dni<br>
-• uwagi i numery projektów<br>
-• ostatnio używane ustawienia godzin
+• numery projektów<br>
+• uwagi<br>
+• ostatnio używane ustawienia godzin i projektu
 
 <br><br>
 
@@ -1413,6 +1424,8 @@ tab.innerHTML=
 
 "<th>Rodzaj</th>"+
 
+"<th>Projekt</th>"+
+
 "<th>Uwagi</th>"+
 
 "</tr>"+
@@ -1634,6 +1647,22 @@ x+
 "<td>"+
 
 '<input type="text" '+
+'placeholder="nr projektu" '+
+'value="'+
+(r.project||"")
+.replaceAll(
+'"',
+"&quot;"
+)+
+'" data-k="'+k+'" '+
+'data-f="project">'+
+
+"</td>"+
+
+
+"<td>"+
+
+'<input type="text" '+
 'placeholder="np. Kraków" '+
 'value="'+
 (r.note||"")
@@ -1809,6 +1838,12 @@ localStorage.getItem(
 )||"Praca";
 
 
+const lastProject=
+localStorage.getItem(
+"worktime_last_project"
+)||"";
+
+
 document.getElementById(
 "selectedFrom"
 ).value=lastFrom;
@@ -1822,6 +1857,11 @@ document.getElementById(
 document.getElementById(
 "selectedType"
 ).value=lastType;
+
+
+document.getElementById(
+"selectedProject"
+).value=lastProject;
 
 
 if(
@@ -1992,8 +2032,11 @@ document.getElementById(
 "selectedType"
 ).value;
 
+
 const project=
-document.getElementById("selectedProject").value.trim();
+document.getElementById(
+"selectedProject"
+).value.trim();
 
 
 let finalFrom=from;
@@ -2063,6 +2106,12 @@ finalTo
 localStorage.setItem(
 "worktime_last_type",
 type
+);
+
+
+localStorage.setItem(
+"worktime_last_project",
+project
 );
 
 
@@ -3228,20 +3277,12 @@ workbook.created=
 new Date();
 
 
-/*
-  Najpierw podsumowanie
-*/
-
 addYearSummary(
 workbook,
 y,
 d
 );
 
-
-/*
-  Następnie 12 miesięcy
-*/
 
 for(
 let m=0;
@@ -3795,7 +3836,12 @@ localStorage.getItem(
 lastType:
 localStorage.getItem(
 "worktime_last_type"
-)||"Praca"
+)||"Praca",
+
+lastProject:
+localStorage.getItem(
+"worktime_last_project"
+)||""
 
 }
 
@@ -4052,6 +4098,18 @@ backup.settings.lastType
 
 }
 
+
+if(
+backup.settings.lastProject !== undefined
+){
+
+localStorage.setItem(
+"worktime_last_project",
+backup.settings.lastProject
+);
+
+}
+
 }
 
 
@@ -4200,16 +4258,28 @@ closeBackupModal();
 ========================================================= */
 
 function updateHeaderHeight(){
-  const header=document.querySelector("header");
-  if(header){
-    document.documentElement.style.setProperty(
-      "--header-height",
-      (header.offsetHeight+12)+"px"
-    );
-  }
+
+const header=
+document.querySelector("header");
+
+if(header){
+
+document.documentElement.style.setProperty(
+"--header-height",
+(header.offsetHeight+12)+"px"
+);
+
 }
-window.addEventListener("resize",updateHeaderHeight);
+
+}
+
+window.addEventListener(
+"resize",
+updateHeaderHeight
+);
+
 updateHeaderHeight();
+
 
 /* =========================================================
    START
