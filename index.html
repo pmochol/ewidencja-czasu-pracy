@@ -114,10 +114,6 @@ button.green{
   background:#15803d;
 }
 
-button.blue{
-  background:#2563eb;
-}
-
 button.red{
   background:#b91c1c;
 }
@@ -630,14 +626,6 @@ class="gray"
 onclick="openBackupModal()">
 
 💾 Backup
-
-</button>
-
-<button
-class="blue"
-onclick="goToToday()">
-
-📅 Dzisiaj
 
 </button>
 
@@ -1425,8 +1413,6 @@ tab.innerHTML=
 
 "<th>Rodzaj</th>"+
 
-"<th>Projekt</th>"+
-
 "<th>Uwagi</th>"+
 
 "</tr>"+
@@ -1640,22 +1626,7 @@ x+
 )
 .join("")+
 
-"</select>
-
-"</td>"+
-
-"<td>"+
-
-'<input type="text" '+
-'placeholder="Nr projektu" '+
-'value="'+
-(r.project||"")
-.replaceAll(
-'"',
-"&quot;"
-)+
-'" data-k="'+k+'" '+
-'data-f="project">'+
+"</select>"+
 
 "</td>"+
 
@@ -4239,31 +4210,6 @@ function updateHeaderHeight(){
 }
 window.addEventListener("resize",updateHeaderHeight);
 updateHeaderHeight();
-
-/* =========================================================
-   PRZEWIŃ DO DZISIAJ
-========================================================= */
-
-function goToToday(){
-
-  const today=new Date();
-  const y=today.getFullYear();
-  const m=today.getMonth();
-  const d=today.getDate();
-
-  if(+ys.value!==y){
-    ys.value=y;
-    render();
-  }
-
-  setTimeout(function(){
-    const row=document.getElementById("today-row");
-    if(row){
-      row.scrollIntoView({behavior:"smooth",block:"center"});
-    }
-  },50);
-}
-
 
 /* =========================================================
    START
