@@ -2069,7 +2069,7 @@ async function login(){
 
 
     const {data,error} =
-        await supabase.auth.signInWithPassword({
+        await supabaseClient.auth.signInWithPassword({
             email,
             password
         });
@@ -2140,7 +2140,7 @@ async function registerUser(){
 
 
     const {data,error} =
-        await supabase.auth.signUp({
+        await supabaseClient.auth.signUp({
             email,
             password
         });
@@ -2180,7 +2180,7 @@ async function registerUser(){
 
 async function logout(){
 
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
 
     currentUser = null;
 
@@ -2197,7 +2197,7 @@ async function logout(){
    AUTH STATE
 ========================================================= */
 
-supabase.auth.onAuthStateChange(
+supabaseClient.auth.onAuthStateChange(
     async(event,session)=>{
 
         if(
@@ -2315,7 +2315,7 @@ async function pushDay(
 
 
     const {data,error} =
-        await supabase.rpc(
+        await supabaseClient.rpc(
             "sync_worktime_entry",
             {
                 p_entry_date:date,
@@ -2842,7 +2842,7 @@ function setAuthMessage(
             session
         }
     } =
-        await supabase.auth.getSession();
+        await supabaseClient.auth.getSession();
 
 
     if(
