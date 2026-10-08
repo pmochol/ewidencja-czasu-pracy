@@ -55,11 +55,6 @@ body {
 
     box-shadow: 0 2px 6px rgba(0,0,0,.25);
 
-    /*
-       Belka może być przewijana poziomo.
-       Dropdown WIĘCEJ znajduje się poza topbarem,
-       więc nie zostanie przez niego obcięty.
-    */
     overflow-x: auto;
     overflow-y: hidden;
 
@@ -174,12 +169,6 @@ body {
     white-space: nowrap;
 }
 
-/*
-   MENU JEST POZA .topbar w HTML.
-
-   Dzięki position:fixed menu nie jest przycinane
-   przez overflow-x belki.
-*/
 .moreDropdown {
     display: none;
 
@@ -458,8 +447,6 @@ td.center {
     text-align: center;
 }
 
-/* szerokości kolumn */
-
 th:nth-child(1),
 td:nth-child(1) {
     width: 38px;
@@ -728,9 +715,6 @@ input[type="checkbox"] {
         display: none;
     }
 
-    /*
-       Spacer nie może rozpychać belki.
-    */
     .spacer {
         flex: 0 0 5px;
         min-width: 5px;
@@ -745,13 +729,6 @@ input[type="checkbox"] {
         font-size: 12px;
     }
 
-    /*
-       ROK:
-
-       76 px gwarantuje, że 2024–2035
-       będzie normalnie widoczne również
-       w rozwijanej liście.
-    */
     #yearSelect {
         min-width: 76px;
         width: 76px;
@@ -764,7 +741,6 @@ input[type="checkbox"] {
     }
 
     #todayButton,
-    #selectAllButton,
     #bulkButton,
     #syncButton {
         display: inline-block;
@@ -975,21 +951,11 @@ input[type="checkbox"] {
 
         <button
             type="button"
-            id="selectAllButton"
-            onclick="toggleSelectAll()"
-        >
-            Zaznacz
-        </button>
-
-        <button
-            type="button"
             id="bulkButton"
             onclick="bulkEdit()"
         >
             Ustaw dla zaznaczonych
         </button>
-
-        <!-- RĘCZNA SYNCHRONIZACJA -->
 
         <button
             type="button"
@@ -1068,17 +1034,22 @@ input[type="checkbox"] {
     </div>
 
 
-    <!--
-        WAŻNE:
-        Dropdown znajduje się POZA .topbar.
-
-        Dzięki temu overflow-x belki nie może go obciąć.
-    -->
+    <!-- =====================================================
+         MENU WIĘCEJ
+         ===================================================== -->
 
     <div
         id="moreDropdown"
         class="moreDropdown"
     >
+
+        <button
+            type="button"
+            id="selectAllMoreButton"
+            onclick="toggleSelectAll(); closeMoreMenu();"
+        >
+            ☑️ Zaznacz
+        </button>
 
         <button
             type="button"
@@ -1466,10 +1437,6 @@ function toggleMoreMenu(event) {
         return;
     }
 
-    /*
-       Pokazujemy menu przed obliczeniem wymiarów.
-    */
-
     menu.classList.add("show");
 
     positionMoreMenu();
@@ -1501,32 +1468,15 @@ function positionMoreMenu() {
     const menuHeight =
         menu.offsetHeight;
 
-    /*
-       Domyślnie menu jest wyrównane
-       prawą krawędzią do przycisku.
-    */
-
     let left =
         rect.right - menuWidth;
 
     let top =
         rect.bottom + 5;
 
-
-    /*
-       Ochrona przed wyjściem poza
-       lewą stronę ekranu.
-    */
-
     if (left < 5) {
         left = 5;
     }
-
-
-    /*
-       Ochrona przed wyjściem poza
-       prawą stronę ekranu.
-    */
 
     if (
         left + menuWidth >
@@ -1539,12 +1489,6 @@ function positionMoreMenu() {
             5;
     }
 
-
-    /*
-       Jeżeli pod przyciskiem nie ma miejsca,
-       menu pojawi się nad nim.
-    */
-
     if (
         top + menuHeight >
         window.innerHeight - 5
@@ -1556,15 +1500,9 @@ function positionMoreMenu() {
             5;
     }
 
-
-    /*
-       Ostateczne zabezpieczenie.
-    */
-
     if (top < 5) {
         top = 5;
     }
-
 
     menu.style.left =
         left + "px";
@@ -1589,11 +1527,6 @@ function closeMoreMenu() {
     }
 }
 
-
-/*
-   Kliknięcie poza przyciskiem/menu
-   zamyka menu.
-*/
 
 document.addEventListener(
     "click",
@@ -1624,11 +1557,6 @@ document.addEventListener(
 );
 
 
-/*
-   Po zmianie orientacji telefonu
-   ponownie ustawiamy menu.
-*/
-
 window.addEventListener(
     "resize",
     () => {
@@ -1648,11 +1576,6 @@ window.addEventListener(
     }
 );
 
-
-/*
-   Przy przewinięciu belki przycisk
-   zmienia pozycję względem ekranu.
-*/
 
 document.addEventListener(
     "scroll",
@@ -2086,7 +2009,6 @@ function render() {
         loadYear(currentYear);
 
     container.innerHTML = "";
-
 
     for (
         let month = 0;
@@ -3019,7 +2941,7 @@ function updateSelectAllButton() {
 
     const button =
         document.getElementById(
-            "selectAllButton"
+            "selectAllMoreButton"
         );
 
     if (!button) {
@@ -3034,7 +2956,7 @@ function updateSelectAllButton() {
     if (rows.length === 0) {
 
         button.textContent =
-            "Zaznacz";
+            "☑️ Zaznacz";
 
         return;
     }
@@ -3061,8 +2983,8 @@ function updateSelectAllButton() {
 
     button.textContent =
         allSelected
-            ? "Odznacz"
-            : "Zaznacz";
+            ? "☑️ Odznacz"
+            : "☑️ Zaznacz";
 }
 
 
