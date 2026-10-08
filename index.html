@@ -56,11 +56,12 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,.25);
 
     /*
-       Ważne:
-       belka może być przewijana poziomo na telefonie.
+       Belka może być przewijana poziomo.
+       Dropdown WIĘCEJ znajduje się poza topbarem,
+       więc nie zostanie przez niego obcięty.
     */
     overflow-x: auto;
-    overflow-y: visible;
+    overflow-y: hidden;
 
     scrollbar-width: thin;
 }
@@ -72,6 +73,10 @@ body {
 .topbar::-webkit-scrollbar-thumb {
     background: #777;
     border-radius: 5px;
+}
+
+.topbar > * {
+    flex: 0 0 auto;
 }
 
 .topbar button,
@@ -99,8 +104,10 @@ body {
 }
 
 .topbar select {
-    min-width: 62px;
-    width: 62px;
+    min-width: 76px;
+    width: 76px;
+    max-width: 76px;
+    flex: 0 0 76px;
 }
 
 .topbar-title {
@@ -154,13 +161,12 @@ body {
 }
 
 /* =========================================================
-   MENU "WIĘCEJ"
+   PRZYCISK WIĘCEJ
    ========================================================= */
 
 .moreMenu {
-    position: static;
+    position: relative;
     display: none;
-
     flex: 0 0 auto;
 }
 
@@ -169,18 +175,18 @@ body {
 }
 
 /*
-   Menu jest fixed względem ekranu.
-   Dzięki temu nie jest obcinane przez poziomy scroll belki.
+   MENU JEST POZA .topbar w HTML.
+
+   Dzięki position:fixed menu nie jest przycinane
+   przez overflow-x belki.
 */
 .moreDropdown {
     display: none;
 
     position: fixed;
 
-    right: 8px;
-    top: calc(var(--topbar-height) + 5px);
-
     width: 190px;
+    min-width: 190px;
 
     padding: 5px;
 
@@ -189,9 +195,9 @@ body {
     border: 1px solid #666;
     border-radius: 6px;
 
-    box-shadow: 0 5px 15px rgba(0,0,0,.3);
+    box-shadow: 0 5px 15px rgba(0,0,0,.4);
 
-    z-index: 5000;
+    z-index: 10000;
 }
 
 .moreDropdown.show {
@@ -203,14 +209,23 @@ body {
 
     width: 100%;
 
-    height: 38px;
+    height: 40px;
 
     margin: 2px 0;
+
+    padding: 0 10px;
 
     text-align: left;
 
     background: #333;
+    color: white;
+
     border: 0;
+    border-radius: 4px;
+
+    font-size: 14px;
+
+    cursor: pointer;
 }
 
 .moreDropdown button:hover {
@@ -428,10 +443,6 @@ td {
     font-size: 13px;
 }
 
-/*
-   UWAGA:
-   Nagłówek tabeli NIE jest sticky.
-*/
 th {
     background: #e8e8e8;
 
@@ -699,17 +710,18 @@ input[type="checkbox"] {
     .topbar {
         min-height: 0;
 
+        height: 46px;
+
         flex-wrap: nowrap;
 
         padding: 6px;
 
         gap: 5px;
 
-        /*
-           Pozwalamy przewijać całą belkę poziomo.
-        */
         overflow-x: auto;
         overflow-y: hidden;
+
+        -webkit-overflow-scrolling: touch;
     }
 
     .topbar-title {
@@ -717,7 +729,7 @@ input[type="checkbox"] {
     }
 
     /*
-       Spacer na telefonie nie może rozpychać belki.
+       Spacer nie może rozpychać belki.
     */
     .spacer {
         flex: 0 0 5px;
@@ -734,37 +746,48 @@ input[type="checkbox"] {
     }
 
     /*
-       Rok ma być mały.
+       ROK:
+
+       76 px gwarantuje, że 2024–2035
+       będzie normalnie widoczne również
+       w rozwijanej liście.
     */
     #yearSelect {
-        min-width: 58px;
-        width: 58px;
+        min-width: 76px;
+        width: 76px;
+        max-width: 76px;
+
+        flex: 0 0 76px;
+
+        padding-left: 5px;
+        padding-right: 5px;
     }
 
-    /*
-       Najważniejsze przyciski zostają na belce.
-    */
     #todayButton,
     #selectAllButton,
     #bulkButton,
     #syncButton {
         display: inline-block;
+
+        flex: 0 0 auto;
     }
 
-    /*
-       Mniej ważne przyciski są w Więcej.
-    */
     .desktopOnly {
         display: none !important;
     }
 
     .moreMenu {
         display: block;
+
+        flex: 0 0 auto;
     }
 
     #selectedInfo {
         font-size: 10px;
+
         padding: 0 3px;
+
+        flex: 0 0 auto;
     }
 
     #syncStatus {
@@ -774,7 +797,11 @@ input[type="checkbox"] {
 
         text-overflow: ellipsis;
 
+        white-space: nowrap;
+
         font-size: 10px;
+
+        flex: 0 0 auto;
     }
 
     .yearSummary {
@@ -934,6 +961,7 @@ input[type="checkbox"] {
         </span>
 
         <button
+            type="button"
             id="todayButton"
             onclick="goToday()"
         >
@@ -946,6 +974,7 @@ input[type="checkbox"] {
         ></select>
 
         <button
+            type="button"
             id="selectAllButton"
             onclick="toggleSelectAll()"
         >
@@ -953,6 +982,7 @@ input[type="checkbox"] {
         </button>
 
         <button
+            type="button"
             id="bulkButton"
             onclick="bulkEdit()"
         >
@@ -960,7 +990,9 @@ input[type="checkbox"] {
         </button>
 
         <!-- RĘCZNA SYNCHRONIZACJA -->
+
         <button
+            type="button"
             id="syncButton"
             onclick="manualSync()"
         >
@@ -968,7 +1000,9 @@ input[type="checkbox"] {
         </button>
 
         <!-- DESKTOP -->
+
         <button
+            type="button"
             class="desktopOnly"
             onclick="clearSelected()"
         >
@@ -976,6 +1010,7 @@ input[type="checkbox"] {
         </button>
 
         <button
+            type="button"
             class="desktopOnly"
             onclick="backupData()"
         >
@@ -983,6 +1018,7 @@ input[type="checkbox"] {
         </button>
 
         <button
+            type="button"
             class="desktopOnly"
             onclick="restoreData()"
         >
@@ -990,6 +1026,7 @@ input[type="checkbox"] {
         </button>
 
         <button
+            type="button"
             class="desktopOnly"
             onclick="exportExcel()"
         >
@@ -998,9 +1035,7 @@ input[type="checkbox"] {
 
         <div class="spacer"></div>
 
-        <span
-            id="selectedInfo"
-        >
+        <span id="selectedInfo">
             Zaznaczono: 0
         </span>
 
@@ -1009,51 +1044,76 @@ input[type="checkbox"] {
         </span>
 
         <button
+            type="button"
             class="desktopOnly"
             onclick="logout()"
         >
             🚪 Wyloguj
         </button>
 
-        <!-- MOBILE MENU -->
+        <!-- MOBILE -->
 
         <div class="moreMenu">
 
             <button
+                type="button"
                 class="moreButton"
                 onclick="toggleMoreMenu(event)"
             >
                 ⋮ Więcej
             </button>
 
-            <div
-                id="moreDropdown"
-                class="moreDropdown"
-            >
-
-                <button onclick="clearSelected(); closeMoreMenu();">
-                    🧹 Wyczyść
-                </button>
-
-                <button onclick="backupData(); closeMoreMenu();">
-                    💾 Backup
-                </button>
-
-                <button onclick="restoreData(); closeMoreMenu();">
-                    📂 Przywróć
-                </button>
-
-                <button onclick="exportExcel(); closeMoreMenu();">
-                    📊 Excel
-                </button>
-
-                <button onclick="logout(); closeMoreMenu();">
-                    🚪 Wyloguj
-                </button>
-
-            </div>
-
         </div>
+
+    </div>
+
+
+    <!--
+        WAŻNE:
+        Dropdown znajduje się POZA .topbar.
+
+        Dzięki temu overflow-x belki nie może go obciąć.
+    -->
+
+    <div
+        id="moreDropdown"
+        class="moreDropdown"
+    >
+
+        <button
+            type="button"
+            onclick="clearSelected(); closeMoreMenu();"
+        >
+            🧹 Wyczyść
+        </button>
+
+        <button
+            type="button"
+            onclick="backupData(); closeMoreMenu();"
+        >
+            💾 Backup
+        </button>
+
+        <button
+            type="button"
+            onclick="restoreData(); closeMoreMenu();"
+        >
+            📂 Przywróć
+        </button>
+
+        <button
+            type="button"
+            onclick="exportExcel(); closeMoreMenu();"
+        >
+            📊 Excel
+        </button>
+
+        <button
+            type="button"
+            onclick="logout(); closeMoreMenu();"
+        >
+            🚪 Wyloguj
+        </button>
 
     </div>
 
@@ -1378,19 +1438,139 @@ window.addEventListener(
 function toggleMoreMenu(event) {
 
     if (event) {
+        event.preventDefault();
         event.stopPropagation();
     }
+
+    const button =
+        document.querySelector(
+            ".moreButton"
+        );
 
     const menu =
         document.getElementById(
             "moreDropdown"
         );
 
-    if (!menu) {
+    if (!button || !menu) {
         return;
     }
 
-    menu.classList.toggle("show");
+    const isOpen =
+        menu.classList.contains("show");
+
+    if (isOpen) {
+
+        closeMoreMenu();
+
+        return;
+    }
+
+    /*
+       Pokazujemy menu przed obliczeniem wymiarów.
+    */
+
+    menu.classList.add("show");
+
+    positionMoreMenu();
+}
+
+
+function positionMoreMenu() {
+
+    const button =
+        document.querySelector(
+            ".moreButton"
+        );
+
+    const menu =
+        document.getElementById(
+            "moreDropdown"
+        );
+
+    if (!button || !menu) {
+        return;
+    }
+
+    const rect =
+        button.getBoundingClientRect();
+
+    const menuWidth =
+        menu.offsetWidth;
+
+    const menuHeight =
+        menu.offsetHeight;
+
+    /*
+       Domyślnie menu jest wyrównane
+       prawą krawędzią do przycisku.
+    */
+
+    let left =
+        rect.right - menuWidth;
+
+    let top =
+        rect.bottom + 5;
+
+
+    /*
+       Ochrona przed wyjściem poza
+       lewą stronę ekranu.
+    */
+
+    if (left < 5) {
+        left = 5;
+    }
+
+
+    /*
+       Ochrona przed wyjściem poza
+       prawą stronę ekranu.
+    */
+
+    if (
+        left + menuWidth >
+        window.innerWidth - 5
+    ) {
+
+        left =
+            window.innerWidth -
+            menuWidth -
+            5;
+    }
+
+
+    /*
+       Jeżeli pod przyciskiem nie ma miejsca,
+       menu pojawi się nad nim.
+    */
+
+    if (
+        top + menuHeight >
+        window.innerHeight - 5
+    ) {
+
+        top =
+            rect.top -
+            menuHeight -
+            5;
+    }
+
+
+    /*
+       Ostateczne zabezpieczenie.
+    */
+
+    if (top < 5) {
+        top = 5;
+    }
+
+
+    menu.style.left =
+        left + "px";
+
+    menu.style.top =
+        top + "px";
 }
 
 
@@ -1402,18 +1582,26 @@ function closeMoreMenu() {
         );
 
     if (menu) {
-        menu.classList.remove("show");
+
+        menu.classList.remove(
+            "show"
+        );
     }
 }
 
+
+/*
+   Kliknięcie poza przyciskiem/menu
+   zamyka menu.
+*/
 
 document.addEventListener(
     "click",
     event => {
 
-        const menu =
+        const button =
             document.querySelector(
-                ".moreMenu"
+                ".moreButton"
             );
 
         const dropdown =
@@ -1421,16 +1609,69 @@ document.addEventListener(
                 "moreDropdown"
             );
 
+        if (!button || !dropdown) {
+            return;
+        }
+
         if (
-            menu &&
-            dropdown &&
-            !menu.contains(event.target) &&
+            !button.contains(event.target) &&
             !dropdown.contains(event.target)
         ) {
 
             closeMoreMenu();
         }
     }
+);
+
+
+/*
+   Po zmianie orientacji telefonu
+   ponownie ustawiamy menu.
+*/
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        const menu =
+            document.getElementById(
+                "moreDropdown"
+            );
+
+        if (
+            menu &&
+            menu.classList.contains("show")
+        ) {
+
+            positionMoreMenu();
+        }
+    }
+);
+
+
+/*
+   Przy przewinięciu belki przycisk
+   zmienia pozycję względem ekranu.
+*/
+
+document.addEventListener(
+    "scroll",
+    () => {
+
+        const menu =
+            document.getElementById(
+                "moreDropdown"
+            );
+
+        if (
+            menu &&
+            menu.classList.contains("show")
+        ) {
+
+            positionMoreMenu();
+        }
+    },
+    true
 );
 
 
@@ -2172,6 +2413,8 @@ function render() {
 
 
                     updateSelectedCount();
+
+                    updateSelectAllButton();
                 }
             );
 
@@ -2772,9 +3015,6 @@ function updateSelectedCount() {
 }
 
 
-/*
-   Ustala stan przycisku Zaznacz.
-*/
 function updateSelectAllButton() {
 
     const button =
@@ -2792,7 +3032,10 @@ function updateSelectAllButton() {
         );
 
     if (rows.length === 0) {
-        button.textContent = "Zaznacz";
+
+        button.textContent =
+            "Zaznacz";
+
         return;
     }
 
@@ -2823,12 +3066,6 @@ function updateSelectAllButton() {
 }
 
 
-/*
-   NOWE DZIAŁANIE:
-
-   Zaznacz -> zaznacza wszystkie
-   Odznacz -> odznacza wszystkie
-*/
 function toggleSelectAll() {
 
     const rows =
@@ -2863,21 +3100,11 @@ function toggleSelectAll() {
     );
 
 
-    /*
-       Jeżeli wszystko było zaznaczone,
-       teraz wszystko odznaczamy.
-    */
-
     if (allSelected) {
 
         selectedDates.clear();
 
     } else {
-
-        /*
-           Jeżeli nie wszystko było zaznaczone,
-           zaznaczamy wszystkie dni.
-        */
 
         rows.forEach(
             tr => {
@@ -2908,11 +3135,6 @@ function toggleSelectAll() {
         );
     }
 
-
-    /*
-       Aktualizacja wszystkich checkboxów
-       bez wywoływania eventów change.
-    */
 
     rows.forEach(
         tr => {
