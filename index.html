@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +7,7 @@
 <title>Ewidencja czasu pracy</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <style>
@@ -265,6 +267,11 @@ td input.note{
     outline-offset:-2px;
 }
 
+/* Przywrócone tło dni urlopowych */
+.vacationDay{
+    background:#fff3cd !important;
+}
+
 .selectedRow{
     background:#eef5ff !important;
 }
@@ -329,8 +336,13 @@ td input.note{
 }
 
 @media(max-width:700px){
+
     body{
-        padding-top:175px;
+        padding-top:235px;
+    }
+
+    .topbar{
+        height:auto;
     }
 
     .userInfo{
@@ -339,6 +351,19 @@ td input.note{
 
     .summary{
         top:105px;
+        min-height:120px;
+        padding:6px 8px;
+        gap:5px;
+        overflow-x:auto;
+        overflow-y:hidden;
+        align-content:flex-start;
+    }
+
+    .card{
+        flex:0 0 auto;
+        font-size:12px;
+        padding:5px 7px;
+        white-space:nowrap;
     }
 
     .title{
@@ -346,6 +371,7 @@ td input.note{
     }
 }
 </style>
+
 </head>
 
 <body>
@@ -355,35 +381,48 @@ td input.note{
 ========================= -->
 
 <div id="authScreen">
-    <div class="authBox">
 
-        <h1>Ewidencja czasu pracy</h1>
-        <p>Zaloguj się, aby korzystać z synchronizacji.</p>
+```
+<div class="authBox">
 
-        <input
-            id="authEmail"
-            type="email"
-            placeholder="Adres e-mail"
-            autocomplete="username"
-        >
+    <h1>Ewidencja czasu pracy</h1>
 
-        <input
-            id="authPassword"
-            type="password"
-            placeholder="Hasło"
-            autocomplete="current-password"
-        >
+    <p>
+        Zaloguj się, aby korzystać z synchronizacji.
+    </p>
 
-        <div class="authButtons">
-            <button onclick="login()">Zaloguj</button>
-            <button onclick="registerUser()">Utwórz konto</button>
-        </div>
+    <input
+        id="authEmail"
+        type="email"
+        placeholder="Adres e-mail"
+        autocomplete="username"
+    >
 
-        <div id="authMessage"></div>
+    <input
+        id="authPassword"
+        type="password"
+        placeholder="Hasło"
+        autocomplete="current-password"
+    >
+
+    <div class="authButtons">
+
+        <button onclick="login()">
+            Zaloguj
+        </button>
+
+        <button onclick="registerUser()">
+            Utwórz konto
+        </button>
 
     </div>
-</div>
 
+    <div id="authMessage"></div>
+
+</div>
+```
+
+</div>
 
 <!-- =========================
      APLIKACJA
@@ -391,155 +430,179 @@ td input.note{
 
 <div id="app">
 
-    <div class="topbar">
+```
+<div class="topbar">
 
-        <div class="topbarRow">
+    <div class="topbarRow">
 
-            <span class="title">Ewidencja czasu pracy</span>
+        <span class="title">
+            Ewidencja czasu pracy
+        </span>
 
-            <label>Rok:</label>
+        <label>Rok:</label>
 
-            <select id="yearSelect"></select>
+        <select id="yearSelect"></select>
 
-            <button onclick="goToday()">📅 Dzisiaj</button>
-
-            <button onclick="showBulkPanel()">
-                ☑ Ustaw dla zaznaczonych
-            </button>
-
-            <button onclick="clearSelected()">
-                🗑 Wyczyść zaznaczone
-            </button>
-
-            <button onclick="exportExcel()">
-                📊 Excel
-            </button>
-
-            <button onclick="backupData()">
-                💾 Backup
-            </button>
-
-            <button onclick="document.getElementById('restoreFile').click()">
-                ♻ Przywróć
-            </button>
-
-            <input
-                type="file"
-                id="restoreFile"
-                accept=".json"
-                style="display:none"
-                onchange="restoreData(event)"
-            >
-
-            <button onclick="syncAll(true)">
-                🔄 Synchronizuj
-            </button>
-
-            <button onclick="logout()">
-                Wyloguj
-            </button>
-
-            <span id="userInfo" class="userInfo"></span>
-
-            <span id="syncStatus">
-                Offline/local
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <div class="summary">
-
-        <div class="card">
-            Przepracowane:
-            <strong id="sumWork">0:00</strong>
-        </div>
-
-        <div class="card">
-            Delegacja:
-            <strong id="sumTrip">0:00</strong>
-        </div>
-
-        <div class="card">
-            Urlop:
-            <strong id="sumVacation">0:00</strong>
-        </div>
-
-        <div class="card">
-            L4:
-            <strong id="sumSick">0:00</strong>
-        </div>
-
-        <div class="card">
-            Święto:
-            <strong id="sumHoliday">0:00</strong>
-        </div>
-
-        <div class="card">
-            Wolne:
-            <strong id="sumFree">0:00</strong>
-        </div>
-
-        <div class="card">
-            Razem:
-            <strong id="sumTotal">0:00</strong>
-        </div>
-
-        <div class="card">
-            <span id="saved">Gotowe</span>
-        </div>
-
-    </div>
-
-
-    <div class="container" id="months"></div>
-
-
-    <div class="bulkPanel" id="bulkPanel">
-
-        <strong>Zaznaczone:</strong>
-        <span id="selectedCount">0</span>
-
-        <label>Od:</label>
-        <input type="time" id="bulkFrom" value="07:00">
-
-        <label>Do:</label>
-        <input type="time" id="bulkTo" value="15:00">
-
-        <label>Rodzaj:</label>
-
-        <select id="bulkType">
-            <option>Praca</option>
-            <option>Delegacja</option>
-            <option>Urlop</option>
-            <option>L4</option>
-            <option>Święto</option>
-            <option>Wolne</option>
-        </select>
-
-        <label>Projekt:</label>
-        <input id="bulkProject" type="text">
-
-        <button onclick="applyBulk()">
-            Ustaw
+        <button onclick="goToday()">
+            📅 Dzisiaj
         </button>
 
-        <button
-            class="danger"
-            onclick="hideBulkPanel()"
+        <button onclick="showBulkPanel()">
+            ☑ Ustaw dla zaznaczonych
+        </button>
+
+        <button onclick="clearSelected()">
+            🗑 Wyczyść zaznaczone
+        </button>
+
+        <button onclick="exportExcel()">
+            📊 Excel
+        </button>
+
+        <button onclick="backupData()">
+            💾 Backup
+        </button>
+
+        <button onclick="document.getElementById('restoreFile').click()">
+            ♻ Przywróć
+        </button>
+
+        <input
+            type="file"
+            id="restoreFile"
+            accept=".json"
+            style="display:none"
+            onchange="restoreData(event)"
         >
-            Zamknij
+
+        <button onclick="syncAll(true)">
+            🔄 Synchronizuj
         </button>
+
+        <button onclick="logout()">
+            Wyloguj
+        </button>
+
+        <span id="userInfo" class="userInfo"></span>
+
+        <span id="syncStatus">
+            Offline/local
+        </span>
 
     </div>
 
 </div>
 
 
-<div id="statusMessage" class="statusMessage"></div>
+<div class="summary">
 
+    <div class="card">
+        Przepracowane:
+        <strong id="sumWork">0:00</strong>
+    </div>
+
+    <div class="card">
+        Delegacja:
+        <strong id="sumTrip">0:00</strong>
+    </div>
+
+    <div class="card">
+        Urlop:
+        <strong id="sumVacation">0:00</strong>
+    </div>
+
+    <div class="card">
+        L4:
+        <strong id="sumSick">0:00</strong>
+    </div>
+
+    <div class="card">
+        Święto:
+        <strong id="sumHoliday">0:00</strong>
+    </div>
+
+    <div class="card">
+        Wolne:
+        <strong id="sumFree">0:00</strong>
+    </div>
+
+    <div class="card">
+        Razem:
+        <strong id="sumTotal">0:00</strong>
+    </div>
+
+    <div class="card">
+        <span id="saved">Gotowe</span>
+    </div>
+
+</div>
+
+
+<div class="container" id="months"></div>
+
+
+<div class="bulkPanel" id="bulkPanel">
+
+    <strong>Zaznaczone:</strong>
+
+    <span id="selectedCount">0</span>
+
+    <label>Od:</label>
+
+    <input
+        type="time"
+        id="bulkFrom"
+        value="07:00"
+    >
+
+    <label>Do:</label>
+
+    <input
+        type="time"
+        id="bulkTo"
+        value="15:00"
+    >
+
+    <label>Rodzaj:</label>
+
+    <select id="bulkType">
+
+        <option>Praca</option>
+        <option>Delegacja</option>
+        <option>Urlop</option>
+        <option>L4</option>
+        <option>Święto</option>
+        <option>Wolne</option>
+
+    </select>
+
+    <label>Projekt:</label>
+
+    <input
+        id="bulkProject"
+        type="text"
+    >
+
+    <button onclick="applyBulk()">
+        Ustaw
+    </button>
+
+    <button
+        class="danger"
+        onclick="hideBulkPanel()"
+    >
+        Zamknij
+    </button>
+
+</div>
+```
+
+</div>
+
+<div
+    id="statusMessage"
+    class="statusMessage"
+></div>
 
 <script>
 
@@ -553,17 +616,18 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_Scpe8NZ9lOyH4asc53h9wQ_1S-fWToe";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-        auth:{
-            persistSession:true,
-            autoRefreshToken:true,
-            detectSessionInUrl:true
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+            auth:{
+                persistSession:true,
+                autoRefreshToken:true,
+                detectSessionInUrl:true
+            }
         }
-    }
-);
+    );
 
 
 /* =========================================================
@@ -604,12 +668,20 @@ const TYPES = [
 ];
 
 let currentUser = null;
-let currentYear = new Date().getFullYear();
 
-if(currentYear < FIRST_YEAR) currentYear = FIRST_YEAR;
-if(currentYear > LAST_YEAR) currentYear = LAST_YEAR;
+let currentYear =
+    new Date().getFullYear();
+
+if(currentYear < FIRST_YEAR){
+    currentYear = FIRST_YEAR;
+}
+
+if(currentYear > LAST_YEAR){
+    currentYear = LAST_YEAR;
+}
 
 let selectedDays = new Set();
+
 let syncRunning = false;
 
 
@@ -617,7 +689,8 @@ let syncRunning = false;
    ELEMENTY
 ========================================================= */
 
-const ys = document.getElementById("yearSelect");
+const ys =
+    document.getElementById("yearSelect");
 
 
 /* =========================================================
@@ -625,7 +698,10 @@ const ys = document.getElementById("yearSelect");
 ========================================================= */
 
 YEARS.forEach(y=>{
-    const o = document.createElement("option");
+
+    const o =
+        document.createElement("option");
+
     o.value = y;
     o.textContent = y;
 
@@ -634,12 +710,19 @@ YEARS.forEach(y=>{
     }
 
     ys.appendChild(o);
+
 });
 
+
 ys.addEventListener("change",()=>{
-    currentYear = Number(ys.value);
+
+    currentYear =
+        Number(ys.value);
+
     selectedDays.clear();
+
     render();
+
 });
 
 
@@ -648,35 +731,48 @@ ys.addEventListener("change",()=>{
 ========================================================= */
 
 function dataKey(year){
+
     return "worktime_" + year;
+
 }
 
+
 function metaKey(year){
+
     return "worktime_meta_" + year;
+
 }
+
 
 function readYear(year){
 
     try{
 
-        const raw = localStorage.getItem(dataKey(year));
+        const raw =
+            localStorage.getItem(
+                dataKey(year)
+            );
 
         if(!raw){
             return {};
         }
 
-        const d = JSON.parse(raw);
+        const d =
+            JSON.parse(raw);
 
-        return d && typeof d === "object"
+        return d &&
+               typeof d === "object"
             ? d
             : {};
 
     }catch(e){
 
         console.error(e);
+
         return {};
 
     }
+
 }
 
 
@@ -687,8 +783,10 @@ function writeYear(year,d){
         JSON.stringify(d)
     );
 
-    document.getElementById("saved").textContent =
+    document.getElementById("saved")
+        .textContent =
         "Zapisano lokalnie";
+
 }
 
 
@@ -697,15 +795,19 @@ function readMeta(year){
     try{
 
         const raw =
-            localStorage.getItem(metaKey(year));
+            localStorage.getItem(
+                metaKey(year)
+            );
 
         if(!raw){
             return {};
         }
 
-        const m = JSON.parse(raw);
+        const m =
+            JSON.parse(raw);
 
-        return m && typeof m === "object"
+        return m &&
+               typeof m === "object"
             ? m
             : {};
 
@@ -714,6 +816,7 @@ function readMeta(year){
         return {};
 
     }
+
 }
 
 
@@ -723,6 +826,7 @@ function writeMeta(year,m){
         metaKey(year),
         JSON.stringify(m)
     );
+
 }
 
 
@@ -731,7 +835,9 @@ function writeMeta(year,m){
 ========================================================= */
 
 function nowISO(){
+
     return new Date().toISOString();
+
 }
 
 
@@ -739,10 +845,17 @@ function nowISO(){
    ZAPIS POJEDYNCZEGO DNIA
 ========================================================= */
 
-function saveDay(year,date,value){
+function saveDay(
+    year,
+    date,
+    value
+){
 
-    const d = readYear(year);
-    const meta = readMeta(year);
+    const d =
+        readYear(year);
+
+    const meta =
+        readMeta(year);
 
     d[date] = value;
 
@@ -752,10 +865,18 @@ function saveDay(year,date,value){
        z wersją znajdującą się w Supabase.
     */
 
-    meta[date] = nowISO();
+    meta[date] =
+        nowISO();
 
-    writeYear(year,d);
-    writeMeta(year,meta);
+    writeYear(
+        year,
+        d
+    );
+
+    writeMeta(
+        year,
+        meta
+    );
 
     renderSummary();
 
@@ -768,10 +889,16 @@ function saveDay(year,date,value){
    USUNIĘCIE / WYCZYSZCZENIE DNIA
 ========================================================= */
 
-function clearDay(year,date){
+function clearDay(
+    year,
+    date
+){
 
-    const d = readYear(year);
-    const meta = readMeta(year);
+    const d =
+        readYear(year);
+
+    const meta =
+        readMeta(year);
 
     delete d[date];
 
@@ -781,14 +908,23 @@ function clearDay(year,date){
        Dzięki temu nie potrzebujemy tombstone.
     */
 
-    meta[date] = nowISO();
+    meta[date] =
+        nowISO();
 
-    writeYear(year,d);
-    writeMeta(year,meta);
+    writeYear(
+        year,
+        d
+    );
+
+    writeMeta(
+        year,
+        meta
+    );
 
     renderSummary();
 
     scheduleSync();
+
 }
 
 
@@ -798,17 +934,40 @@ function clearDay(year,date){
 
 function normalizeDay(value){
 
-    if(!value || typeof value !== "object"){
-        return {};
+    if(
+        !value ||
+        typeof value !== "object"
+    ){
+
+        return {
+            from:"",
+            to:"",
+            type:"",
+            project:"",
+            note:""
+        };
+
     }
 
     return {
-        from: value.from || "",
-        to: value.to || "",
-        type: value.type || "",
-        project: value.project || "",
-        note: value.note || ""
+
+        from:
+            value.from ?? "",
+
+        to:
+            value.to ?? "",
+
+        type:
+            value.type ?? "",
+
+        project:
+            value.project ?? "",
+
+        note:
+            value.note ?? ""
+
     };
+
 }
 
 
@@ -816,7 +975,10 @@ function normalizeDay(value){
    AUTOMATYCZNE GODZINY DLA URLOPU
 ========================================================= */
 
-function adjustByType(day,type){
+function adjustByType(
+    day,
+    type
+){
 
     if(type === "Urlop"){
 
@@ -837,6 +999,7 @@ function adjustByType(day,type){
     }
 
     return day;
+
 }
 
 
@@ -851,22 +1014,29 @@ function render(){
 
     container.innerHTML = "";
 
-    const d = readYear(currentYear);
+    const d =
+        readYear(currentYear);
+
 
     for(let month=0; month<12; month++){
 
         const monthBox =
             document.createElement("div");
 
-        monthBox.className = "month";
+        monthBox.className =
+            "month";
+
 
         const title =
             document.createElement("div");
 
-        title.className = "monthTitle";
+        title.className =
+            "monthTitle";
 
         title.textContent =
-            MONTHS[month] + " " + currentYear;
+            MONTHS[month] +
+            " " +
+            currentYear;
 
         monthBox.appendChild(title);
 
@@ -874,11 +1044,13 @@ function render(){
         const wrap =
             document.createElement("div");
 
-        wrap.className = "tableWrap";
+        wrap.className =
+            "tableWrap";
 
 
         const table =
             document.createElement("table");
+
 
         table.innerHTML = `
             <thead>
@@ -908,10 +1080,15 @@ function render(){
             ).getDate();
 
 
-        for(let day=1; day<=days; day++){
+        for(
+            let day=1;
+            day<=days;
+            day++
+        ){
 
             const date =
                 `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
 
             const jsDate =
                 new Date(
@@ -920,8 +1097,10 @@ function render(){
                     day
                 );
 
+
             const weekday =
                 jsDate.getDay();
+
 
             const weekdayNames = [
                 "Nd",
@@ -933,8 +1112,11 @@ function render(){
                 "Sb"
             ];
 
+
             const old =
-                normalizeDay(d[date]);
+                normalizeDay(
+                    d[date]
+                );
 
 
             const tr =
@@ -945,7 +1127,11 @@ function render(){
                 weekday === 0 ||
                 weekday === 6
             ){
-                tr.classList.add("weekend");
+
+                tr.classList.add(
+                    "weekend"
+                );
+
             }
 
 
@@ -953,239 +1139,372 @@ function render(){
                 date ===
                 formatDate(new Date())
             ){
-                tr.classList.add("today");
+
+                tr.classList.add(
+                    "today"
+                );
+
             }
 
 
-            if(selectedDays.has(date)){
-                tr.classList.add("selectedRow");
+            if(
+                selectedDays.has(date)
+            ){
+
+                tr.classList.add(
+                    "selectedRow"
+                );
+
+            }
+
+
+            /* Przywrócone tło urlopu */
+            if(old.type === "Urlop"){
+
+                tr.classList.add(
+                    "vacationDay"
+                );
+
             }
 
 
             const check =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
-            check.type = "checkbox";
+            check.type =
+                "checkbox";
+
             check.checked =
                 selectedDays.has(date);
 
-            check.addEventListener("change",()=>{
 
-                if(check.checked){
-                    selectedDays.add(date);
-                }else{
-                    selectedDays.delete(date);
+            check.addEventListener(
+                "change",
+                ()=>{
+
+                    if(check.checked){
+
+                        selectedDays.add(
+                            date
+                        );
+
+                    }else{
+
+                        selectedDays.delete(
+                            date
+                        );
+
+                    }
+
+                    updateSelectedCount();
+
+                    tr.classList.toggle(
+                        "selectedRow",
+                        check.checked
+                    );
+
                 }
-
-                updateSelectedCount();
-
-                tr.classList.toggle(
-                    "selectedRow",
-                    check.checked
-                );
-
-            });
+            );
 
 
             const tdCheck =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdCheck.appendChild(check);
+            tdCheck.appendChild(
+                check
+            );
 
 
             const tdDate =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdDate.className = "date";
-            tdDate.textContent = date;
+            tdDate.className =
+                "date";
+
+            tdDate.textContent =
+                date;
 
 
             const tdDay =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdDay.className = "day";
+            tdDay.className =
+                "day";
+
             tdDay.textContent =
                 weekdayNames[weekday];
 
 
             const from =
-                document.createElement("input");
-
-            from.type = "time";
-            from.value = old.from;
-
-
-            from.addEventListener("change",()=>{
-
-                const dayData =
-                    normalizeDay(
-                        readYear(currentYear)[date]
-                    );
-
-                dayData.from = from.value;
-
-                saveDay(
-                    currentYear,
-                    date,
-                    dayData
+                document.createElement(
+                    "input"
                 );
 
-            });
+            from.type =
+                "time";
+
+            from.value =
+                old.from || "";
+
+
+            from.addEventListener(
+                "change",
+                ()=>{
+
+                    const dayData =
+                        normalizeDay(
+                            readYear(
+                                currentYear
+                            )[date]
+                        );
+
+                    dayData.from =
+                        from.value;
+
+                    saveDay(
+                        currentYear,
+                        date,
+                        dayData
+                    );
+
+                }
+            );
 
 
             const tdFrom =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdFrom.appendChild(from);
+            tdFrom.appendChild(
+                from
+            );
 
 
             const to =
-                document.createElement("input");
-
-            to.type = "time";
-            to.value = old.to;
-
-
-            to.addEventListener("change",()=>{
-
-                const dayData =
-                    normalizeDay(
-                        readYear(currentYear)[date]
-                    );
-
-                dayData.to = to.value;
-
-                saveDay(
-                    currentYear,
-                    date,
-                    dayData
+                document.createElement(
+                    "input"
                 );
 
-            });
+            to.type =
+                "time";
+
+            to.value =
+                old.to || "";
+
+
+            to.addEventListener(
+                "change",
+                ()=>{
+
+                    const dayData =
+                        normalizeDay(
+                            readYear(
+                                currentYear
+                            )[date]
+                        );
+
+                    dayData.to =
+                        to.value;
+
+                    saveDay(
+                        currentYear,
+                        date,
+                        dayData
+                    );
+
+                }
+            );
 
 
             const tdTo =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdTo.appendChild(to);
+            tdTo.appendChild(
+                to
+            );
 
 
             const type =
-                document.createElement("select");
+                document.createElement(
+                    "select"
+                );
 
 
             TYPES.forEach(t=>{
 
                 const option =
-                    document.createElement("option");
-
-                option.value = t;
-                option.textContent = t;
-
-                if(t === old.type){
-                    option.selected = true;
-                }
-
-                type.appendChild(option);
-
-            });
-
-
-            type.addEventListener("change",()=>{
-
-                const dayData =
-                    normalizeDay(
-                        readYear(currentYear)[date]
+                    document.createElement(
+                        "option"
                     );
 
-                dayData.type = type.value;
+                option.value =
+                    t;
 
-                adjustByType(
-                    dayData,
-                    type.value
+                option.textContent =
+                    t;
+
+                if(t === old.type){
+
+                    option.selected =
+                        true;
+
+                }
+
+                type.appendChild(
+                    option
                 );
-
-                saveDay(
-                    currentYear,
-                    date,
-                    dayData
-                );
-
-                render();
 
             });
+
+
+            type.addEventListener(
+                "change",
+                ()=>{
+
+                    const dayData =
+                        normalizeDay(
+                            readYear(
+                                currentYear
+                            )[date]
+                        );
+
+                    dayData.type =
+                        type.value;
+
+                    adjustByType(
+                        dayData,
+                        type.value
+                    );
+
+                    saveDay(
+                        currentYear,
+                        date,
+                        dayData
+                    );
+
+                    render();
+
+                }
+            );
 
 
             const tdType =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdType.appendChild(type);
+            tdType.appendChild(
+                type
+            );
 
 
             const project =
-                document.createElement("input");
-
-            project.className = "project";
-            project.type = "text";
-            project.value = old.project;
-
-
-            project.addEventListener("change",()=>{
-
-                const dayData =
-                    normalizeDay(
-                        readYear(currentYear)[date]
-                    );
-
-                dayData.project =
-                    project.value;
-
-                saveDay(
-                    currentYear,
-                    date,
-                    dayData
+                document.createElement(
+                    "input"
                 );
 
-            });
+            project.className =
+                "project";
+
+            project.type =
+                "text";
+
+            project.value =
+                old.project || "";
+
+
+            project.addEventListener(
+                "change",
+                ()=>{
+
+                    const dayData =
+                        normalizeDay(
+                            readYear(
+                                currentYear
+                            )[date]
+                        );
+
+                    dayData.project =
+                        project.value;
+
+                    saveDay(
+                        currentYear,
+                        date,
+                        dayData
+                    );
+
+                }
+            );
 
 
             const tdProject =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdProject.appendChild(project);
+            tdProject.appendChild(
+                project
+            );
 
 
             const note =
-                document.createElement("input");
-
-            note.className = "note";
-            note.type = "text";
-            note.value = old.note;
-
-
-            note.addEventListener("change",()=>{
-
-                const dayData =
-                    normalizeDay(
-                        readYear(currentYear)[date]
-                    );
-
-                dayData.note =
-                    note.value;
-
-                saveDay(
-                    currentYear,
-                    date,
-                    dayData
+                document.createElement(
+                    "input"
                 );
 
-            });
+            note.className =
+                "note";
+
+            note.type =
+                "text";
+
+            note.value =
+                old.note || "";
+
+
+            note.addEventListener(
+                "change",
+                ()=>{
+
+                    const dayData =
+                        normalizeDay(
+                            readYear(
+                                currentYear
+                            )[date]
+                        );
+
+                    dayData.note =
+                        note.value;
+
+                    saveDay(
+                        currentYear,
+                        date,
+                        dayData
+                    );
+
+                }
+            );
 
 
             const tdNote =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
-            tdNote.appendChild(note);
+            tdNote.appendChild(
+                note
+            );
 
 
             tr.appendChild(tdCheck);
@@ -1203,14 +1522,18 @@ function render(){
 
 
         table.appendChild(tbody);
+
         wrap.appendChild(table);
+
         monthBox.appendChild(wrap);
+
         container.appendChild(monthBox);
 
     }
 
 
     renderSummary();
+
     updateSelectedCount();
 
 }
@@ -1224,9 +1547,13 @@ function formatDate(date){
 
     return date.getFullYear()
         + "-"
-        + String(date.getMonth()+1).padStart(2,"0")
+        + String(
+            date.getMonth()+1
+        ).padStart(2,"0")
         + "-"
-        + String(date.getDate()).padStart(2,"0");
+        + String(
+            date.getDate()
+        ).padStart(2,"0");
 
 }
 
@@ -1260,7 +1587,9 @@ function timeToMinutes(value){
 function minutesToTime(minutes){
 
     const h =
-        Math.floor(minutes / 60);
+        Math.floor(
+            minutes / 60
+        );
 
     const m =
         minutes % 60;
@@ -1279,29 +1608,42 @@ function renderSummary(){
     const d =
         readYear(currentYear);
 
+
     const sums = {
+
         Praca:0,
         Delegacja:0,
         Urlop:0,
         L4:0,
         Święto:0,
         Wolne:0
+
     };
+
 
     Object.values(d).forEach(day=>{
 
-        if(!day || !day.type){
+        if(
+            !day ||
+            !day.type
+        ){
             return;
         }
 
+
         let minutes = 0;
 
-        if(day.from && day.to){
+
+        if(
+            day.from &&
+            day.to
+        ){
 
             minutes =
                 timeToMinutes(day.to)
                 -
                 timeToMinutes(day.from);
+
 
             if(minutes < 0){
                 minutes = 0;
@@ -1309,13 +1651,17 @@ function renderSummary(){
 
         }
 
+
         if(
             Object.prototype.hasOwnProperty.call(
                 sums,
                 day.type
             )
         ){
-            sums[day.type] += minutes;
+
+            sums[day.type] +=
+                minutes;
+
         }
 
     });
@@ -1323,31 +1669,53 @@ function renderSummary(){
 
     document.getElementById("sumWork")
         .textContent =
-        minutesToTime(sums.Praca);
+        minutesToTime(
+            sums.Praca
+        );
+
 
     document.getElementById("sumTrip")
         .textContent =
-        minutesToTime(sums.Delegacja);
+        minutesToTime(
+            sums.Delegacja
+        );
+
 
     document.getElementById("sumVacation")
         .textContent =
-        minutesToTime(sums.Urlop);
+        minutesToTime(
+            sums.Urlop
+        );
+
 
     document.getElementById("sumSick")
         .textContent =
-        minutesToTime(sums.L4);
+        minutesToTime(
+            sums.L4
+        );
+
 
     document.getElementById("sumHoliday")
         .textContent =
-        minutesToTime(sums.Święto);
+        minutesToTime(
+            sums.Święto
+        );
+
 
     document.getElementById("sumFree")
         .textContent =
-        minutesToTime(sums.Wolne);
+        minutesToTime(
+            sums.Wolne
+        );
+
 
     const total =
         Object.values(sums)
-            .reduce((a,b)=>a+b,0);
+            .reduce(
+                (a,b)=>a+b,
+                0
+            );
+
 
     document.getElementById("sumTotal")
         .textContent =
@@ -1365,25 +1733,35 @@ function goToday(){
     const today =
         new Date();
 
+
     const year =
         today.getFullYear();
+
 
     if(
         year >= FIRST_YEAR &&
         year <= LAST_YEAR
     ){
 
-        currentYear = year;
-        ys.value = year;
+        currentYear =
+            year;
+
+        ys.value =
+            year;
 
     }
 
+
     render();
+
 
     setTimeout(()=>{
 
         const el =
-            document.querySelector(".today");
+            document.querySelector(
+                ".today"
+            );
+
 
         if(el){
 
@@ -1405,8 +1783,9 @@ function goToday(){
 
 function updateSelectedCount(){
 
-    document.getElementById("selectedCount")
-        .textContent =
+    document.getElementById(
+        "selectedCount"
+    ).textContent =
         selectedDays.size;
 
 }
@@ -1414,8 +1793,10 @@ function updateSelectedCount(){
 
 function showBulkPanel(){
 
-    document.getElementById("bulkPanel")
-        .style.display = "flex";
+    document.getElementById(
+        "bulkPanel"
+    ).style.display =
+        "flex";
 
     updateSelectedCount();
 
@@ -1424,15 +1805,19 @@ function showBulkPanel(){
 
 function hideBulkPanel(){
 
-    document.getElementById("bulkPanel")
-        .style.display = "none";
+    document.getElementById(
+        "bulkPanel"
+    ).style.display =
+        "none";
 
 }
 
 
 function applyBulk(){
 
-    if(selectedDays.size === 0){
+    if(
+        selectedDays.size === 0
+    ){
 
         showMessage(
             "Nie zaznaczono żadnego dnia."
@@ -1444,23 +1829,36 @@ function applyBulk(){
 
 
     const from =
-        document.getElementById("bulkFrom").value;
+        document.getElementById(
+            "bulkFrom"
+        ).value;
+
 
     const to =
-        document.getElementById("bulkTo").value;
+        document.getElementById(
+            "bulkTo"
+        ).value;
+
 
     const type =
-        document.getElementById("bulkType").value;
+        document.getElementById(
+            "bulkType"
+        ).value;
+
 
     const project =
-        document.getElementById("bulkProject").value;
+        document.getElementById(
+            "bulkProject"
+        ).value;
 
 
     const d =
         readYear(currentYear);
 
+
     const meta =
         readMeta(currentYear);
+
 
     const timestamp =
         nowISO();
@@ -1469,25 +1867,53 @@ function applyBulk(){
     selectedDays.forEach(date=>{
 
         const old =
-            normalizeDay(d[date]);
+            normalizeDay(
+                d[date]
+            );
 
-        old.from = from;
-        old.to = to;
-        old.type = type;
-        old.project = project;
 
-        adjustByType(old,type);
+        old.from =
+            from;
 
-        d[date] = old;
-        meta[date] = timestamp;
+        old.to =
+            to;
+
+        old.type =
+            type;
+
+        old.project =
+            project;
+
+
+        adjustByType(
+            old,
+            type
+        );
+
+
+        d[date] =
+            old;
+
+        meta[date] =
+            timestamp;
 
     });
 
 
-    writeYear(currentYear,d);
-    writeMeta(currentYear,meta);
+    writeYear(
+        currentYear,
+        d
+    );
+
+
+    writeMeta(
+        currentYear,
+        meta
+    );
+
 
     selectedDays.clear();
+
 
     render();
 
@@ -1504,7 +1930,9 @@ function applyBulk(){
 
 function clearSelected(){
 
-    if(selectedDays.size === 0){
+    if(
+        selectedDays.size === 0
+    ){
 
         showMessage(
             "Nie zaznaczono żadnego dnia."
@@ -1520,15 +1948,19 @@ function clearSelected(){
             "Czy na pewno wyczyścić zaznaczone dni?"
         )
     ){
+
         return;
+
     }
 
 
     const d =
         readYear(currentYear);
 
+
     const meta =
         readMeta(currentYear);
+
 
     const timestamp =
         nowISO();
@@ -1544,10 +1976,20 @@ function clearSelected(){
     });
 
 
-    writeYear(currentYear,d);
-    writeMeta(currentYear,meta);
+    writeYear(
+        currentYear,
+        d
+    );
+
+
+    writeMeta(
+        currentYear,
+        meta
+    );
+
 
     selectedDays.clear();
+
 
     render();
 
@@ -1563,11 +2005,18 @@ function clearSelected(){
 function backupData(){
 
     const backup = {
+
         version:2,
-        createdAt:new Date().toISOString(),
+
+        createdAt:
+            new Date().toISOString(),
+
         years:{},
+
         meta:{},
+
         settings:{
+
             lastFrom:
                 localStorage.getItem(
                     "worktime_last_from"
@@ -1582,7 +2031,9 @@ function backupData(){
                 localStorage.getItem(
                     "worktime_last_type"
                 ) || "Praca"
+
         }
+
     };
 
 
@@ -1619,7 +2070,10 @@ function backupData(){
     const a =
         document.createElement("a");
 
-    a.href = url;
+
+    a.href =
+        url;
+
 
     a.download =
         "ewidencja_czasu_pracy_backup_"
@@ -1646,6 +2100,7 @@ function restoreData(event){
 
     const file =
         event.target.files[0];
+
 
     if(!file){
         return;
@@ -1683,7 +2138,9 @@ function restoreData(event){
                     "Przywrócić dane z backupu? Aktualne lokalne dane zostaną zastąpione."
                 )
             ){
+
                 return;
+
             }
 
 
@@ -1692,17 +2149,12 @@ function restoreData(event){
                 const d =
                     backup.years[year] || {};
 
+
                 localStorage.setItem(
                     dataKey(year),
                     JSON.stringify(d)
                 );
 
-
-                /*
-                   Jeżeli backup nie ma timestampów,
-                   nadajemy wszystkim przywróconym
-                   rekordom aktualny czas.
-                */
 
                 const oldMeta =
                     backup.meta &&
@@ -1710,7 +2162,9 @@ function restoreData(event){
                         ? backup.meta[year]
                         : {};
 
+
                 const meta = {};
+
 
                 Object.keys(d).forEach(date=>{
 
@@ -1734,28 +2188,36 @@ function restoreData(event){
                 if(
                     backup.settings.lastFrom
                 ){
+
                     localStorage.setItem(
                         "worktime_last_from",
                         backup.settings.lastFrom
                     );
+
                 }
+
 
                 if(
                     backup.settings.lastTo
                 ){
+
                     localStorage.setItem(
                         "worktime_last_to",
                         backup.settings.lastTo
                     );
+
                 }
+
 
                 if(
                     backup.settings.lastType
                 ){
+
                     localStorage.setItem(
                         "worktime_last_type",
                         backup.settings.lastType
                     );
+
                 }
 
             }
@@ -1763,9 +2225,11 @@ function restoreData(event){
 
             render();
 
+
             showMessage(
                 "Backup przywrócony lokalnie."
             );
+
 
             scheduleSync();
 
@@ -1773,6 +2237,7 @@ function restoreData(event){
         }catch(e){
 
             console.error(e);
+
 
             alert(
                 "Nie udało się przywrócić backupu:\n"
@@ -1807,6 +2272,7 @@ async function exportExcel(){
         const monthName =
             MONTHS[month];
 
+
         const sheet =
             workbook.addWorksheet(
                 monthName
@@ -1814,41 +2280,49 @@ async function exportExcel(){
 
 
         sheet.columns = [
+
             {
                 header:"Data",
                 key:"date",
                 width:14
             },
+
             {
                 header:"Dzień",
                 key:"day",
                 width:10
             },
+
             {
                 header:"Od",
                 key:"from",
                 width:10
             },
+
             {
                 header:"Do",
                 key:"to",
                 width:10
             },
+
             {
                 header:"Rodzaj",
                 key:"type",
                 width:15
             },
+
             {
                 header:"Projekt",
                 key:"project",
                 width:25
             },
+
             {
                 header:"Uwagi",
                 key:"note",
                 width:40
             }
+
         ];
 
 
@@ -1864,10 +2338,15 @@ async function exportExcel(){
             ).getDate();
 
 
-        for(let day=1; day<=days; day++){
+        for(
+            let day=1;
+            day<=days;
+            day++
+        ){
 
             const date =
                 `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
 
             const jsDate =
                 new Date(
@@ -1889,17 +2368,35 @@ async function exportExcel(){
 
 
             const item =
-                normalizeDay(d[date]);
+                normalizeDay(
+                    d[date]
+                );
 
 
             sheet.addRow({
+
                 date:date,
-                day:weekdays[jsDate.getDay()],
-                from:item.from,
-                to:item.to,
-                type:item.type,
-                project:item.project,
-                note:item.note
+
+                day:
+                    weekdays[
+                        jsDate.getDay()
+                    ],
+
+                from:
+                    item.from || "",
+
+                to:
+                    item.to || "",
+
+                type:
+                    item.type || "",
+
+                project:
+                    item.project || "",
+
+                note:
+                    item.note || ""
+
             });
 
         }
@@ -1936,29 +2433,42 @@ async function exportExcel(){
 
 
     const sums = {
+
         Praca:0,
         Delegacja:0,
         Urlop:0,
         L4:0,
         Święto:0,
         Wolne:0
+
     };
 
 
     Object.values(d).forEach(day=>{
 
-        if(!day || !day.type){
+        if(
+            !day ||
+            !day.type
+        ){
+
             return;
+
         }
+
 
         let min = 0;
 
-        if(day.from && day.to){
+
+        if(
+            day.from &&
+            day.to
+        ){
 
             min =
                 timeToMinutes(day.to)
                 -
                 timeToMinutes(day.from);
+
 
             if(min < 0){
                 min = 0;
@@ -1966,13 +2476,17 @@ async function exportExcel(){
 
         }
 
+
         if(
             Object.prototype.hasOwnProperty.call(
                 sums,
                 day.type
             )
         ){
-            sums[day.type] += min;
+
+            sums[day.type] +=
+                min;
+
         }
 
     });
@@ -1982,7 +2496,9 @@ async function exportExcel(){
 
         summary.addRow([
             type,
-            minutesToTime(sums[type])
+            minutesToTime(
+                sums[type]
+            )
         ]);
 
     });
@@ -1991,6 +2507,7 @@ async function exportExcel(){
     summary.getRow(1).font = {
         bold:true
     };
+
 
     summary.getRow(3).font = {
         bold:true
@@ -2018,7 +2535,10 @@ async function exportExcel(){
     const a =
         document.createElement("a");
 
-    a.href = url;
+
+    a.href =
+        url;
+
 
     a.download =
         "ewidencja_czasu_pracy_"
@@ -2027,7 +2547,9 @@ async function exportExcel(){
         +
         ".xlsx";
 
+
     a.click();
+
 
     URL.revokeObjectURL(url);
 
@@ -2045,13 +2567,17 @@ async function login(){
             "authEmail"
         ).value.trim();
 
+
     const password =
         document.getElementById(
             "authPassword"
         ).value;
 
 
-    if(!email || !password){
+    if(
+        !email ||
+        !password
+    ){
 
         setAuthMessage(
             "Podaj e-mail i hasło.",
@@ -2068,16 +2594,22 @@ async function login(){
     );
 
 
-    const {data,error} =
+    const {
+        data,
+        error
+    } =
         await supabaseClient.auth.signInWithPassword({
+
             email,
             password
+
         });
 
 
     if(error){
 
         console.error(error);
+
 
         setAuthMessage(
             error.message,
@@ -2092,6 +2624,7 @@ async function login(){
     currentUser =
         data.user;
 
+
     await startApplication();
 
 }
@@ -2104,13 +2637,17 @@ async function registerUser(){
             "authEmail"
         ).value.trim();
 
+
     const password =
         document.getElementById(
             "authPassword"
         ).value;
 
 
-    if(!email || !password){
+    if(
+        !email ||
+        !password
+    ){
 
         setAuthMessage(
             "Podaj e-mail i hasło.",
@@ -2122,7 +2659,9 @@ async function registerUser(){
     }
 
 
-    if(password.length < 6){
+    if(
+        password.length < 6
+    ){
 
         setAuthMessage(
             "Hasło musi mieć co najmniej 6 znaków.",
@@ -2139,16 +2678,22 @@ async function registerUser(){
     );
 
 
-    const {data,error} =
+    const {
+        data,
+        error
+    } =
         await supabaseClient.auth.signUp({
+
             email,
             password
+
         });
 
 
     if(error){
 
         console.error(error);
+
 
         setAuthMessage(
             error.message,
@@ -2184,11 +2729,15 @@ async function logout(){
 
     currentUser = null;
 
+
     document.getElementById("app")
-        .style.display = "none";
+        .style.display =
+        "none";
+
 
     document.getElementById("authScreen")
-        .style.display = "flex";
+        .style.display =
+        "flex";
 
 }
 
@@ -2198,7 +2747,10 @@ async function logout(){
 ========================================================= */
 
 supabaseClient.auth.onAuthStateChange(
-    async(event,session)=>{
+    async(
+        event,
+        session
+    )=>{
 
         if(
             session &&
@@ -2227,19 +2779,76 @@ async function startApplication(){
     }
 
 
-    document.getElementById("authScreen")
-        .style.display = "none";
+    document.getElementById(
+        "authScreen"
+    ).style.display =
+        "none";
 
-    document.getElementById("app")
-        .style.display = "block";
+
+    document.getElementById(
+        "app"
+    ).style.display =
+        "block";
 
 
-    document.getElementById("userInfo")
-        .textContent =
+    document.getElementById(
+        "userInfo"
+    ).textContent =
         currentUser.email || "";
 
 
+    /*
+       Zawsze rozpoczynamy na dzisiejszym roku.
+    */
+
+    const today =
+        new Date();
+
+
+    const todayYear =
+        today.getFullYear();
+
+
+    if(
+        todayYear >= FIRST_YEAR &&
+        todayYear <= LAST_YEAR
+    ){
+
+        currentYear =
+            todayYear;
+
+        ys.value =
+            todayYear;
+
+    }
+
+
     render();
+
+
+    /*
+       Po wyrenderowaniu automatycznie
+       przewijamy do dzisiejszego dnia.
+    */
+
+    setTimeout(()=>{
+
+        const el =
+            document.querySelector(
+                ".today"
+            );
+
+
+        if(el){
+
+            el.scrollIntoView({
+                behavior:"auto",
+                block:"center"
+            });
+
+        }
+
+    },100);
 
 
     setSyncStatus(
@@ -2248,12 +2857,6 @@ async function startApplication(){
 
 
     await syncAll(false);
-
-
-    /*
-       Pierwsza synchronizacja już wykonana.
-       Potem robimy ją cyklicznie.
-    */
 
 }
 
@@ -2269,7 +2872,10 @@ async function fetchRemote(){
     }
 
 
-    const {data,error} =
+    const {
+        data,
+        error
+    } =
         await supabaseClient
             .from("worktime_entries")
             .select(
@@ -2314,13 +2920,18 @@ async function pushDay(
     }
 
 
-    const {data,error} =
+    const {
+        data,
+        error
+    } =
         await supabaseClient.rpc(
             "sync_worktime_entry",
             {
                 p_entry_date:date,
-                p_data:localData || {},
-                p_modified_at:modifiedAt
+                p_data:
+                    localData || {},
+                p_modified_at:
+                    modifiedAt
             }
         );
 
@@ -2346,19 +2957,21 @@ async function pushDay(
    SYNCHRONIZACJA WSZYSTKICH DANYCH
 ========================================================= */
 
-async function syncAll(manual=false){
+async function syncAll(
+    manual=false
+){
 
     if(
         !currentUser ||
         syncRunning
     ){
+
         return;
+
     }
 
 
-    if(
-        !navigator.onLine
-    ){
+    if(!navigator.onLine){
 
         setSyncStatus(
             "⚫ Offline"
@@ -2392,7 +3005,9 @@ async function syncAll(manual=false){
            YYYY-MM-DD -> rekord
         */
 
-        const remoteMap = new Map();
+        const remoteMap =
+            new Map();
+
 
         remote.forEach(row=>{
 
@@ -2409,10 +3024,13 @@ async function syncAll(manual=false){
            które mamy lokalnie.
         */
 
-        for(const year of YEARS){
+        for(
+            const year of YEARS
+        ){
 
             const local =
                 readYear(year);
+
 
             const meta =
                 readMeta(year);
@@ -2433,10 +3051,13 @@ async function syncAll(manual=false){
                Obsługujemy lokalne rekordy.
             */
 
-            for(const date of localDates){
+            for(
+                const date of localDates
+            ){
 
                 const localValue =
                     local[date] || {};
+
 
                 let localModified =
                     meta[date];
@@ -2452,7 +3073,9 @@ async function syncAll(manual=false){
 
                 if(!localModified){
 
-                    if(remoteMap.has(date)){
+                    if(
+                        remoteMap.has(date)
+                    ){
 
                         /*
                            Serwer ma dane,
@@ -2469,8 +3092,10 @@ async function syncAll(manual=false){
                         localModified =
                             nowISO();
 
+
                         meta[date] =
                             localModified;
+
 
                         writeMeta(
                             year,
@@ -2562,6 +3187,7 @@ async function syncAll(manual=false){
                         local
                     );
 
+
                     writeMeta(
                         year,
                         meta
@@ -2579,10 +3205,13 @@ async function syncAll(manual=false){
            w Supabase, których lokalnie nie ma.
         */
 
-        for(const row of remote){
+        for(
+            const row of remote
+        ){
 
             const date =
                 row.entry_date;
+
 
             const year =
                 Number(
@@ -2594,12 +3223,15 @@ async function syncAll(manual=false){
                 year < FIRST_YEAR ||
                 year > LAST_YEAR
             ){
+
                 continue;
+
             }
 
 
             const local =
                 readYear(year);
+
 
             const meta =
                 readMeta(year);
@@ -2627,7 +3259,9 @@ async function syncAll(manual=false){
 
                     if(
                         row.data &&
-                        Object.keys(row.data).length
+                        Object.keys(
+                            row.data
+                        ).length
                     ){
 
                         local[date] =
@@ -2646,6 +3280,7 @@ async function syncAll(manual=false){
                     year,
                     local
                 );
+
 
                 writeMeta(
                     year,
@@ -2666,8 +3301,9 @@ async function syncAll(manual=false){
         );
 
 
-        document.getElementById("saved")
-            .textContent =
+        document.getElementById(
+            "saved"
+        ).textContent =
             "Zapisano i zsynchronizowano";
 
 
@@ -2751,11 +3387,13 @@ setInterval(
 window.addEventListener(
     "online",
     ()=>{
+
         setSyncStatus(
             "🔄 Internet wrócił..."
         );
 
         syncAll(true);
+
     }
 );
 
@@ -2767,12 +3405,16 @@ window.addEventListener(
 document.addEventListener(
     "visibilitychange",
     ()=>{
+
         if(
             document.visibilityState ===
             "visible"
         ){
+
             syncAll(false);
+
         }
+
     }
 );
 
@@ -2785,7 +3427,8 @@ function setSyncStatus(text){
 
     document.getElementById(
         "syncStatus"
-    ).textContent = text;
+    ).textContent =
+        text;
 
 }
 
@@ -2797,13 +3440,23 @@ function showMessage(text){
             "statusMessage"
         );
 
-    el.textContent = text;
 
-    el.classList.add("show");
+    el.textContent =
+        text;
+
+
+    el.classList.add(
+        "show"
+    );
+
 
     setTimeout(
         ()=>{
-            el.classList.remove("show");
+
+            el.classList.remove(
+                "show"
+            );
+
         },
         2500
     );
@@ -2821,7 +3474,10 @@ function setAuthMessage(
             "authMessage"
         );
 
-    el.textContent = text;
+
+    el.textContent =
+        text;
+
 
     el.style.color =
         error
