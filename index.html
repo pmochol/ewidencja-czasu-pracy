@@ -30,10 +30,6 @@ body {
     color: #222;
 }
 
-/* =========================================================
-   GÓRNA BELKA
-   ========================================================= */
-
 .topbar {
     position: fixed;
     top: 0;
@@ -117,10 +113,6 @@ body {
     min-width: 20px;
 }
 
-/* =========================================================
-   STATUS SYNCHRONIZACJI
-   ========================================================= */
-
 #syncStatus {
     white-space: nowrap;
 
@@ -144,20 +136,12 @@ body {
     color: #ef9a9a !important;
 }
 
-/* =========================================================
-   INFORMACJA O ZAZNACZENIU
-   ========================================================= */
-
 #selectedInfo {
     white-space: nowrap;
     font-size: 12px;
     color: #ddd;
     flex: 0 0 auto;
 }
-
-/* =========================================================
-   PRZYCISK WIĘCEJ
-   ========================================================= */
 
 .moreMenu {
     position: relative;
@@ -221,10 +205,6 @@ body {
     background: #444;
 }
 
-/* =========================================================
-   GŁÓWNA ZAWARTOŚĆ
-   ========================================================= */
-
 #application {
     padding-top: var(--topbar-height);
 }
@@ -232,10 +212,6 @@ body {
 #app {
     width: 100%;
 }
-
-/* =========================================================
-   PODSUMOWANIE ROCZNE
-   ========================================================= */
 
 .yearSummary {
     display: flex;
@@ -308,10 +284,6 @@ body {
     color: #555;
 }
 
-/* =========================================================
-   MIESIĄC
-   ========================================================= */
-
 .monthContainer {
     margin: 12px 8px 20px;
 
@@ -334,10 +306,6 @@ body {
 
     border-radius: 5px 5px 0 0;
 }
-
-/* =========================================================
-   PODSUMOWANIE MIESIĘCZNE
-   ========================================================= */
 
 .monthSummary {
     position: sticky;
@@ -404,10 +372,6 @@ body {
 
     font-weight: bold;
 }
-
-/* =========================================================
-   TABELA
-   ========================================================= */
 
 .tableWrapper {
     width: 100%;
@@ -487,10 +451,6 @@ td:nth-child(8) {
     width: auto;
 }
 
-/* =========================================================
-   INPUTY
-   ========================================================= */
-
 input[type="time"],
 input[type="text"],
 select {
@@ -510,10 +470,6 @@ input[type="checkbox"] {
     height: 17px;
 }
 
-/* =========================================================
-   DZISIAJ
-   ========================================================= */
-
 .today {
     outline: 3px solid #2196f3;
     outline-offset: -3px;
@@ -522,10 +478,6 @@ input[type="checkbox"] {
 .today td {
     background: #eaf4ff;
 }
-
-/* =========================================================
-   URLOP
-   ========================================================= */
 
 .vacationDay td {
     background: #fff3cd !important;
@@ -538,10 +490,6 @@ input[type="checkbox"] {
 .selectedRow.vacationDay td {
     background: #fff3cd !important;
 }
-
-/* =========================================================
-   LOGOWANIE
-   ========================================================= */
 
 #loginScreen {
     position: fixed;
@@ -619,10 +567,6 @@ input[type="checkbox"] {
     font-size: 13px;
 }
 
-/* =========================================================
-   MODAL
-   ========================================================= */
-
 .modal {
     position: fixed;
     inset: 0;
@@ -676,10 +620,6 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
-/* =========================================================
-   PRZYCISKI
-   ========================================================= */
-
 .danger {
     background: #b71c1c !important;
 }
@@ -687,10 +627,6 @@ input[type="checkbox"] {
 .success {
     background: #2e7d32 !important;
 }
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
 
 @media (max-width: 700px) {
 
@@ -885,10 +821,6 @@ input[type="checkbox"] {
 
 <body>
 
-<!-- =========================================================
-     LOGIN
-     ========================================================= -->
-
 <div id="loginScreen">
 
     <div class="loginBox">
@@ -922,11 +854,6 @@ input[type="checkbox"] {
     </div>
 
 </div>
-
-
-<!-- =========================================================
-     APLIKACJA
-     ========================================================= -->
 
 <div id="application">
 
@@ -964,8 +891,6 @@ input[type="checkbox"] {
         >
             🔄 Synchronizuj
         </button>
-
-        <!-- DESKTOP -->
 
         <button
             type="button"
@@ -1017,8 +942,6 @@ input[type="checkbox"] {
             🚪 Wyloguj
         </button>
 
-        <!-- MOBILE -->
-
         <div class="moreMenu">
 
             <button
@@ -1032,11 +955,6 @@ input[type="checkbox"] {
         </div>
 
     </div>
-
-
-    <!-- =====================================================
-         MENU WIĘCEJ
-         ===================================================== -->
 
     <div
         id="moreDropdown"
@@ -1087,11 +1005,6 @@ input[type="checkbox"] {
         </button>
 
     </div>
-
-
-    <!-- =====================================================
-         PODSUMOWANIE ROCZNE
-         ===================================================== -->
 
     <div
         class="yearSummary"
@@ -1202,15 +1115,9 @@ input[type="checkbox"] {
 
     </div>
 
-
     <div id="app"></div>
 
 </div>
-
-
-<!-- =========================================================
-     MODAL
-     ========================================================= -->
 
 <div
     class="modal"
@@ -1302,7 +1209,6 @@ input[type="checkbox"] {
 
 </div>
 
-
 <script>
 
 /* =========================================================
@@ -1375,7 +1281,7 @@ let syncTimer = null;
 
 
 /* =========================================================
-   BELKA - DYNAMICZNA WYSOKOŚĆ
+   BELKA
    ========================================================= */
 
 function updateTopLayout() {
@@ -2285,8 +2191,6 @@ function render() {
             }
 
 
-            /* CHECKBOX */
-
             const tdCheck =
                 document.createElement(
                     "td"
@@ -2350,8 +2254,6 @@ function render() {
             );
 
 
-            /* DATA */
-
             const tdDate =
                 document.createElement(
                     "td"
@@ -2367,8 +2269,6 @@ function render() {
                 tdDate
             );
 
-
-            /* DZIEŃ */
 
             const tdDay =
                 document.createElement(
@@ -2387,8 +2287,6 @@ function render() {
                 tdDay
             );
 
-
-            /* OD */
 
             const tdFrom =
                 document.createElement(
@@ -2415,8 +2313,6 @@ function render() {
             );
 
 
-            /* DO */
-
             const tdTo =
                 document.createElement(
                     "td"
@@ -2441,8 +2337,6 @@ function render() {
                 tdTo
             );
 
-
-            /* RODZAJ */
 
             const tdType =
                 document.createElement(
@@ -2505,8 +2399,6 @@ function render() {
             );
 
 
-            /* PROJEKT */
-
             const tdProject =
                 document.createElement(
                     "td"
@@ -2535,8 +2427,6 @@ function render() {
             );
 
 
-            /* UWAGI */
-
             const tdNote =
                 document.createElement(
                     "td"
@@ -2564,8 +2454,6 @@ function render() {
                 tdNote
             );
 
-
-            /* ZAPIS */
 
             function saveRow() {
 
@@ -2687,7 +2575,7 @@ function render() {
 
 
 /* =========================================================
-   AKTUALIZACJA PODSUMOWAŃ MIESIĘCZNYCH
+   AKTUALIZACJA PODSUMOWAŃ
    ========================================================= */
 
 function renderMonthlySummaryOnly() {
@@ -3406,7 +3294,7 @@ function markLocalChange(
 
 
 /* =========================================================
-   STATUS SYNCHRONIZACJI
+   STATUS
    ========================================================= */
 
 function setSyncPending() {
@@ -3502,7 +3390,7 @@ function setSyncError() {
 
 
 /* =========================================================
-   SYNC
+   AUTOMATYCZNA SYNCHRONIZACJA
    ========================================================= */
 
 function scheduleSync() {
@@ -3523,6 +3411,10 @@ function scheduleSync() {
 }
 
 
+/* =========================================================
+   WYSYŁANIE JEDNEGO DNIA
+   ========================================================= */
+
 async function pushDay(
     year,
     key
@@ -3535,7 +3427,10 @@ async function pushDay(
         userResult.data.user;
 
     if (!user) {
-        return null;
+
+        throw new Error(
+            "Brak zalogowanego użytkownika."
+        );
     }
 
 
@@ -3551,9 +3446,30 @@ async function pushDay(
         loadMeta(year);
 
 
-    const localModified =
-        meta[key] ||
-        Date.now();
+    /*
+     * Jeżeli wpis nie ma timestampu,
+     * tworzymy go i zapisujemy lokalnie.
+     */
+
+    let localModified =
+        Number(
+            meta[key] || 0
+        );
+
+
+    if (!localModified) {
+
+        localModified =
+            Date.now();
+
+        meta[key] =
+            localModified;
+
+        saveMeta(
+            year,
+            meta
+        );
+    }
 
 
     const payload = {
@@ -3589,7 +3505,16 @@ async function pushDay(
     };
 
 
-    const { data: result, error } =
+    console.log(
+        "Wysyłanie do Supabase:",
+        payload
+    );
+
+
+    const {
+        data: result,
+        error
+    } =
         await supabaseClient.rpc(
             "sync_worktime_entry",
             payload
@@ -3599,7 +3524,7 @@ async function pushDay(
     if (error) {
 
         console.error(
-            "Błąd synchronizacji:",
+            "Błąd RPC sync_worktime_entry:",
             error
         );
 
@@ -3607,9 +3532,19 @@ async function pushDay(
     }
 
 
+    console.log(
+        "RPC zakończone:",
+        result
+    );
+
+
     return result;
 }
 
+
+/* =========================================================
+   GŁÓWNA SYNCHRONIZACJA
+   ========================================================= */
 
 async function syncAll(
     showMessage = true
@@ -3630,8 +3565,12 @@ async function syncAll(
         const user =
             userResult.data.user;
 
+
         if (!user) {
-            return;
+
+            throw new Error(
+                "Brak zalogowanego użytkownika."
+            );
         }
 
 
@@ -3646,7 +3585,7 @@ async function syncAll(
 
         /*
          * =====================================================
-         * PRZECHODZIMY PO WSZYSTKICH LATACH
+         * PRZECHODZIMY PRZEZ WSZYSTKIE LATA
          * =====================================================
          */
 
@@ -3656,15 +3595,16 @@ async function syncAll(
             year++
         ) {
 
+
             /*
              * -------------------------------------------------
-             * POBIERZ AKTUALNE DANE Z SUPABASE
+             * POBIERZ AKTUALNY STAN Z SUPABASE
              * -------------------------------------------------
              */
 
             const {
                 data: remoteRows,
-                error
+                error: remoteError
             } =
                 await supabaseClient
                     .from("worktime_entries")
@@ -3679,14 +3619,14 @@ async function syncAll(
                     );
 
 
-            if (error) {
+            if (remoteError) {
 
                 console.error(
                     `Błąd pobierania roku ${year}:`,
-                    error
+                    remoteError
                 );
 
-                throw error;
+                throw remoteError;
             }
 
 
@@ -3696,12 +3636,6 @@ async function syncAll(
             const localMeta =
                 loadMeta(year);
 
-
-            /*
-             * -------------------------------------------------
-             * MAPA DANYCH Z SUPABASE
-             * -------------------------------------------------
-             */
 
             const remoteMap = {};
 
@@ -3718,7 +3652,7 @@ async function syncAll(
 
             /*
              * -------------------------------------------------
-             * NAJPIERW OBSŁUGUJEMY DNI, KTÓRE SĄ LOKALNIE
+             * LOKALNE REKORDY
              * -------------------------------------------------
              */
 
@@ -3733,35 +3667,23 @@ async function syncAll(
                         localMeta[key] || 0
                     );
 
+
                 const remote =
                     remoteMap[key];
 
 
                 /*
                  * ---------------------------------------------
-                 * BRAK REKORDU W SUPABASE
+                 * LOKALNY REKORD NIE ISTNIEJE NA SERWERZE
                  * ---------------------------------------------
                  */
 
                 if (!remote) {
 
-                    /*
-                     * Jeżeli lokalny wpis istnieje,
-                     * wysyłamy go na serwer.
-                     */
-
                     await pushDay(
                         year,
                         key
                     );
-
-                    /*
-                     * Nie mamy tutaj jeszcze pewności,
-                     * jaki dokładnie timestamp nadał serwer.
-                     *
-                     * W kolejnym pobraniu dostaniemy
-                     * rzeczywisty modified_at.
-                     */
 
                     continue;
                 }
@@ -3769,7 +3691,7 @@ async function syncAll(
 
                 /*
                  * ---------------------------------------------
-                 * PORÓWNANIE CZASÓW
+                 * CZAS Z SERWERA
                  * ---------------------------------------------
                  */
 
@@ -3803,12 +3725,8 @@ async function syncAll(
 
                 /*
                  * ---------------------------------------------
-                 * SUPABASE JEST Nowsze
-                 * LUB CZASY SĄ IDENTYCZNE
+                 * SERWER JEST Nowszy
                  * ---------------------------------------------
-                 *
-                 * W tej sytuacji przyjmujemy wersję
-                 * znajdującą się na serwerze.
                  */
 
                 localData[key] = {
@@ -3837,7 +3755,7 @@ async function syncAll(
 
             /*
              * -------------------------------------------------
-             * DNI, KTÓRE ISTNIEJĄ TYLKO NA SUPABASE
+             * REKORDY ISTNIEJĄCE TYLKO NA SERWERZE
              * -------------------------------------------------
              */
 
@@ -3910,14 +3828,14 @@ async function syncAll(
 
         /*
          * =====================================================
-         * DRUGI ODCZYT
+         * KOŃCOWY ODCZYT
          * =====================================================
          *
-         * Jest celowo.
+         * Po wszystkich wysłanych zmianach jeszcze raz
+         * pobieramy bazę.
          *
-         * Jeżeli coś zostało wysłane na Supabase,
-         * pobieramy ponownie dane, żeby urządzenie miało
-         * dokładnie taki stan jak serwer.
+         * Dzięki temu urządzenie dostaje dokładnie ten
+         * stan, który faktycznie znajduje się w Supabase.
          * =====================================================
          */
 
@@ -3941,7 +3859,7 @@ async function syncAll(
 
 
         /*
-         * Grupujemy końcowe dane według roku.
+         * Grupowanie rekordów według roku.
          */
 
         const finalByYear = {};
@@ -3950,9 +3868,13 @@ async function syncAll(
         (finalRows || []).forEach(
             row => {
 
-                if (!finalByYear[row.year]) {
+                if (
+                    !finalByYear[row.year]
+                ) {
+
                     finalByYear[row.year] = [];
                 }
+
 
                 finalByYear[row.year].push(
                     row
@@ -3962,11 +3884,9 @@ async function syncAll(
 
 
         /*
-         * Zapisujemy stan serwera lokalnie.
-         *
-         * UWAGA:
-         * Nie kasujemy lokalnych rekordów, których serwer
-         * nie zwrócił, ponieważ mogły właśnie zostać wysłane.
+         * -------------------------------------------------
+         * USTAWIAMY LOKALNY STAN ZGODNIE Z SERWEREM
+         * -------------------------------------------------
          */
 
         for (
@@ -3977,6 +3897,7 @@ async function syncAll(
 
             const rows =
                 finalByYear[year] || [];
+
 
             const data =
                 loadYear(year);
@@ -4035,7 +3956,7 @@ async function syncAll(
 
         /*
          * =====================================================
-         * ODBUDOWANIE EKRANU
+         * ODŚWIEŻENIE EKRANU
          * =====================================================
          */
 
@@ -4064,7 +3985,6 @@ async function syncAll(
             "savedInfo"
         ).textContent =
             "Błąd synchronizacji — dane lokalne zachowane";
-
 
     } finally {
 
@@ -4479,9 +4399,11 @@ async function startApplication() {
 
                 todayRow.scrollIntoView({
 
-                    behavior: "auto",
+                    behavior:
+                        "auto",
 
-                    block: "center"
+                    block:
+                        "center"
                 });
             }
 
