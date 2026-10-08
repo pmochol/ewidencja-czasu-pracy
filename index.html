@@ -1,1728 +1,1232 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="pl">
-
 <head>
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ewidencja czasu pracy</title>
 
-<!-- ExcelJS - tworzenie i formatowanie plików Excel -->
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <style>
-
 *{
-  box-sizing:border-box;
+    box-sizing:border-box;
 }
 
-html,
+html,body{
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f8;
+    color:#222;
+}
+
 body{
-  margin:0;
-  padding:0;
-  width:100%;
-  overflow-x:hidden;
-}
-
-body{
-  background:#f3f5f7;
-  color:#20252b;
-  font-family:Arial,sans-serif;
-}
-
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-header{
-  background:#1f2937;
-  color:white;
-  padding:16px 20px;
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  width:100%;
-  z-index:100;
-  box-shadow:0 2px 8px #0002;
-}
-body{padding-top:var(--header-height,150px)}
-
-.head{
-  max-width:1500px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  flex-wrap:wrap;
-}
-
-h1{
-  margin:0;
-  font-size:23px;
-}
-
-.sub{
-  font-size:12px;
-  color:#cbd5e1;
-  margin-top:4px;
-}
-
-.controls{
-  display:flex;
-  gap:7px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.controls label{
-  display:flex;
-  align-items:center;
-  gap:5px;
+    padding-top:128px;
 }
 
 button,
-select,
-input{
-  font:inherit;
+input,
+select{
+    font:inherit;
 }
 
 button{
-  border:0;
-  border-radius:7px;
-  padding:9px 12px;
-  background:#2563eb;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
+    cursor:pointer;
 }
 
-button:hover{
-  opacity:.9;
+#authScreen{
+    position:fixed;
+    inset:0;
+    background:#f4f6f8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
 }
 
-button.gray{
-  background:#4b5563;
+.authBox{
+    width:380px;
+    max-width:calc(100vw - 30px);
+    background:white;
+    border-radius:12px;
+    padding:28px;
+    box-shadow:0 5px 30px rgba(0,0,0,.15);
 }
 
-button.green{
-  background:#15803d;
+.authBox h1{
+    margin:0 0 8px;
+    font-size:25px;
 }
 
-button.blue{
-  background:#2563eb;
+.authBox p{
+    color:#666;
+    margin:0 0 20px;
 }
 
-button.red{
-  background:#b91c1c;
+.authBox input{
+    width:100%;
+    padding:11px 12px;
+    margin-bottom:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
 }
 
-select{
-  padding:8px;
-  border-radius:6px;
-  border:1px solid #cbd5e1;
-  background:white;
+.authButtons{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
 }
 
-
-/* =========================================================
-   MAIN
-========================================================= */
-
-main{
-  max-width:1500px;
-  margin:18px auto;
-  padding:var(--summary-height,180px) 14px 0;
+.authButtons button{
+    flex:1;
 }
 
+#authMessage{
+    min-height:20px;
+    margin-top:12px;
+    font-size:14px;
+}
 
-/* =========================================================
-   SUMMARY
-========================================================= */
+#app{
+    display:none;
+}
+
+.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:1000;
+    background:#1f2937;
+    color:white;
+    padding:10px 14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+
+.topbarRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.topbar button,
+.topbar select{
+    border:0;
+    border-radius:5px;
+    padding:7px 10px;
+}
+
+.topbar button{
+    background:#374151;
+    color:white;
+}
+
+.topbar button:hover{
+    background:#4b5563;
+}
+
+.topbar select{
+    background:white;
+    color:#222;
+}
+
+.title{
+    font-size:18px;
+    font-weight:bold;
+    margin-right:10px;
+}
+
+.userInfo{
+    margin-left:auto;
+    font-size:12px;
+    opacity:.9;
+}
+
+#syncStatus{
+    font-size:12px;
+    padding:5px 8px;
+    border-radius:5px;
+    background:#374151;
+}
 
 .summary{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  position:fixed;
-  top:var(--header-height,150px);
-  left:0;
-  right:0;
-  z-index:90;
-  padding:12px max(14px, calc((100vw - 1500px) / 2 + 14px));
-  margin:0;
-  background:#f3f5f7;
-  box-shadow:0 3px 8px #0002;
-}
-
-.summary .card{
-  min-width:0;
+    position:fixed;
+    top:58px;
+    left:0;
+    right:0;
+    z-index:999;
+    background:white;
+    border-bottom:1px solid #ddd;
+    padding:7px 14px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
 }
 
 .card{
-  background:white;
-  border-radius:9px;
-  padding:15px;
-  box-shadow:0 1px 4px #0001;
+    padding:5px 10px;
+    border:1px solid #ddd;
+    border-radius:5px;
+    background:#fafafa;
+    font-size:13px;
 }
 
-.label{
-  font-size:12px;
-  color:#6b7280;
+.card strong{
+    margin-left:4px;
 }
 
-.value{
-  font-size:23px;
-  font-weight:bold;
-  margin-top:5px;
+.container{
+    padding:15px;
 }
-
-
-/* =========================================================
-   SELECTION INFO
-========================================================= */
-
-.selection-info{
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  color:#1e40af;
-  border-radius:8px;
-  padding:10px 13px;
-  margin-bottom:14px;
-  font-size:13px;
-  display:none;
-}
-
-.selection-info.visible{
-  display:block;
-}
-
-
-/* =========================================================
-   MONTH
-========================================================= */
 
 .month{
-  background:white;
-  border-radius:9px;
-  margin-bottom:17px;
-  box-shadow:0 1px 4px #0001;
-  overflow:hidden;
+    margin-bottom:24px;
+    background:white;
+    border-radius:8px;
+    box-shadow:0 1px 4px rgba(0,0,0,.12);
+    overflow:hidden;
 }
 
-.month h2{
-  margin:0;
-  padding:12px 14px;
-  background:#e9eef5;
-  font-size:17px;
-  border-bottom:1px solid #d8dee7;
-}
-
-
-/*
-  WAŻNE:
-  Tabela ma minimalną szerokość.
-  Dzięki temu na telefonie powstaje
-  rzeczywisty poziomy scroll.
-*/
-
-.month-scroll{
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-}
-
-.month-scroll::-webkit-scrollbar{
-  height:8px;
-}
-
-.month-scroll::-webkit-scrollbar-track{
-  background:#e5e7eb;
-}
-
-.month-scroll::-webkit-scrollbar-thumb{
-  background:#9ca3af;
-  border-radius:5px;
+.monthTitle{
+    padding:9px 12px;
+    background:#e5e7eb;
+    font-size:17px;
+    font-weight:bold;
 }
 
 table{
-  width:100%;
-  min-width:1180px;
-  border-collapse:collapse;
-  font-size:13px;
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
 }
 
-th{
-  background:#f8fafc;
-  color:#475569;
-  position:static;
+.tableWrap{
+    overflow-x:auto;
 }
 
 th,
 td{
-  padding:7px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:left;
+    border:1px solid #ddd;
+    padding:4px 5px;
+    text-align:center;
+    font-size:13px;
 }
 
-td input,
+th{
+    background:#f1f3f5;
+    position:sticky;
+    top:0;
+    z-index:2;
+}
+
+td.date{
+    white-space:nowrap;
+}
+
+td.day{
+    width:35px;
+}
+
+td input[type="time"]{
+    width:85px;
+    padding:3px;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
+
 td select{
-  width:100%;
-  padding:6px;
-  border:1px solid #d1d5db;
-  border-radius:5px;
+    padding:3px;
+    width:110px;
+    border:1px solid #ccc;
+    border-radius:4px;
 }
 
-.checkbox-cell{
-  width:42px;
-  text-align:center;
+td input.project,
+td input.note{
+    width:100%;
+    min-width:120px;
+    padding:4px;
+    border:1px solid #ccc;
+    border-radius:4px;
 }
 
-.checkbox-cell input{
-  width:18px;
-  height:18px;
-  cursor:pointer;
-}
-
-.select-all{
-  width:18px !important;
-  height:18px;
-  cursor:pointer;
-}
-
-.hours{
-  text-align:center;
-  font-weight:bold;
-  white-space:nowrap;
+td input.note{
+    min-width:180px;
 }
 
 .weekend{
-  background:#fafafa;
-  color:#6b7280;
+    background:#fafafa;
 }
 
-.holiday{
-  background:#fff7ed;
+.today{
+    outline:2px solid #2563eb;
+    outline-offset:-2px;
 }
 
-/* Delikatne wyróżnienie dni urlopowych */
-tr.urlop td{
-  background:#eef6ff !important;
+.selectedRow{
+    background:#eef5ff !important;
 }
 
-.total{
-  text-align:right;
-  padding:9px 14px;
-  background:#f8fafc;
-  font-weight:bold;
+.emptyDay{
+    color:#aaa;
 }
 
-
-/* =========================================================
-   MOBILE SCROLL INFO
-========================================================= */
-
-.mobile-scroll-info{
-  display:none;
-  padding:7px 12px;
-  background:#f8fafc;
-  color:#64748b;
-  font-size:11px;
-  border-top:1px solid #e5e7eb;
-  text-align:center;
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:#0007;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:200;
-}
-
-.hidden{
-  display:none !important;
-}
-
-.modal-box{
-  background:white;
-  border-radius:12px;
-  padding:20px;
-  max-width:450px;
-  width:100%;
-  max-height:90vh;
-  overflow-y:auto;
-  box-shadow:0 10px 35px #0004;
-}
-
-.modal-box h2{
-  margin:0 0 8px;
-  font-size:20px;
-}
-
-.modal-box p{
-  font-size:13px;
-  color:#64748b;
-  margin:0 0 16px;
-}
-
-.time-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.time-grid label{
-  font-size:12px;
-  color:#475569;
-}
-
-.time-grid input{
-  display:block;
-  width:100%;
-  margin-top:5px;
-  padding:9px;
-  border:1px solid #cbd5e1;
-  border-radius:6px;
-}
-
-.modal-type{
-  display:block;
-  margin-top:12px;
-}
-
-.modal-type select{
-  display:block;
-  width:100%;
-  margin-top:5px;
-}
-
-.modal-actions{
-  display:flex;
-  justify-content:flex-end;
-  gap:8px;
-  margin-top:18px;
-}
-
-.excel-buttons{
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-}
-
-.excel-buttons button{
-  width:100%;
-}
-
-.excel-month-label{
-  display:block;
-  font-size:12px;
-  color:#475569;
-  margin-bottom:14px;
-}
-
-.excel-month-label select{
-  display:block;
-  width:100%;
-  margin-top:5px;
-}
-
-
-/* =========================================================
-   BACKUP
-========================================================= */
-
-.backup-buttons{
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-}
-
-.backup-buttons button{
-  width:100%;
-}
-
-.backup-info{
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
-  border-radius:8px;
-  padding:10px;
-  margin-top:12px;
-  font-size:12px;
-  color:#64748b;
-  line-height:1.5;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:850px){
-
- .summary{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .mobile-scroll-info{
-    display:block;
-  }
-
-  .controls{
-    width:100%;
-  }
-
-  .controls button{
-    flex:1;
-  }
-
-}
-
-@media(max-width:550px){
-
-  header{
-    padding:12px;
-  }
-
-  h1{
-    font-size:20px;
-  }
-
- .summary{
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-  }
-
-  .card{
-    padding:12px;
-  }
-
-  .value{
-    font-size:20px;
-  }
-
-  main{
-    padding:var(--summary-height,180px) 8px 0;
-  }
-
-  .controls{
-    gap:5px;
-  }
-
-  .controls button{
-    font-size:11px;
-    padding:8px 7px;
-  }
-
-  .controls label{
-    width:100%;
-    justify-content:flex-start;
-  }
-
-  .time-grid{
-    grid-template-columns:1fr;
-  }
-
-  .modal-box{
-    padding:16px;
-  }
-
-}
-
-
-/* =========================================================
-   PRINT
-========================================================= */
-
-@media print{
-
-  header,
-  .selection-info,
-  button,
-  .controls,
-  .mobile-scroll-info{
-    display:none !important;
-  }
-
-  body{
+.bulkPanel{
+    position:fixed;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:1100;
     background:white;
-  }
-
-  main{
-    max-width:none;
-    margin:0;
-  }
-
-  .month{
-    box-shadow:none;
-    page-break-inside:avoid;
-  }
-
+    border:1px solid #ccc;
+    border-radius:8px;
+    padding:8px;
+    box-shadow:0 3px 15px rgba(0,0,0,.2);
+    display:none;
+    align-items:center;
+    gap:7px;
+    flex-wrap:wrap;
 }
 
-</style>
+.bulkPanel input,
+.bulkPanel select{
+    padding:6px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
 
+.bulkPanel button{
+    padding:7px 10px;
+    border:0;
+    border-radius:5px;
+    background:#2563eb;
+    color:white;
+}
+
+.bulkPanel button.danger{
+    background:#dc2626;
+}
+
+.statusMessage{
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    background:#111827;
+    color:white;
+    padding:9px 13px;
+    border-radius:6px;
+    opacity:0;
+    pointer-events:none;
+    transition:.2s;
+    z-index:5000;
+    font-size:13px;
+}
+
+.statusMessage.show{
+    opacity:1;
+}
+
+@media(max-width:700px){
+    body{
+        padding-top:175px;
+    }
+
+    .userInfo{
+        margin-left:0;
+    }
+
+    .summary{
+        top:105px;
+    }
+
+    .title{
+        width:100%;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<!-- =======================================================
-     HEADER
-======================================================= -->
+<!-- =========================
+     LOGOWANIE
+========================= -->
 
-<header>
+<div id="authScreen">
+    <div class="authBox">
 
-<div class="head">
+        <h1>Ewidencja czasu pracy</h1>
+        <p>Zaloguj się, aby korzystać z synchronizacji.</p>
 
-<div>
+        <input
+            id="authEmail"
+            type="email"
+            placeholder="Adres e-mail"
+            autocomplete="username"
+        >
 
-<h1>⏱ Ewidencja czasu pracy</h1>
+        <input
+            id="authPassword"
+            type="password"
+            placeholder="Hasło"
+            autocomplete="current-password"
+        >
 
-<div class="sub">
-Roczna ewidencja • dane zapisywane lokalnie w przeglądarce
+        <div class="authButtons">
+            <button onclick="login()">Zaloguj</button>
+            <button onclick="registerUser()">Utwórz konto</button>
+        </div>
+
+        <div id="authMessage"></div>
+
+    </div>
 </div>
 
-</div>
 
-<div class="controls">
+<!-- =========================
+     APLIKACJA
+========================= -->
 
-<label>
+<div id="app">
 
-Rok:
+    <div class="topbar">
 
-<select id="year"></select>
+        <div class="topbarRow">
 
-</label>
+            <span class="title">Ewidencja czasu pracy</span>
 
-<button
-class="green"
-onclick="openTimeModal()">
+            <label>Rok:</label>
 
-Ustaw dla zaznaczonych
+            <select id="yearSelect"></select>
 
-</button>
+            <button onclick="goToday()">📅 Dzisiaj</button>
 
-<button
-class="gray"
-onclick="clearSelection()">
+            <button onclick="showBulkPanel()">
+                ☑ Ustaw dla zaznaczonych
+            </button>
 
-Odznacz wszystkie
+            <button onclick="clearSelected()">
+                🗑 Wyczyść zaznaczone
+            </button>
 
-</button>
+            <button onclick="exportExcel()">
+                📊 Excel
+            </button>
 
-<button
-class="gray"
-onclick="clearSelectedData()">
+            <button onclick="backupData()">
+                💾 Backup
+            </button>
 
-Wyczyść dla zaznaczonych
+            <button onclick="document.getElementById('restoreFile').click()">
+                ♻ Przywróć
+            </button>
 
-</button>
+            <input
+                type="file"
+                id="restoreFile"
+                accept=".json"
+                style="display:none"
+                onchange="restoreData(event)"
+            >
 
-<button
-class="green"
-onclick="openExcelModal()">
+            <button onclick="syncAll(true)">
+                🔄 Synchronizuj
+            </button>
 
-📊 Excel
+            <button onclick="logout()">
+                Wyloguj
+            </button>
 
-</button>
+            <span id="userInfo" class="userInfo"></span>
 
-<button
-class="gray"
-onclick="openBackupModal()">
+            <span id="syncStatus">
+                Offline/local
+            </span>
 
-💾 Backup
+        </div>
 
-</button>
+    </div>
 
-<button
-class="blue"
-onclick="goToToday()">
 
-📅 Dzisiaj
+    <div class="summary">
 
-</button>
+        <div class="card">
+            Przepracowane:
+            <strong id="sumWork">0:00</strong>
+        </div>
 
-</div>
+        <div class="card">
+            Delegacja:
+            <strong id="sumTrip">0:00</strong>
+        </div>
 
-</div>
+        <div class="card">
+            Urlop:
+            <strong id="sumVacation">0:00</strong>
+        </div>
 
-</header>
+        <div class="card">
+            L4:
+            <strong id="sumSick">0:00</strong>
+        </div>
 
-<!-- =======================================================
-     MODAL GODZINY
-======================================================= -->
+        <div class="card">
+            Święto:
+            <strong id="sumHoliday">0:00</strong>
+        </div>
 
-<div
-id="timeModal"
-class="modal hidden">
+        <div class="card">
+            Wolne:
+            <strong id="sumFree">0:00</strong>
+        </div>
 
-<div class="modal-box">
+        <div class="card">
+            Razem:
+            <strong id="sumTotal">0:00</strong>
+        </div>
 
-<h2>
-Ustaw dla zaznaczonych
-</h2>
+        <div class="card">
+            <span id="saved">Gotowe</span>
+        </div>
 
-<p>
-Wybrane ustawienia zostaną zastosowane do wszystkich zaznaczonych dni.
-</p>
+    </div>
 
-<div class="time-grid">
 
-<label>
+    <div class="container" id="months"></div>
 
-Od
 
-<input
-id="selectedFrom"
-type="time">
+    <div class="bulkPanel" id="bulkPanel">
 
-</label>
+        <strong>Zaznaczone:</strong>
+        <span id="selectedCount">0</span>
 
-<label>
+        <label>Od:</label>
+        <input type="time" id="bulkFrom" value="07:00">
 
-Do
+        <label>Do:</label>
+        <input type="time" id="bulkTo" value="15:00">
 
-<input
-id="selectedTo"
-type="time">
+        <label>Rodzaj:</label>
 
-</label>
+        <select id="bulkType">
+            <option>Praca</option>
+            <option>Delegacja</option>
+            <option>Urlop</option>
+            <option>L4</option>
+            <option>Święto</option>
+            <option>Wolne</option>
+        </select>
 
-</div>
+        <label>Projekt:</label>
+        <input id="bulkProject" type="text">
 
-<label class="modal-type">
-Projekt
-<input id="selectedProject" type="text" placeholder="Numer projektu (opcjonalnie)"
-style="display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #cbd5e1;border-radius:6px">
-</label>
+        <button onclick="applyBulk()">
+            Ustaw
+        </button>
 
-<label class="modal-type">
+        <button
+            class="danger"
+            onclick="hideBulkPanel()"
+        >
+            Zamknij
+        </button>
 
-Rodzaj
-
-<select id="selectedType">
-
-<option value="Praca">
-Praca
-</option>
-
-<option value="Delegacja">
-Delegacja
-</option>
-
-<option value="Urlop">
-Urlop
-</option>
-
-<option value="L4">
-L4
-</option>
-
-<option value="Święto">
-Święto
-</option>
-
-<option value="Wolne">
-Wolne
-</option>
-
-</select>
-
-</label>
-
-<div
-id="modalHoursInfo"
-style="margin-top:10px;font-size:12px;color:#64748b">
-
-Czas pracy: —
-
-</div>
-
-<div class="modal-actions">
-
-<button
-class="gray"
-onclick="closeTimeModal()">
-
-Anuluj
-
-</button>
-
-<button
-class="green"
-onclick="applySelected()">
-
-Ustaw
-
-</button>
+    </div>
 
 </div>
 
-</div>
 
-</div>
+<div id="statusMessage" class="statusMessage"></div>
 
-<!-- =======================================================
-     MODAL EXCEL
-======================================================= -->
-
-<div
-id="excelModal"
-class="modal hidden">
-
-<div class="modal-box">
-
-<h2>
-📊 Eksport do Excela
-</h2>
-
-<p>
-Wybierz zakres danych do eksportu.
-</p>
-
-<label class="excel-month-label">
-
-Miesiąc:
-
-<select id="excelMonth">
-
-<option value="0">Styczeń</option>
-<option value="1">Luty</option>
-<option value="2">Marzec</option>
-<option value="3">Kwiecień</option>
-<option value="4">Maj</option>
-<option value="5">Czerwiec</option>
-<option value="6">Lipiec</option>
-<option value="7">Sierpień</option>
-<option value="8">Wrzesień</option>
-<option value="9">Październik</option>
-<option value="10">Listopad</option>
-<option value="11">Grudzień</option>
-
-</select>
-
-</label>
-
-<div class="excel-buttons">
-
-<button
-class="green"
-onclick="exportYear()">
-
-📅 Cały rok <br> <small>Podsumowanie + 12 miesięcy</small>
-
-</button>
-
-<button
-class="green"
-onclick="exportMonth()">
-
-📆 Wybrany miesiąc
-
-</button>
-
-<button
-class="green"
-onclick="exportSelected()">
-
-☑ Zaznaczone dni
-
-</button>
-
-</div>
-
-<div class="modal-actions">
-
-<button
-class="gray"
-onclick="closeExcelModal()">
-
-Anuluj
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- =======================================================
-     MODAL BACKUP
-======================================================= -->
-
-<div
-id="backupModal"
-class="modal hidden">
-
-<div class="modal-box">
-
-<h2>
-💾 Backup danych
-</h2>
-
-<p>
-Zapisz lub przywróć całą ewidencję pracy.
-</p>
-
-<div class="backup-buttons">
-
-<button
-class="green"
-onclick="downloadBackup()">
-
-💾 Zapisz backup
-
-</button>
-
-<button
-class="green"
-onclick="document.getElementById('backupFile').click()">
-
-↩ Przywróć backup
-
-</button>
-
-<input
-id="backupFile"
-type="file"
-accept=".json,application/json"
-style="display:none"
-onchange="restoreBackup(this)">
-
-</div>
-
-<div class="backup-info">
-
-<b>Backup zawiera:</b><br>
-
-• wszystkie zapisane lata<br>
-• godziny pracy<br>
-• rodzaje dni<br>
-• uwagi i numery projektów<br>
-• ostatnio używane ustawienia godzin
-
-<br><br>
-
-Plik backupu jest zwykłym plikiem JSON i można go przechowywać np. na komputerze, pendrive lub w chmurze.
-
-</div>
-
-<div class="modal-actions">
-
-<button
-class="gray"
-onclick="closeBackupModal()">
-
-Zamknij
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- =======================================================
-     MAIN
-======================================================= -->
-
-<main>
-
-<div
-id="selectionInfo"
-class="selection-info">
-
-Zaznaczono:
-
-<b id="selectedCount">
-0
-</b>
-
-dni
-
-</div>
-
-<!-- =======================================================
-     PODSUMOWANIE
-======================================================= -->
-
-<div class="summary">
-
-<div class="card">
-
-<div class="label">
-Przepracowane godziny
-</div>
-
-<div
-class="value"
-id="hours">
-
-0:00
-
-</div>
-
-</div>
-
-<div class="card">
-
-<div class="label">
-Dni pracy
-</div>
-
-<div
-class="value"
-id="days">
-
-0
-
-</div>
-
-</div>
-
-<div class="card">
-
-<div class="label">
-Delegacje
-</div>
-
-<div
-class="value"
-id="delegations">
-
-0
-
-</div>
-
-</div>
-
-<div class="card">
-
-<div class="label">
-Zapis
-</div>
-
-<div
-class="value"
-id="saved"
-style="font-size:15px">
-
-Gotowe
-
-</div>
-
-</div>
-
-</div>
-
-<div id="months"></div>
-
-</main>
 
 <script>
 
-
 /* =========================================================
-   PODSTAWOWE DANE
+   SUPABASE
 ========================================================= */
 
-const months=[
-
-"Styczeń",
-"Luty",
-"Marzec",
-"Kwiecień",
-"Maj",
-"Czerwiec",
-"Lipiec",
-"Sierpień",
-"Wrzesień",
-"Październik",
-"Listopad",
-"Grudzień"
-
-];
-
-
-const days=[
-
-"Nd",
-"Pn",
-"Wt",
-"Śr",
-"Cz",
-"Pt",
-"Sb"
-
-];
-
-
-const types=[
-
-"Praca",
-"Delegacja",
-"Urlop",
-"L4",
-"Święto",
-"Wolne"
-
-];
-
-
-const holidays={
-
-"01-01":"Nowy Rok",
-"01-06":"Trzech Króli",
-"04-05":"Wielkanoc",
-"04-06":"Poniedziałek Wielkanocny",
-"05-01":"Święto Pracy",
-"05-03":"3 Maja",
-"05-24":"Zielone Świątki",
-"06-04":"Boże Ciało",
-"08-15":"Wniebowzięcie",
-"11-01":"Wszystkich Świętych",
-"11-11":"Niepodległość",
-"12-24":"Wigilia",
-"12-25":"Boże Narodzenie",
-"12-26":"Drugi dzień Świąt"
-
-};
-
-
-const now=new Date();
-
-const ys=document.getElementById("year");
-
-
-/* =========================================================
-   LATA
-========================================================= */
-
-for(
-let y=2024;
-y<=2035;
-y++
-){
-
-let o=document.createElement("option");
-
-o.value=y;
-
-o.textContent=y;
-
-if(
-y===now.getFullYear()
-){
-
-o.selected=true;
-
-}
-
-ys.appendChild(o);
-
-}
-
-
-ys.onchange=function(){
-
-clearSelection();
-
-render();
-
-};
-
-
-/* =========================================================
-   KLUCZ DATY
-========================================================= */
-
-function key(y,m,d){
-
-return y+"-"+
-
-String(m+1).padStart(2,"0")+"-"+
-
-String(d).padStart(2,"0");
-
-}
-
-
-/* =========================================================
-   DANE AKTUALNEGO ROKU
-========================================================= */
-
-function data(){
-
-return JSON.parse(
-
-localStorage.getItem(
-"worktime_"+ys.value
-)||"{}"
-
-);
-
-}
-
-
-/* =========================================================
-   ZAPIS
-========================================================= */
-
-function save(d){
-
-localStorage.setItem(
-
-"worktime_"+ys.value,
-
-JSON.stringify(d)
-
-);
-
-document.getElementById(
-"saved"
-).textContent="Zapisano";
-
-}
-
-
-/* =========================================================
-   MINUTY
-========================================================= */
-
-function mins(t){
-
-if(!t){
-
-return null;
-
-}
-
-let a=t.split(":");
-
-return +a[0]*60 + +a[1];
-
-}
-
-
-/* =========================================================
-   CZAS TRWANIA
-========================================================= */
-
-function dur(a,b){
-
-let x=mins(a);
-
-let y=mins(b);
-
-return x!==null &&
-y!==null &&
-y>=x
-?y-x
-:0;
-
-}
-
-
-/* =========================================================
-   FORMAT CZASU
-========================================================= */
-
-function fmt(n){
-
-return Math.floor(n/60)+":"+
-
-String(n%60).padStart(2,"0");
-
-}
-
-
-/* =========================================================
-   ŚWIĘTO
-========================================================= */
-
-function holiday(date){
-
-return holidays[
-
-String(
-date.getMonth()+1
-).padStart(2,"0")+
-
-"-"+
-
-String(
-date.getDate()
-).padStart(2,"0")
-
-]||"";
-
-}
-
-
-/* =========================================================
-   WEEKEND
-========================================================= */
-
-function weekend(date){
-
-return date.getDay()===0 ||
-date.getDay()===6;
-
-}
-
-
-/* =========================================================
-   INFORMACJA O ZAZNACZENIU
-========================================================= */
-
-function updateSelectionInfo(){
-
-const selected=
-
-document.querySelectorAll(
-".day-checkbox:checked"
-).length;
-
-
-document.getElementById(
-"selectedCount"
-).textContent=selected;
-
-
-const info=
-document.getElementById(
-"selectionInfo"
+const SUPABASE_URL =
+    "https://iazvoxejpizdaithkqof.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_Scpe8NZ9lOyH4asc53h9wQ_1S-fWToe";
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+        auth:{
+            persistSession:true,
+            autoRefreshToken:true,
+            detectSessionInUrl:true
+        }
+    }
 );
 
 
-if(selected>0){
+/* =========================================================
+   USTAWIENIA
+========================================================= */
 
-info.classList.add("visible");
+const FIRST_YEAR = 2024;
+const LAST_YEAR  = 2035;
 
-}else{
+const YEARS = [];
 
-info.classList.remove("visible");
-
+for(let y=FIRST_YEAR; y<=LAST_YEAR; y++){
+    YEARS.push(y);
 }
 
-}
+const MONTHS = [
+    "Styczeń",
+    "Luty",
+    "Marzec",
+    "Kwiecień",
+    "Maj",
+    "Czerwiec",
+    "Lipiec",
+    "Sierpień",
+    "Wrzesień",
+    "Październik",
+    "Listopad",
+    "Grudzień"
+];
+
+const TYPES = [
+    "Praca",
+    "Delegacja",
+    "Urlop",
+    "L4",
+    "Święto",
+    "Wolne"
+];
+
+let currentUser = null;
+let currentYear = new Date().getFullYear();
+
+if(currentYear < FIRST_YEAR) currentYear = FIRST_YEAR;
+if(currentYear > LAST_YEAR) currentYear = LAST_YEAR;
+
+let selectedDays = new Set();
+let syncRunning = false;
 
 
 /* =========================================================
-   ZAZNACZANIE CAŁEGO MIESIĄCA
+   ELEMENTY
 ========================================================= */
 
-function toggleMonth(checkbox){
-
-const table=
-checkbox.closest("table");
+const ys = document.getElementById("yearSelect");
 
 
-table
-.querySelectorAll(".day-checkbox")
-.forEach(cb=>{
+/* =========================================================
+   INICJALIZACJA ROKÓW
+========================================================= */
 
-cb.checked=
-checkbox.checked;
+YEARS.forEach(y=>{
+    const o = document.createElement("option");
+    o.value = y;
+    o.textContent = y;
 
+    if(y === currentYear){
+        o.selected = true;
+    }
+
+    ys.appendChild(o);
+});
+
+ys.addEventListener("change",()=>{
+    currentYear = Number(ys.value);
+    selectedDays.clear();
+    render();
 });
 
 
-updateSelectionInfo();
+/* =========================================================
+   LOCAL STORAGE
+========================================================= */
+
+function dataKey(year){
+    return "worktime_" + year;
+}
+
+function metaKey(year){
+    return "worktime_meta_" + year;
+}
+
+function readYear(year){
+
+    try{
+
+        const raw = localStorage.getItem(dataKey(year));
+
+        if(!raw){
+            return {};
+        }
+
+        const d = JSON.parse(raw);
+
+        return d && typeof d === "object"
+            ? d
+            : {};
+
+    }catch(e){
+
+        console.error(e);
+        return {};
+
+    }
+}
+
+
+function writeYear(year,d){
+
+    localStorage.setItem(
+        dataKey(year),
+        JSON.stringify(d)
+    );
+
+    document.getElementById("saved").textContent =
+        "Zapisano lokalnie";
+}
+
+
+function readMeta(year){
+
+    try{
+
+        const raw =
+            localStorage.getItem(metaKey(year));
+
+        if(!raw){
+            return {};
+        }
+
+        const m = JSON.parse(raw);
+
+        return m && typeof m === "object"
+            ? m
+            : {};
+
+    }catch(e){
+
+        return {};
+
+    }
+}
+
+
+function writeMeta(year,m){
+
+    localStorage.setItem(
+        metaKey(year),
+        JSON.stringify(m)
+    );
+}
+
+
+/* =========================================================
+   CZAS ZMIANY
+========================================================= */
+
+function nowISO(){
+    return new Date().toISOString();
+}
+
+
+/* =========================================================
+   ZAPIS POJEDYNCZEGO DNIA
+========================================================= */
+
+function saveDay(year,date,value){
+
+    const d = readYear(year);
+    const meta = readMeta(year);
+
+    d[date] = value;
+
+    /*
+       Każda lokalna zmiana dostaje własny timestamp.
+       Dzięki temu możemy później porównać ją
+       z wersją znajdującą się w Supabase.
+    */
+
+    meta[date] = nowISO();
+
+    writeYear(year,d);
+    writeMeta(year,meta);
+
+    renderSummary();
+
+    scheduleSync();
 
 }
 
 
 /* =========================================================
-   RENDER TABEL
+   USUNIĘCIE / WYCZYSZCZENIE DNIA
+========================================================= */
+
+function clearDay(year,date){
+
+    const d = readYear(year);
+    const meta = readMeta(year);
+
+    delete d[date];
+
+    /*
+       Brak rekordu lokalnie traktujemy jako pusty dzień.
+       Do Supabase wyślemy {} zamiast fizycznego DELETE.
+       Dzięki temu nie potrzebujemy tombstone.
+    */
+
+    meta[date] = nowISO();
+
+    writeYear(year,d);
+    writeMeta(year,meta);
+
+    renderSummary();
+
+    scheduleSync();
+}
+
+
+/* =========================================================
+   DOMYŚLNE DANE
+========================================================= */
+
+function normalizeDay(value){
+
+    if(!value || typeof value !== "object"){
+        return {};
+    }
+
+    return {
+        from: value.from || "",
+        to: value.to || "",
+        type: value.type || "",
+        project: value.project || "",
+        note: value.note || ""
+    };
+}
+
+
+/* =========================================================
+   AUTOMATYCZNE GODZINY DLA URLOPU
+========================================================= */
+
+function adjustByType(day,type){
+
+    if(type === "Urlop"){
+
+        day.from = "07:00";
+        day.to   = "15:00";
+
+    }
+
+    if(
+        type === "Święto" ||
+        type === "Wolne" ||
+        type === "L4"
+    ){
+
+        day.from = "";
+        day.to   = "";
+
+    }
+
+    return day;
+}
+
+
+/* =========================================================
+   RENDER
 ========================================================= */
 
 function render(){
 
-let y=+ys.value;
+    const container =
+        document.getElementById("months");
 
-let d=data();
+    container.innerHTML = "";
 
-let box=
-document.getElementById(
-"months"
-);
+    const d = readYear(currentYear);
 
-box.innerHTML="";
+    for(let month=0; month<12; month++){
 
+        const monthBox =
+            document.createElement("div");
 
-let all=0;
+        monthBox.className = "month";
 
-let wd=0;
+        const title =
+            document.createElement("div");
 
-let del=0;
+        title.className = "monthTitle";
 
+        title.textContent =
+            MONTHS[month] + " " + currentYear;
 
-for(
-let m=0;
-m<12;
-m++
-){
+        monthBox.appendChild(title);
 
-let sec=
-document.createElement(
-"section"
-);
 
-sec.className="month";
+        const wrap =
+            document.createElement("div");
 
+        wrap.className = "tableWrap";
 
-sec.innerHTML=
 
-"<h2>"+
+        const table =
+            document.createElement("table");
 
-months[m]+" "+y+
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>✓</th>
+                    <th>Data</th>
+                    <th>Dzień</th>
+                    <th>Od</th>
+                    <th>Do</th>
+                    <th>Rodzaj</th>
+                    <th>Projekt</th>
+                    <th>Uwagi</th>
+                </tr>
+            </thead>
+        `;
 
-"</h2>"+
 
-'<div class="mobile-scroll-info">↔ Przesuń tabelę w bok, aby zobaczyć wszystkie kolumny</div>';
+        const tbody =
+            document.createElement("tbody");
 
 
-let scroll=
-document.createElement(
-"div"
-);
+        const days =
+            new Date(
+                currentYear,
+                month + 1,
+                0
+            ).getDate();
 
-scroll.className="month-scroll";
 
+        for(let day=1; day<=days; day++){
 
-let tab=
-document.createElement(
-"table"
-);
+            const date =
+                `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 
+            const jsDate =
+                new Date(
+                    currentYear,
+                    month,
+                    day
+                );
 
-tab.innerHTML=
+            const weekday =
+                jsDate.getDay();
 
-"<thead>"+
+            const weekdayNames = [
+                "Nd",
+                "Pn",
+                "Wt",
+                "Śr",
+                "Cz",
+                "Pt",
+                "Sb"
+            ];
 
-"<tr>"+
+            const old =
+                normalizeDay(d[date]);
 
-'<th class="checkbox-cell">'+
 
-'<input type="checkbox" '+
-'class="select-all" '+
-'title="Zaznacz cały miesiąc" '+
-'onchange="toggleMonth(this)">'+
+            const tr =
+                document.createElement("tr");
 
-"</th>"+
 
-"<th>Data</th>"+
+            if(
+                weekday === 0 ||
+                weekday === 6
+            ){
+                tr.classList.add("weekend");
+            }
 
-"<th>Dzień</th>"+
 
-"<th>Od</th>"+
+            if(
+                date ===
+                formatDate(new Date())
+            ){
+                tr.classList.add("today");
+            }
 
-"<th>Do</th>"+
 
-"<th>Godziny</th>"+
+            if(selectedDays.has(date)){
+                tr.classList.add("selectedRow");
+            }
 
-"<th>Rodzaj</th>"+
 
-"<th>Projekt</th>"+
+            const check =
+                document.createElement("input");
 
-"<th>Uwagi</th>"+
+            check.type = "checkbox";
+            check.checked =
+                selectedDays.has(date);
 
-"</tr>"+
+            check.addEventListener("change",()=>{
 
-"</thead>"+
+                if(check.checked){
+                    selectedDays.add(date);
+                }else{
+                    selectedDays.delete(date);
+                }
 
-"<tbody></tbody>";
+                updateSelectedCount();
 
+                tr.classList.toggle(
+                    "selectedRow",
+                    check.checked
+                );
 
-let tb=
-tab.querySelector("tbody");
+            });
 
 
-let mt=0;
+            const tdCheck =
+                document.createElement("td");
 
+            tdCheck.appendChild(check);
 
-let n=
-new Date(
-y,
-m+1,
-0
-).getDate();
 
+            const tdDate =
+                document.createElement("td");
 
-for(
-let day=1;
-day<=n;
-day++
-){
+            tdDate.className = "date";
+            tdDate.textContent = date;
 
-let dt=
-new Date(
-y,
-m,
-day
-);
 
+            const tdDay =
+                document.createElement("td");
 
-let k=
-key(
-y,
-m,
-day
-);
+            tdDay.className = "day";
+            tdDay.textContent =
+                weekdayNames[weekday];
 
 
-let r=
-d[k]||{};
+            const from =
+                document.createElement("input");
 
+            from.type = "time";
+            from.value = old.from;
 
-let hol=
-holiday(dt);
 
+            from.addEventListener("change",()=>{
 
-let type=
-r.type ||
+                const dayData =
+                    normalizeDay(
+                        readYear(currentYear)[date]
+                    );
 
-(
-hol
-?"Święto"
-:weekend(dt)
-?"Wolne"
-:"Praca"
-);
+                dayData.from = from.value;
 
+                saveDay(
+                    currentYear,
+                    date,
+                    dayData
+                );
 
-let h=
-dur(
-r.from,
-r.to
-);
+            });
 
 
-mt+=h;
+            const tdFrom =
+                document.createElement("td");
 
-all+=h;
+            tdFrom.appendChild(from);
 
 
-if(h){
+            const to =
+                document.createElement("input");
 
-wd++;
+            to.type = "time";
+            to.value = old.to;
+
+
+            to.addEventListener("change",()=>{
+
+                const dayData =
+                    normalizeDay(
+                        readYear(currentYear)[date]
+                    );
+
+                dayData.to = to.value;
+
+                saveDay(
+                    currentYear,
+                    date,
+                    dayData
+                );
+
+            });
+
+
+            const tdTo =
+                document.createElement("td");
+
+            tdTo.appendChild(to);
+
+
+            const type =
+                document.createElement("select");
+
+
+            TYPES.forEach(t=>{
+
+                const option =
+                    document.createElement("option");
+
+                option.value = t;
+                option.textContent = t;
+
+                if(t === old.type){
+                    option.selected = true;
+                }
+
+                type.appendChild(option);
+
+            });
+
+
+            type.addEventListener("change",()=>{
+
+                const dayData =
+                    normalizeDay(
+                        readYear(currentYear)[date]
+                    );
+
+                dayData.type = type.value;
+
+                adjustByType(
+                    dayData,
+                    type.value
+                );
+
+                saveDay(
+                    currentYear,
+                    date,
+                    dayData
+                );
+
+                render();
+
+            });
+
+
+            const tdType =
+                document.createElement("td");
+
+            tdType.appendChild(type);
+
+
+            const project =
+                document.createElement("input");
+
+            project.className = "project";
+            project.type = "text";
+            project.value = old.project;
+
+
+            project.addEventListener("change",()=>{
+
+                const dayData =
+                    normalizeDay(
+                        readYear(currentYear)[date]
+                    );
+
+                dayData.project =
+                    project.value;
+
+                saveDay(
+                    currentYear,
+                    date,
+                    dayData
+                );
+
+            });
+
+
+            const tdProject =
+                document.createElement("td");
+
+            tdProject.appendChild(project);
+
+
+            const note =
+                document.createElement("input");
+
+            note.className = "note";
+            note.type = "text";
+            note.value = old.note;
+
+
+            note.addEventListener("change",()=>{
+
+                const dayData =
+                    normalizeDay(
+                        readYear(currentYear)[date]
+                    );
+
+                dayData.note =
+                    note.value;
+
+                saveDay(
+                    currentYear,
+                    date,
+                    dayData
+                );
+
+            });
+
+
+            const tdNote =
+                document.createElement("td");
+
+            tdNote.appendChild(note);
+
+
+            tr.appendChild(tdCheck);
+            tr.appendChild(tdDate);
+            tr.appendChild(tdDay);
+            tr.appendChild(tdFrom);
+            tr.appendChild(tdTo);
+            tr.appendChild(tdType);
+            tr.appendChild(tdProject);
+            tr.appendChild(tdNote);
+
+            tbody.appendChild(tr);
+
+        }
+
+
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+        monthBox.appendChild(wrap);
+        container.appendChild(monthBox);
+
+    }
+
+
+    renderSummary();
+    updateSelectedCount();
 
 }
 
 
-if(
-h &&
-type==="Delegacja"
-){
-
-del++;
-
-}
-
-
-let tr=
-document.createElement(
-"tr"
-);
-
-
-if(
-dt.toDateString()===
-now.toDateString()
-){
-
-tr.id="today-row";
-
-}
-
-
-if(weekend(dt)){
-
-tr.className="weekend";
-
-}
-
-
-if(hol){
-
-tr.className+=" holiday";
-
-}
-
-if(type==="Urlop"){
-
-tr.classList.add("urlop");
-
-}
-
-
-tr.innerHTML=
-
-'<td class="checkbox-cell">'+
-
-'<input type="checkbox" '+
-'class="day-checkbox" '+
-'data-k="'+k+'">'+
-
-"</td>"+
-
-
-"<td><b>"+
-
-String(day)
-.padStart(2,"0")+
-
-"."+
-
-String(m+1)
-.padStart(2,"0")+
-
-"."+
-
-y+
-
-"</b></td>"+
-
-
-"<td>"+
-
-days[dt.getDay()]+
-
-(hol?" ★":"")+
-
-"</td>"+
-
-
-"<td>"+
-
-'<input type="time" '+
-'value="'+
-(r.from||"")+
-'" data-k="'+k+'" '+
-'data-f="from">'+
-
-"</td>"+
-
-
-"<td>"+
-
-'<input type="time" '+
-'value="'+
-(r.to||"")+
-'" data-k="'+k+'" '+
-'data-f="to">'+
-
-"</td>"+
-
-
-'<td class="hours">'+
-
-fmt(h)+
-
-"</td>"+
-
-
-"<td>"+
-
-'<select data-k="'+k+'" data-f="type">'+
-
-types
-.map(x=>
-
-"<option "+
-
-(x===type
-?"selected"
-:"")+
-
-">"+
-
-x+
-
-"</option>"
-
-)
-.join("")+
-
-"</select>"+
-
-"</td>"+
-
-"<td>"+
-
-'<input type="text" '+
-'placeholder="Nr projektu" '+
-'value="'+
-(r.project||"")
-.replaceAll(
-'"',
-"&quot;"
-)+
-'" data-k="'+k+'" '+
-'data-f="project">'+
-
-"</td>"+
-
-
-"<td>"+
-
-'<input type="text" '+
-'placeholder="np. Kraków" '+
-'value="'+
-(r.note||"")
-.replaceAll(
-'"',
-"&quot;"
-)+
-'" data-k="'+k+'" '+
-'data-f="note">'+
-
-"</td>";
-
-
-tb.appendChild(tr);
-
-}
-
-
-scroll.appendChild(tab);
-
-sec.appendChild(scroll);
-
-
-/* suma miesiąca */
-
-let total=
-document.createElement(
-"div"
-);
-
-total.className="total";
-
-total.textContent=
-"Suma: "+fmt(mt);
-
-sec.appendChild(total);
-
-
-box.appendChild(sec);
+/* =========================================================
+   FORMAT DATE
+========================================================= */
+
+function formatDate(date){
+
+    return date.getFullYear()
+        + "-"
+        + String(date.getMonth()+1).padStart(2,"0")
+        + "-"
+        + String(date.getDate()).padStart(2,"0");
 
 }
 
@@ -1731,2062 +1235,323 @@ box.appendChild(sec);
    PODSUMOWANIE
 ========================================================= */
 
-document.getElementById(
-"hours"
-).textContent=fmt(all);
+function timeToMinutes(value){
 
+    if(!value){
+        return 0;
+    }
 
-document.getElementById(
-"days"
-).textContent=wd;
+    const parts =
+        value.split(":");
 
+    if(parts.length !== 2){
+        return 0;
+    }
 
-document.getElementById(
-"delegations"
-).textContent=del;
-
-
-/* =========================================================
-   OBSŁUGA PÓL
-========================================================= */
-
-document
-.querySelectorAll(
-"input[data-k],select[data-k]"
-)
-.forEach(e=>{
-
-e.onchange=()=>{
-
-let k=e.dataset.k;
-
-let f=e.dataset.f;
-
-
-d[k]=d[k]||{};
-
-
-/*
-  URLop = zawsze 07:00–15:00
-*/
-
-if(
-f==="type" &&
-e.value==="Urlop"
-){
-
-d[k].type="Urlop";
-
-d[k].from="07:00";
-
-d[k].to="15:00";
-
-}else{
-
-d[k][f]=e.value;
+    return (
+        Number(parts[0]) * 60
+        +
+        Number(parts[1])
+    );
 
 }
 
 
-save(d);
+function minutesToTime(minutes){
 
-render();
+    const h =
+        Math.floor(minutes / 60);
 
-};
+    const m =
+        minutes % 60;
 
-});
-
-
-/* =========================================================
-   CHECKBOXY
-========================================================= */
-
-document
-.querySelectorAll(
-".day-checkbox"
-)
-.forEach(cb=>{
-
-cb.onchange=
-updateSelectionInfo;
-
-});
-
-
-updateSelectionInfo();
-
-setTimeout(updateStickyLayout,0);
+    return (
+        h
+        + ":"
+        + String(m).padStart(2,"0")
+    );
 
 }
 
 
-/* =========================================================
-   MODAL GODZINY
-========================================================= */
+function renderSummary(){
 
-function openTimeModal(){
+    const d =
+        readYear(currentYear);
 
-const selected=
-document.querySelectorAll(
-".day-checkbox:checked"
-);
+    const sums = {
+        Praca:0,
+        Delegacja:0,
+        Urlop:0,
+        L4:0,
+        Święto:0,
+        Wolne:0
+    };
 
+    Object.values(d).forEach(day=>{
 
-if(selected.length===0){
+        if(!day || !day.type){
+            return;
+        }
 
-alert(
-"Najpierw zaznacz dni, dla których chcesz ustawić dane."
-);
+        let minutes = 0;
 
-return;
+        if(day.from && day.to){
 
-}
+            minutes =
+                timeToMinutes(day.to)
+                -
+                timeToMinutes(day.from);
 
+            if(minutes < 0){
+                minutes = 0;
+            }
 
-const lastFrom=
-localStorage.getItem(
-"worktime_last_from"
-)||"07:00";
+        }
 
+        if(
+            Object.prototype.hasOwnProperty.call(
+                sums,
+                day.type
+            )
+        ){
+            sums[day.type] += minutes;
+        }
 
-const lastTo=
-localStorage.getItem(
-"worktime_last_to"
-)||"15:00";
-
-
-const lastType=
-localStorage.getItem(
-"worktime_last_type"
-)||"Praca";
-
-
-document.getElementById(
-"selectedFrom"
-).value=lastFrom;
-
-
-document.getElementById(
-"selectedTo"
-).value=lastTo;
+    });
 
 
-document.getElementById(
-"selectedType"
-).value=lastType;
+    document.getElementById("sumWork")
+        .textContent =
+        minutesToTime(sums.Praca);
 
+    document.getElementById("sumTrip")
+        .textContent =
+        minutesToTime(sums.Delegacja);
 
-if(
-lastType==="Urlop"
-){
+    document.getElementById("sumVacation")
+        .textContent =
+        minutesToTime(sums.Urlop);
 
-document.getElementById(
-"selectedFrom"
-).value="07:00";
+    document.getElementById("sumSick")
+        .textContent =
+        minutesToTime(sums.L4);
 
-document.getElementById(
-"selectedTo"
-).value="15:00";
+    document.getElementById("sumHoliday")
+        .textContent =
+        minutesToTime(sums.Święto);
 
-}
+    document.getElementById("sumFree")
+        .textContent =
+        minutesToTime(sums.Wolne);
 
+    const total =
+        Object.values(sums)
+            .reduce((a,b)=>a+b,0);
 
-updateModalHours();
-
-
-document.getElementById(
-"timeModal"
-).classList.remove(
-"hidden"
-);
+    document.getElementById("sumTotal")
+        .textContent =
+        minutesToTime(total);
 
 }
 
 
 /* =========================================================
-   ZAMKNIJ MODAL GODZIN
+   DZIŚ
 ========================================================= */
 
-function closeTimeModal(){
+function goToday(){
 
-document.getElementById(
-"timeModal"
-).classList.add(
-"hidden"
-);
+    const today =
+        new Date();
+
+    const year =
+        today.getFullYear();
+
+    if(
+        year >= FIRST_YEAR &&
+        year <= LAST_YEAR
+    ){
+
+        currentYear = year;
+        ys.value = year;
+
+    }
+
+    render();
+
+    setTimeout(()=>{
+
+        const el =
+            document.querySelector(".today");
+
+        if(el){
+
+            el.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+
+        }
+
+    },100);
 
 }
 
 
 /* =========================================================
-   ZMIANA RODZAJU W MODALU
+   ZAZNACZANIE / BULK
 ========================================================= */
 
-document
-.getElementById(
-"selectedType"
-)
-.addEventListener(
-"change",
-function(){
+function updateSelectedCount(){
 
-if(
-this.value==="Urlop"
-){
-
-document.getElementById(
-"selectedFrom"
-).value="07:00";
-
-document.getElementById(
-"selectedTo"
-).value="15:00";
-
-}
-
-updateModalHours();
-
-}
-);
-
-
-/* =========================================================
-   INFORMACJA O CZASIE
-========================================================= */
-
-function updateModalHours(){
-
-const from=
-document.getElementById(
-"selectedFrom"
-).value;
-
-
-const to=
-document.getElementById(
-"selectedTo"
-).value;
-
-
-const info=
-document.getElementById(
-"modalHoursInfo"
-);
-
-
-if(from&&to){
-
-info.textContent=
-"Czas pracy: "+fmt(
-dur(from,to)
-);
-
-}else{
-
-info.textContent=
-"Czas pracy: —";
-
-}
+    document.getElementById("selectedCount")
+        .textContent =
+        selectedDays.size;
 
 }
 
 
-/* =========================================================
-   ZMIANA GODZIN
-========================================================= */
+function showBulkPanel(){
 
-document
-.getElementById(
-"selectedFrom"
-)
-.addEventListener(
-"change",
-updateModalHours
-);
+    document.getElementById("bulkPanel")
+        .style.display = "flex";
 
-
-document
-.getElementById(
-"selectedTo"
-)
-.addEventListener(
-"change",
-updateModalHours
-);
-
-
-/* =========================================================
-   ZASTOSUJ DLA ZAZNACZONYCH
-========================================================= */
-
-function applySelected(){
-
-const selected=
-document.querySelectorAll(
-".day-checkbox:checked"
-);
-
-
-const from=
-document.getElementById(
-"selectedFrom"
-).value;
-
-
-const to=
-document.getElementById(
-"selectedTo"
-).value;
-
-
-const type=
-document.getElementById(
-"selectedType"
-).value;
-
-const project=
-document.getElementById("selectedProject").value.trim();
-
-
-let finalFrom=from;
-
-let finalTo=to;
-
-
-/*
-  Urlop zawsze 8 godzin.
-*/
-
-if(
-type==="Urlop"
-){
-
-finalFrom="07:00";
-
-finalTo="15:00";
-
-}else{
-
-if(
-!finalFrom ||
-!finalTo
-){
-
-alert(
-"Wybierz godzinę rozpoczęcia i zakończenia."
-);
-
-return;
+    updateSelectedCount();
 
 }
 
 
-if(
-finalFrom>=finalTo
-){
+function hideBulkPanel(){
 
-alert(
-"Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia."
-);
-
-return;
-
-}
+    document.getElementById("bulkPanel")
+        .style.display = "none";
 
 }
 
 
-/*
-  Zapamiętaj ostatnie ustawienia.
-*/
+function applyBulk(){
 
-localStorage.setItem(
-"worktime_last_from",
-finalFrom
-);
+    if(selectedDays.size === 0){
 
+        showMessage(
+            "Nie zaznaczono żadnego dnia."
+        );
 
-localStorage.setItem(
-"worktime_last_to",
-finalTo
-);
+        return;
+
+    }
 
 
-localStorage.setItem(
-"worktime_last_type",
-type
-);
+    const from =
+        document.getElementById("bulkFrom").value;
+
+    const to =
+        document.getElementById("bulkTo").value;
+
+    const type =
+        document.getElementById("bulkType").value;
+
+    const project =
+        document.getElementById("bulkProject").value;
 
 
-const d=data();
+    const d =
+        readYear(currentYear);
+
+    const meta =
+        readMeta(currentYear);
+
+    const timestamp =
+        nowISO();
 
 
-selected.forEach(cb=>{
+    selectedDays.forEach(date=>{
 
-const k=cb.dataset.k;
+        const old =
+            normalizeDay(d[date]);
 
+        old.from = from;
+        old.to = to;
+        old.type = type;
+        old.project = project;
 
-d[k]={
-...(d[k]||{}),
+        adjustByType(old,type);
 
-from:finalFrom,
+        d[date] = old;
+        meta[date] = timestamp;
 
-to:finalTo,
-
-type:type,
-
-project:project
-
-};
-
-});
+    });
 
 
-save(d);
+    writeYear(currentYear,d);
+    writeMeta(currentYear,meta);
 
+    selectedDays.clear();
 
-closeTimeModal();
+    render();
 
-render();
+    hideBulkPanel();
+
+    scheduleSync();
 
 }
 
 
 /* =========================================================
-   ODZNACZ WSZYSTKIE
+   CZYSZCZENIE ZAZNACZONYCH
 ========================================================= */
 
-function clearSelection(){
+function clearSelected(){
 
-document
-.querySelectorAll(
-".day-checkbox"
-)
-.forEach(cb=>{
+    if(selectedDays.size === 0){
 
-cb.checked=false;
+        showMessage(
+            "Nie zaznaczono żadnego dnia."
+        );
 
-});
+        return;
 
+    }
 
-document
-.querySelectorAll(
-".select-all"
-)
-.forEach(cb=>{
 
-cb.checked=false;
+    if(
+        !confirm(
+            "Czy na pewno wyczyścić zaznaczone dni?"
+        )
+    ){
+        return;
+    }
 
-});
 
+    const d =
+        readYear(currentYear);
 
-updateSelectionInfo();
+    const meta =
+        readMeta(currentYear);
 
-}
+    const timestamp =
+        nowISO();
 
 
-/* =========================================================
-   WYCZYŚĆ ZAZNACZONE
-========================================================= */
+    selectedDays.forEach(date=>{
 
-function clearSelectedData(){
+        delete d[date];
 
-const selected=
-document.querySelectorAll(
-".day-checkbox:checked"
-);
+        meta[date] =
+            timestamp;
 
+    });
 
-if(selected.length===0){
 
-alert(
-"Najpierw zaznacz dni, które chcesz wyczyścić."
-);
+    writeYear(currentYear,d);
+    writeMeta(currentYear,meta);
 
-return;
+    selectedDays.clear();
 
-}
+    render();
 
-
-if(
-!confirm(
-"Czy na pewno wyczyścić dane dla "+
-selected.length+
-" zaznaczonych dni?"
-)
-){
-
-return;
-
-}
-
-
-const d=data();
-
-
-selected.forEach(cb=>{
-
-delete d[cb.dataset.k];
-
-});
-
-
-save(d);
-
-clearSelection();
-
-render();
-
-}
-
-
-/* =========================================================
-   MODAL EXCEL
-========================================================= */
-
-function openExcelModal(){
-
-document.getElementById(
-"excelMonth"
-).value=now.getMonth();
-
-
-document.getElementById(
-"excelModal"
-).classList.remove(
-"hidden"
-);
-
-}
-
-
-function closeExcelModal(){
-
-document.getElementById(
-"excelModal"
-).classList.add(
-"hidden"
-);
-
-}
-
-
-/* =========================================================
-   EXCEL - STYLE
-========================================================= */
-
-function excelHeaderStyle(row){
-
-row.font={
-bold:true,
-color:{
-argb:"FFFFFFFF"
-},
-size:11
-};
-
-
-row.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FF1F4E78"
-}
-};
-
-
-row.alignment={
-vertical:"middle",
-horizontal:"center"
-};
-
-
-row.border={
-
-top:{
-style:"thin",
-color:{
-argb:"FFD9E2F3"
-}
-},
-
-bottom:{
-style:"thin",
-color:{
-argb:"FFD9E2F3"
-}
-},
-
-left:{
-style:"thin",
-color:{
-argb:"FFD9E2F3"
-}
-},
-
-right:{
-style:"thin",
-color:{
-argb:"FFD9E2F3"
-}
-}
-
-};
-
-}
-
-
-function excelTitleStyle(cell){
-
-cell.font={
-bold:true,
-size:16,
-color:{
-argb:"FF1F2937"
-}
-};
-
-}
-
-
-/* =========================================================
-   EXCEL - WIERSZ DANYCH
-========================================================= */
-
-function getExcelRecord(
-y,
-m,
-day,
-d
-){
-
-const dt=
-new Date(
-y,
-m,
-day
-);
-
-
-const k=
-key(
-y,
-m,
-day
-);
-
-
-const r=
-d[k]||{};
-
-
-const hol=
-holiday(dt);
-
-
-const type=
-r.type ||
-
-(
-hol
-?"Święto"
-:weekend(dt)
-?"Wolne"
-:"Praca"
-);
-
-
-const h=
-dur(
-r.from,
-r.to
-);
-
-
-return{
-
-date:dt,
-
-dateText:
-String(day).padStart(2,"0")+
-"."+
-String(m+1).padStart(2,"0")+
-"."+
-y,
-
-dayName:
-days[dt.getDay()],
-
-from:r.from||"",
-
-to:r.to||"",
-
-hours:h,
-
-type:type,
-
-project:r.project||"",
-
-note:r.note||"",
-
-holiday:hol,
-
-weekend:weekend(dt)
-
-};
-
-}
-
-
-/* =========================================================
-   EXCEL - DODAJ MIESIĄC
-========================================================= */
-
-function addMonthSheet(
-workbook,
-y,
-m,
-d,
-sheetName
-){
-
-const ws=
-workbook.addWorksheet(
-sheetName
-);
-
-
-/* szerokości */
-
-ws.columns=[
-
-{
-header:"Data",
-key:"date",
-width:14
-},
-
-{
-header:"Dzień",
-key:"day",
-width:10
-},
-
-{
-header:"Od",
-key:"from",
-width:10
-},
-
-{
-header:"Do",
-key:"to",
-width:10
-},
-
-{
-header:"Godziny",
-key:"hours",
-width:13
-},
-
-{
-header:"Rodzaj",
-key:"type",
-width:16
-},
-
-{
-header:"Projekt",
-key:"project",
-width:18
-},
-
-{
-header:"Uwagi",
-key:"note",
-width:40
-}
-
-];
-
-
-/* tytuł */
-
-ws.mergeCells("A1:H1");
-
-ws.getCell("A1").value=
-"Ewidencja czasu pracy – "+
-months[m]+
-" "+
-y;
-
-excelTitleStyle(
-ws.getCell("A1")
-);
-
-ws.getRow(1).height=25;
-
-
-/* nagłówek */
-
-const header=
-ws.getRow(3);
-
-header.values=[
-
-"Data",
-"Dzień",
-"Od",
-"Do",
-"Godziny",
-"Rodzaj",
-"Projekt",
-"Uwagi"
-
-];
-
-excelHeaderStyle(header);
-
-header.height=22;
-
-
-let total=0;
-
-let rowNumber=4;
-
-
-/* dni */
-
-const n=
-new Date(
-y,
-m+1,
-0
-).getDate();
-
-
-for(
-let day=1;
-day<=n;
-day++
-){
-
-const r=
-getExcelRecord(
-y,
-m,
-day,
-d
-);
-
-
-total+=r.hours;
-
-
-const row=
-ws.getRow(
-rowNumber
-);
-
-
-row.values=[
-
-r.dateText,
-
-r.dayName,
-
-r.from,
-
-r.to,
-
-r.hours/1440,
-
-r.type,
-
-r.project||"",
-
-r.note
-
-];
-
-
-/*
-  Godziny jako czas Excela
-*/
-
-row.getCell(5).numFmt=
-"[h]:mm";
-
-
-/*
-  Centrowanie
-*/
-
-row.getCell(1).alignment={
-horizontal:"center"
-};
-
-row.getCell(2).alignment={
-horizontal:"center"
-};
-
-row.getCell(3).alignment={
-horizontal:"center"
-};
-
-row.getCell(4).alignment={
-horizontal:"center"
-};
-
-row.getCell(5).alignment={
-horizontal:"center"
-};
-
-
-/*
-  Weekend
-*/
-
-if(r.weekend){
-
-row.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFF2F2F2"
-}
-};
-
-});
-
-}
-
-
-/*
-  Święto
-*/
-
-if(r.holiday){
-
-row.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFFCE4D6"
-}
-};
-
-});
-
-}
-
-
-/*
-  Pogrubienie rodzaju
-*/
-
-row.getCell(6).font={
-bold:true
-};
-
-
-rowNumber++;
-
-}
-
-
-/* =======================================================
-   SUMA
-======================================================= */
-
-const totalRow=
-ws.getRow(
-rowNumber+1
-);
-
-
-totalRow.getCell(1).value=
-"SUMA:";
-
-
-totalRow.getCell(1).font={
-bold:true
-};
-
-
-totalRow.getCell(5).value=
-total/1440;
-
-
-totalRow.getCell(5).numFmt=
-"[h]:mm";
-
-
-totalRow.getCell(5).font={
-bold:true
-};
-
-
-totalRow.getCell(5).alignment={
-horizontal:"center"
-};
-
-
-totalRow.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFD9EAF7"
-}
-};
-
-});
-
-
-/* zamrożenie nagłówka */
-
-ws.views=[
-{
-state:"frozen",
-ySplit:3
-}
-];
-
-
-/* filtr */
-
-ws.autoFilter={
-from:"A3",
-to:"H"+(rowNumber-1)
-};
-
-
-/* obramowanie */
-
-for(
-let r=3;
-r<=rowNumber-1;
-r++
-){
-
-for(
-let c=1;
-c<=7;
-c++
-){
-
-ws.getCell(r,c).border={
-
-bottom:{
-style:"hair",
-color:{
-argb:"FFD9E2F3"
-}
-}
-
-};
-
-}
-
-}
-
-
-return{
-
-total:total,
-
-days:rowNumber-4
-
-};
-
-}
-
-
-/* =========================================================
-   EXCEL - PODSUMOWANIE ROKU
-========================================================= */
-
-function addYearSummary(
-workbook,
-y,
-d
-){
-
-const ws=
-workbook.addWorksheet(
-"Podsumowanie roku",
-{
-views:[
-{
-showGridLines:false
-}
-]
-}
-);
-
-
-/* szerokości */
-
-ws.columns=[
-
-{
-width:28
-},
-
-{
-width:20
-},
-
-{
-width:18
-}
-
-];
-
-
-/* tytuł */
-
-ws.mergeCells("A1:C1");
-
-ws.getCell("A1").value=
-"EWIDENCJA CZASU PRACY – "+
-y;
-
-excelTitleStyle(
-ws.getCell("A1")
-);
-
-ws.getCell("A1").alignment={
-horizontal:"center"
-};
-
-ws.getRow(1).height=30;
-
-
-/* nagłówek */
-
-ws.getCell("A3").value=
-"Podsumowanie";
-
-
-ws.getCell("B3").value=
-"Wartość";
-
-
-ws.getCell("C3").value=
-"Uwagi";
-
-
-excelHeaderStyle(
-ws.getRow(3)
-);
-
-
-let total=0;
-
-let workDays=0;
-
-let delegations=0;
-
-let vacation=0;
-
-let sick=0;
-
-let holidaysCount=0;
-
-let free=0;
-
-
-/* miesięczne podsumowanie */
-
-const monthly=[];
-
-
-for(
-let m=0;
-m<12;
-m++
-){
-
-let monthTotal=0;
-
-let monthDays=0;
-
-
-const n=
-new Date(
-y,
-m+1,
-0
-).getDate();
-
-
-for(
-let day=1;
-day<=n;
-day++
-){
-
-const r=
-getExcelRecord(
-y,
-m,
-day,
-d
-);
-
-
-monthTotal+=r.hours;
-
-total+=r.hours;
-
-
-if(r.hours>0){
-
-workDays++;
-
-monthDays++;
-
-}
-
-
-if(
-r.type==="Delegacja"
-){
-
-delegations++;
-
-}
-
-
-if(
-r.type==="Urlop"
-){
-
-vacation++;
-
-}
-
-
-if(
-r.type==="L4"
-){
-
-sick++;
-
-}
-
-
-if(
-r.type==="Święto"
-){
-
-holidaysCount++;
-
-}
-
-
-if(
-r.type==="Wolne"
-){
-
-free++;
-
-}
-
-}
-
-
-monthly.push({
-
-month:months[m],
-
-hours:monthTotal,
-
-days:monthDays
-
-});
-
-}
-
-
-/* podstawowe dane */
-
-const summaryRows=[
-
-[
-"Łączny czas pracy",
-total/1440,
-""
-
-],
-
-[
-"Liczba dni z godzinami",
-workDays,
-""
-
-],
-
-[
-"Delegacje",
-delegations,
-""
-
-],
-
-[
-"Urlop",
-vacation,
-""
-
-],
-
-[
-"L4",
-sick,
-""
-
-],
-
-[
-"Święta",
-holidaysCount,
-""
-
-],
-
-[
-"Wolne",
-free,
-""
-
-]
-
-];
-
-
-let r=4;
-
-
-summaryRows.forEach(values=>{
-
-ws.getRow(r).values=values;
-
-
-ws.getCell(r,1).font={
-bold:true
-};
-
-
-if(
-r===4
-){
-
-ws.getCell(r,2).numFmt=
-"[h]:mm";
-
-}else{
-
-ws.getCell(r,2).numFmt=
-"0";
-
-}
-
-
-r++;
-
-});
-
-
-/* =======================================================
-   PODSUMOWANIE MIESIĘCY
-======================================================= */
-
-r+=2;
-
-
-ws.mergeCells(
-"A"+r+":C"+r
-);
-
-
-ws.getCell(r).value=
-"Podsumowanie miesięczne";
-
-
-ws.getCell(r).font={
-bold:true,
-size:13
-};
-
-
-r++;
-
-
-const monthlyHeader=
-ws.getRow(r);
-
-
-monthlyHeader.values=[
-
-"Miesiąc",
-"Godziny",
-"Dni z godzinami"
-
-];
-
-
-excelHeaderStyle(
-monthlyHeader
-);
-
-
-r++;
-
-
-monthly.forEach(m=>{
-
-const row=
-ws.getRow(r);
-
-
-row.values=[
-
-m.month,
-
-m.hours/1440,
-
-m.days
-
-];
-
-
-row.getCell(2).numFmt=
-"[h]:mm";
-
-
-row.getCell(2).alignment={
-horizontal:"center"
-};
-
-
-row.getCell(3).alignment={
-horizontal:"center"
-};
-
-
-r++;
-
-});
-
-
-/* suma roczna */
-
-r++;
-
-
-ws.getCell(r,1).value=
-"RAZEM";
-
-
-ws.getCell(r,2).value=
-total/1440;
-
-
-ws.getCell(r,2).numFmt=
-"[h]:mm";
-
-
-ws.getCell(r,1).font={
-bold:true
-};
-
-
-ws.getCell(r,2).font={
-bold:true
-};
-
-
-ws.getCell(r,3).value=
-workDays;
-
-
-ws.getCell(r,3).font={
-bold:true
-};
-
-
-ws.getRow(r).eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFD9EAF7"
-}
-};
-
-});
-
-
-/* zamrożenie */
-
-ws.views=[
-{
-state:"frozen",
-ySplit:3
-}
-];
-
-
-return total;
-
-}
-
-
-/* =========================================================
-   EKSPORT CAŁEGO ROKU
-========================================================= */
-
-async function exportYear(){
-
-try{
-
-const y=
-+ys.value;
-
-
-const d=
-data();
-
-
-const workbook=
-new ExcelJS.Workbook();
-
-
-workbook.creator=
-"Ewidencja czasu pracy";
-
-
-workbook.created=
-new Date();
-
-
-/*
-  Najpierw podsumowanie
-*/
-
-addYearSummary(
-workbook,
-y,
-d
-);
-
-
-/*
-  Następnie 12 miesięcy
-*/
-
-for(
-let m=0;
-m<12;
-m++
-){
-
-addMonthSheet(
-workbook,
-y,
-m,
-d,
-months[m]
-);
-
-}
-
-
-const buffer=
-await workbook.xlsx.writeBuffer();
-
-
-downloadExcel(
-buffer,
-"Ewidencja_czasu_pracy_"+
-y+
-".xlsx"
-);
-
-
-closeExcelModal();
-
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Nie udało się utworzyć pliku Excel.\n\n"+
-error.message
-);
-
-}
-
-}
-
-
-/* =========================================================
-   EKSPORT MIESIĄCA
-========================================================= */
-
-async function exportMonth(){
-
-try{
-
-const y=
-+ys.value;
-
-
-const m=
-+document.getElementById(
-"excelMonth"
-).value;
-
-
-const d=
-data();
-
-
-const workbook=
-new ExcelJS.Workbook();
-
-
-workbook.creator=
-"Ewidencja czasu pracy";
-
-
-addMonthSheet(
-workbook,
-y,
-m,
-d,
-months[m]
-);
-
-
-const buffer=
-await workbook.xlsx.writeBuffer();
-
-
-downloadExcel(
-buffer,
-"Ewidencja_"+
-months[m]+
-"_"+
-y+
-".xlsx"
-);
-
-
-closeExcelModal();
-
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Nie udało się utworzyć pliku Excel.\n\n"+
-error.message
-);
-
-}
-
-}
-
-
-/* =========================================================
-   EKSPORT ZAZNACZONYCH
-========================================================= */
-
-async function exportSelected(){
-
-try{
-
-const selected=
-document.querySelectorAll(
-".day-checkbox:checked"
-);
-
-
-if(selected.length===0){
-
-alert(
-"Najpierw zaznacz dni, które chcesz wyeksportować."
-);
-
-return;
-
-}
-
-
-const y=
-+ys.value;
-
-
-const d=
-data();
-
-
-const workbook=
-new ExcelJS.Workbook();
-
-
-workbook.creator=
-"Ewidencja czasu pracy";
-
-
-const ws=
-workbook.addWorksheet(
-"Zaznaczone dni"
-);
-
-
-ws.columns=[
-
-{
-header:"Data",
-key:"date",
-width:14
-},
-
-{
-header:"Dzień",
-key:"day",
-width:10
-},
-
-{
-header:"Od",
-key:"from",
-width:10
-},
-
-{
-header:"Do",
-key:"to",
-width:10
-},
-
-{
-header:"Godziny",
-key:"hours",
-width:13
-},
-
-{
-header:"Rodzaj",
-key:"type",
-width:16
-},
-
-{
-header:"Projekt",
-key:"project",
-width:18
-},
-
-{
-header:"Uwagi",
-key:"note",
-width:40
-}
-
-];
-
-
-ws.mergeCells("A1:H1");
-
-ws.getCell("A1").value=
-"Zaznaczone dni – "+
-y;
-
-excelTitleStyle(
-ws.getCell("A1")
-);
-
-
-const header=
-ws.getRow(3);
-
-header.values=[
-
-"Data",
-"Dzień",
-"Od",
-"Do",
-"Godziny",
-"Rodzaj",
-"Projekt",
-"Uwagi"
-
-];
-
-excelHeaderStyle(header);
-
-
-const records=[];
-
-
-selected.forEach(cb=>{
-
-const parts=
-cb.dataset.k.split("-");
-
-
-const m=
-+parts[1]-1;
-
-
-const day=
-+parts[2];
-
-
-records.push(
-getExcelRecord(
-y,
-m,
-day,
-d
-)
-);
-
-});
-
-
-records.sort(
-(a,b)=>
-a.date-b.date
-);
-
-
-let total=0;
-
-let rowNumber=4;
-
-
-records.forEach(r=>{
-
-total+=r.hours;
-
-
-const row=
-ws.getRow(
-rowNumber
-);
-
-
-row.values=[
-
-r.dateText,
-
-r.dayName,
-
-r.from,
-
-r.to,
-
-r.hours/1440,
-
-r.type,
-
-r.project||"",
-
-r.note
-
-];
-
-
-row.getCell(5).numFmt=
-"[h]:mm";
-
-
-row.getCell(5).alignment={
-horizontal:"center"
-};
-
-
-if(r.weekend){
-
-row.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFF2F2F2"
-}
-};
-
-});
-
-}
-
-
-if(r.holiday){
-
-row.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFFCE4D6"
-}
-};
-
-});
-
-}
-
-
-rowNumber++;
-
-});
-
-
-const totalRow=
-ws.getRow(
-rowNumber+1
-);
-
-
-totalRow.getCell(1).value=
-"SUMA:";
-
-
-totalRow.getCell(5).value=
-total/1440;
-
-
-totalRow.getCell(5).numFmt=
-"[h]:mm";
-
-
-totalRow.getCell(1).font={
-bold:true
-};
-
-
-totalRow.getCell(5).font={
-bold:true
-};
-
-
-totalRow.eachCell(cell=>{
-
-cell.fill={
-type:"pattern",
-pattern:"solid",
-fgColor:{
-argb:"FFD9EAF7"
-}
-};
-
-});
-
-
-ws.views=[
-{
-state:"frozen",
-ySplit:3
-}
-];
-
-
-ws.autoFilter={
-from:"A3",
-to:"H"+(rowNumber-1)
-};
-
-
-const buffer=
-await workbook.xlsx.writeBuffer();
-
-
-downloadExcel(
-buffer,
-"Ewidencja_zaznaczone_"+
-y+
-".xlsx"
-);
-
-
-closeExcelModal();
-
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Nie udało się utworzyć pliku Excel.\n\n"+
-error.message
-);
-
-}
-
-}
-
-
-/* =========================================================
-   POBIERANIE PLIKU EXCEL
-========================================================= */
-
-function downloadExcel(
-buffer,
-filename
-){
-
-const blob=
-new Blob(
-[buffer],
-{
-type:
-"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-}
-);
-
-
-const url=
-URL.createObjectURL(blob);
-
-
-const a=
-document.createElement("a");
-
-
-a.href=url;
-
-a.download=filename;
-
-document.body.appendChild(a);
-
-a.click();
-
-a.remove();
-
-
-setTimeout(
-()=>URL.revokeObjectURL(url),
-1000
-);
+    scheduleSync();
 
 }
 
@@ -3795,505 +1560,1274 @@ setTimeout(
    BACKUP
 ========================================================= */
 
-function openBackupModal(){
+function backupData(){
 
-document.getElementById(
-"backupModal"
-).classList.remove(
-"hidden"
-);
+    const backup = {
+        version:2,
+        createdAt:new Date().toISOString(),
+        years:{},
+        meta:{},
+        settings:{
+            lastFrom:
+                localStorage.getItem(
+                    "worktime_last_from"
+                ) || "07:00",
 
-}
+            lastTo:
+                localStorage.getItem(
+                    "worktime_last_to"
+                ) || "15:00",
 
-
-function closeBackupModal(){
-
-document.getElementById(
-"backupModal"
-).classList.add(
-"hidden"
-);
-
-}
-
-
-/* =========================================================
-   UTWÓRZ BACKUP
-========================================================= */
-
-function downloadBackup(){
-
-const backup={
-
-version:1,
-
-createdAt:
-new Date().toISOString(),
-
-data:{},
-
-settings:{
-
-lastFrom:
-localStorage.getItem(
-"worktime_last_from"
-)||"07:00",
-
-lastTo:
-localStorage.getItem(
-"worktime_last_to"
-)||"15:00",
-
-lastType:
-localStorage.getItem(
-"worktime_last_type"
-)||"Praca"
-
-}
-
-};
+            lastType:
+                localStorage.getItem(
+                    "worktime_last_type"
+                ) || "Praca"
+        }
+    };
 
 
-/*
-  Pobierz wszystkie lata 2024–2035.
-*/
+    YEARS.forEach(year=>{
 
-for(
-let y=2024;
-y<=2035;
-y++
-){
+        backup.years[year] =
+            readYear(year);
 
-const raw=
-localStorage.getItem(
-"worktime_"+y
-);
+        backup.meta[year] =
+            readMeta(year);
+
+    });
 
 
-if(raw){
-
-try{
-
-backup.data[y]=
-JSON.parse(raw);
-
-}catch(e){
-
-console.warn(
-"Nie można odczytać danych roku",
-y
-);
-
-}
-
-}
-
-}
+    const blob =
+        new Blob(
+            [
+                JSON.stringify(
+                    backup,
+                    null,
+                    2
+                )
+            ],
+            {
+                type:"application/json"
+            }
+        );
 
 
-/*
-  Zamiana na JSON
-*/
-
-const json=
-JSON.stringify(
-backup,
-null,
-2
-);
+    const url =
+        URL.createObjectURL(blob);
 
 
-const blob=
-new Blob(
-[json],
-{
-type:"application/json"
-}
-);
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "ewidencja_czasu_pracy_backup_"
+        +
+        new Date()
+            .toISOString()
+            .slice(0,10)
+        +
+        ".json";
 
 
-const url=
-URL.createObjectURL(blob);
+    a.click();
 
-
-const a=
-document.createElement("a");
-
-
-const date=
-new Date()
-.toISOString()
-.slice(0,10);
-
-
-a.href=url;
-
-a.download=
-"Ewidencja_backup_"+
-date+
-".json";
-
-
-document.body.appendChild(a);
-
-a.click();
-
-a.remove();
-
-
-setTimeout(
-()=>URL.revokeObjectURL(url),
-1000
-);
-
-
-alert(
-"Backup został zapisany."
-);
+    URL.revokeObjectURL(url);
 
 }
 
 
 /* =========================================================
-   PRZYWRÓĆ BACKUP
+   RESTORE
 ========================================================= */
 
-function restoreBackup(input){
+function restoreData(event){
 
-const file=
-input.files[0];
+    const file =
+        event.target.files[0];
 
+    if(!file){
+        return;
+    }
 
-if(!file){
 
-return;
+    const reader =
+        new FileReader();
 
-}
 
+    reader.onload = ()=>{
 
-const reader=
-new FileReader();
+        try{
 
+            const backup =
+                JSON.parse(
+                    reader.result
+                );
 
-reader.onload=function(e){
 
-try{
+            if(
+                !backup.years ||
+                typeof backup.years !== "object"
+            ){
 
-const backup=
-JSON.parse(
-e.target.result
-);
+                throw new Error(
+                    "Nieprawidłowy plik backupu."
+                );
 
+            }
 
-/*
-  Podstawowa walidacja.
-*/
 
-if(
-!backup ||
-typeof backup!=="object" ||
-!backup.data ||
-typeof backup.data!=="object"
-){
+            if(
+                !confirm(
+                    "Przywrócić dane z backupu? Aktualne lokalne dane zostaną zastąpione."
+                )
+            ){
+                return;
+            }
 
-throw new Error(
-"Nieprawidłowy format pliku backupu."
-);
 
-}
+            YEARS.forEach(year=>{
 
+                const d =
+                    backup.years[year] || {};
 
-const years=
-Object.keys(
-backup.data
-).filter(
-y=>/^\d{4}$/.test(y)
-);
+                localStorage.setItem(
+                    dataKey(year),
+                    JSON.stringify(d)
+                );
 
 
-if(years.length===0){
+                /*
+                   Jeżeli backup nie ma timestampów,
+                   nadajemy wszystkim przywróconym
+                   rekordom aktualny czas.
+                */
 
-throw new Error(
-"Backup nie zawiera danych żadnego roku."
-);
+                const oldMeta =
+                    backup.meta &&
+                    backup.meta[year]
+                        ? backup.meta[year]
+                        : {};
 
-}
+                const meta = {};
 
+                Object.keys(d).forEach(date=>{
 
-const message=
+                    meta[date] =
+                        oldMeta[date] ||
+                        nowISO();
 
-"Backup zawiera dane dla lat:\n\n"+
+                });
 
-years.join(", ")+
 
-"\n\n"+
-"Przywrócenie zastąpi obecne dane dla tych lat.\n\n"+
-"Czy chcesz kontynuować?";
+                localStorage.setItem(
+                    metaKey(year),
+                    JSON.stringify(meta)
+                );
 
+            });
 
-if(
-!confirm(message)
-){
 
-input.value="";
+            if(backup.settings){
 
-return;
+                if(
+                    backup.settings.lastFrom
+                ){
+                    localStorage.setItem(
+                        "worktime_last_from",
+                        backup.settings.lastFrom
+                    );
+                }
 
-}
+                if(
+                    backup.settings.lastTo
+                ){
+                    localStorage.setItem(
+                        "worktime_last_to",
+                        backup.settings.lastTo
+                    );
+                }
 
+                if(
+                    backup.settings.lastType
+                ){
+                    localStorage.setItem(
+                        "worktime_last_type",
+                        backup.settings.lastType
+                    );
+                }
 
-/*
-  Przywracanie danych.
-*/
+            }
 
-years.forEach(y=>{
 
-localStorage.setItem(
+            render();
 
-"worktime_"+y,
+            showMessage(
+                "Backup przywrócony lokalnie."
+            );
 
-JSON.stringify(
-backup.data[y]
-)
+            scheduleSync();
 
-);
 
-});
+        }catch(e){
 
+            console.error(e);
 
-/*
-  Przywrócenie ustawień.
-*/
+            alert(
+                "Nie udało się przywrócić backupu:\n"
+                +
+                e.message
+            );
 
-if(
-backup.settings
-){
+        }
 
-if(
-backup.settings.lastFrom
-){
+    };
 
-localStorage.setItem(
-"worktime_last_from",
-backup.settings.lastFrom
-);
 
-}
+    reader.readAsText(file);
 
-
-if(
-backup.settings.lastTo
-){
-
-localStorage.setItem(
-"worktime_last_to",
-backup.settings.lastTo
-);
-
-}
-
-
-if(
-backup.settings.lastType
-){
-
-localStorage.setItem(
-"worktime_last_type",
-backup.settings.lastType
-);
-
-}
-
-}
-
-
-/*
-  Jeżeli aktualny rok nie jest w backupie,
-  przełącz na pierwszy rok backupu.
-*/
-
-const currentYear=
-String(ys.value);
-
-
-if(
-!years.includes(currentYear)
-){
-
-ys.value=
-years[0];
-
-}
-
-
-clearSelection();
-
-render();
-
-
-alert(
-"Backup został pomyślnie przywrócony."
-);
-
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Nie udało się przywrócić backupu.\n\n"+
-error.message
-);
-
-}
-
-
-/*
-  Pozwól ponownie wybrać ten sam plik.
-*/
-
-input.value="";
-
-};
-
-
-reader.onerror=function(){
-
-alert(
-"Nie udało się odczytać pliku backupu."
-);
-
-input.value="";
-
-};
-
-
-reader.readAsText(file);
+    event.target.value = "";
 
 }
 
 
 /* =========================================================
-   KLIKNIĘCIE POZA MODALEM
+   EXCEL
 ========================================================= */
 
-document
-.getElementById("timeModal")
-.addEventListener(
-"click",
-function(e){
+async function exportExcel(){
 
-if(e.target===this){
+    const workbook =
+        new ExcelJS.Workbook();
 
-closeTimeModal();
+
+    for(let month=0; month<12; month++){
+
+        const monthName =
+            MONTHS[month];
+
+        const sheet =
+            workbook.addWorksheet(
+                monthName
+            );
+
+
+        sheet.columns = [
+            {
+                header:"Data",
+                key:"date",
+                width:14
+            },
+            {
+                header:"Dzień",
+                key:"day",
+                width:10
+            },
+            {
+                header:"Od",
+                key:"from",
+                width:10
+            },
+            {
+                header:"Do",
+                key:"to",
+                width:10
+            },
+            {
+                header:"Rodzaj",
+                key:"type",
+                width:15
+            },
+            {
+                header:"Projekt",
+                key:"project",
+                width:25
+            },
+            {
+                header:"Uwagi",
+                key:"note",
+                width:40
+            }
+        ];
+
+
+        const d =
+            readYear(currentYear);
+
+
+        const days =
+            new Date(
+                currentYear,
+                month+1,
+                0
+            ).getDate();
+
+
+        for(let day=1; day<=days; day++){
+
+            const date =
+                `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+            const jsDate =
+                new Date(
+                    currentYear,
+                    month,
+                    day
+                );
+
+
+            const weekdays = [
+                "Nd",
+                "Pn",
+                "Wt",
+                "Śr",
+                "Cz",
+                "Pt",
+                "Sb"
+            ];
+
+
+            const item =
+                normalizeDay(d[date]);
+
+
+            sheet.addRow({
+                date:date,
+                day:weekdays[jsDate.getDay()],
+                from:item.from,
+                to:item.to,
+                type:item.type,
+                project:item.project,
+                note:item.note
+            });
+
+        }
+
+
+        sheet.getRow(1).font = {
+            bold:true
+        };
+
+    }
+
+
+    const summary =
+        workbook.addWorksheet(
+            "Podsumowanie roku"
+        );
+
+
+    summary.addRow([
+        "Rok",
+        currentYear
+    ]);
+
+    summary.addRow([]);
+
+    summary.addRow([
+        "Rodzaj",
+        "Czas"
+    ]);
+
+
+    const d =
+        readYear(currentYear);
+
+
+    const sums = {
+        Praca:0,
+        Delegacja:0,
+        Urlop:0,
+        L4:0,
+        Święto:0,
+        Wolne:0
+    };
+
+
+    Object.values(d).forEach(day=>{
+
+        if(!day || !day.type){
+            return;
+        }
+
+        let min = 0;
+
+        if(day.from && day.to){
+
+            min =
+                timeToMinutes(day.to)
+                -
+                timeToMinutes(day.from);
+
+            if(min < 0){
+                min = 0;
+            }
+
+        }
+
+        if(
+            Object.prototype.hasOwnProperty.call(
+                sums,
+                day.type
+            )
+        ){
+            sums[day.type] += min;
+        }
+
+    });
+
+
+    Object.keys(sums).forEach(type=>{
+
+        summary.addRow([
+            type,
+            minutesToTime(sums[type])
+        ]);
+
+    });
+
+
+    summary.getRow(1).font = {
+        bold:true
+    };
+
+    summary.getRow(3).font = {
+        bold:true
+    };
+
+
+    const buffer =
+        await workbook.xlsx.writeBuffer();
+
+
+    const blob =
+        new Blob(
+            [buffer],
+            {
+                type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "ewidencja_czasu_pracy_"
+        +
+        currentYear
+        +
+        ".xlsx";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
 
 }
 
+
+/* =========================================================
+   SUPABASE AUTH
+========================================================= */
+
+async function login(){
+
+    const email =
+        document.getElementById(
+            "authEmail"
+        ).value.trim();
+
+    const password =
+        document.getElementById(
+            "authPassword"
+        ).value;
+
+
+    if(!email || !password){
+
+        setAuthMessage(
+            "Podaj e-mail i hasło.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    setAuthMessage(
+        "Logowanie..."
+    );
+
+
+    const {data,error} =
+        await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+
+    if(error){
+
+        console.error(error);
+
+        setAuthMessage(
+            error.message,
+            true
+        );
+
+        return;
+
+    }
+
+
+    currentUser =
+        data.user;
+
+    await startApplication();
+
 }
-);
 
 
-document
-.getElementById("excelModal")
-.addEventListener(
-"click",
-function(e){
+async function registerUser(){
 
-if(e.target===this){
+    const email =
+        document.getElementById(
+            "authEmail"
+        ).value.trim();
 
-closeExcelModal();
+    const password =
+        document.getElementById(
+            "authPassword"
+        ).value;
+
+
+    if(!email || !password){
+
+        setAuthMessage(
+            "Podaj e-mail i hasło.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    if(password.length < 6){
+
+        setAuthMessage(
+            "Hasło musi mieć co najmniej 6 znaków.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    setAuthMessage(
+        "Tworzenie konta..."
+    );
+
+
+    const {data,error} =
+        await supabase.auth.signUp({
+            email,
+            password
+        });
+
+
+    if(error){
+
+        console.error(error);
+
+        setAuthMessage(
+            error.message,
+            true
+        );
+
+        return;
+
+    }
+
+
+    if(data.session){
+
+        currentUser =
+            data.user;
+
+        await startApplication();
+
+    }else{
+
+        setAuthMessage(
+            "Konto utworzone. Sprawdź e-mail i potwierdź konto."
+        );
+
+    }
 
 }
 
-}
-);
 
+async function logout(){
 
-document
-.getElementById("backupModal")
-.addEventListener(
-"click",
-function(e){
+    await supabase.auth.signOut();
 
-if(e.target===this){
+    currentUser = null;
 
-closeBackupModal();
+    document.getElementById("app")
+        .style.display = "none";
 
-}
+    document.getElementById("authScreen")
+        .style.display = "flex";
 
 }
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+supabase.auth.onAuthStateChange(
+    async(event,session)=>{
+
+        if(
+            session &&
+            session.user
+        ){
+
+            currentUser =
+                session.user;
+
+            await startApplication();
+
+        }
+
+    }
 );
 
 
 /* =========================================================
-   ESC - ZAMYKANIE MODALI
+   START
 ========================================================= */
+
+async function startApplication(){
+
+    if(!currentUser){
+        return;
+    }
+
+
+    document.getElementById("authScreen")
+        .style.display = "none";
+
+    document.getElementById("app")
+        .style.display = "block";
+
+
+    document.getElementById("userInfo")
+        .textContent =
+        currentUser.email || "";
+
+
+    render();
+
+
+    setSyncStatus(
+        "Synchronizacja..."
+    );
+
+
+    await syncAll(false);
+
+
+    /*
+       Pierwsza synchronizacja już wykonana.
+       Potem robimy ją cyklicznie.
+    */
+
+}
+
+
+/* =========================================================
+   POBRANIE DANYCH Z SUPABASE
+========================================================= */
+
+async function fetchRemote(){
+
+    if(!currentUser){
+        return null;
+    }
+
+
+    const {data,error} =
+        await supabase
+            .from("worktime_entries")
+            .select(
+                "entry_date,data,modified_at"
+            )
+            .eq(
+                "user_id",
+                currentUser.id
+            );
+
+
+    if(error){
+
+        console.error(
+            "Supabase fetch error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data || [];
+
+}
+
+
+/* =========================================================
+   SYNCHRONIZACJA JEDNEGO DNIA
+========================================================= */
+
+async function pushDay(
+    year,
+    date,
+    localData,
+    modifiedAt
+){
+
+    if(!currentUser){
+        return;
+    }
+
+
+    const {data,error} =
+        await supabase.rpc(
+            "sync_worktime_entry",
+            {
+                p_entry_date:date,
+                p_data:localData || {},
+                p_modified_at:modifiedAt
+            }
+        );
+
+
+    if(error){
+
+        console.error(
+            "RPC sync error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   SYNCHRONIZACJA WSZYSTKICH DANYCH
+========================================================= */
+
+async function syncAll(manual=false){
+
+    if(
+        !currentUser ||
+        syncRunning
+    ){
+        return;
+    }
+
+
+    if(
+        !navigator.onLine
+    ){
+
+        setSyncStatus(
+            "⚫ Offline"
+        );
+
+        return;
+
+    }
+
+
+    syncRunning = true;
+
+
+    try{
+
+        if(manual){
+
+            setSyncStatus(
+                "🔄 Synchronizacja..."
+            );
+
+        }
+
+
+        const remote =
+            await fetchRemote();
+
+
+        /*
+           Mapujemy dane z serwera:
+           YYYY-MM-DD -> rekord
+        */
+
+        const remoteMap = new Map();
+
+        remote.forEach(row=>{
+
+            remoteMap.set(
+                row.entry_date,
+                row
+            );
+
+        });
+
+
+        /*
+           Najpierw przetwarzamy wszystkie lata,
+           które mamy lokalnie.
+        */
+
+        for(const year of YEARS){
+
+            const local =
+                readYear(year);
+
+            const meta =
+                readMeta(year);
+
+
+            /*
+               Znajdźmy lokalne daty.
+            */
+
+            const localDates =
+                new Set([
+                    ...Object.keys(local),
+                    ...Object.keys(meta)
+                ]);
+
+
+            /*
+               Obsługujemy lokalne rekordy.
+            */
+
+            for(const date of localDates){
+
+                const localValue =
+                    local[date] || {};
+
+                let localModified =
+                    meta[date];
+
+
+                /*
+                   Stary localStorage może nie mieć
+                   timestampów.
+
+                   Jeżeli rekord istnieje tylko lokalnie,
+                   traktujemy go jako nowy.
+                */
+
+                if(!localModified){
+
+                    if(remoteMap.has(date)){
+
+                        /*
+                           Serwer ma dane,
+                           a lokalne nie ma timestampu.
+                           Przy pierwszym połączeniu
+                           bezpieczniej przyjąć wersję
+                           z serwera.
+                        */
+
+                        continue;
+
+                    }else{
+
+                        localModified =
+                            nowISO();
+
+                        meta[date] =
+                            localModified;
+
+                        writeMeta(
+                            year,
+                            meta
+                        );
+
+                    }
+
+                }
+
+
+                const remoteRow =
+                    remoteMap.get(date);
+
+
+                if(!remoteRow){
+
+                    /*
+                       Nie ma w Supabase.
+                       Wysyłamy lokalną wersję.
+                    */
+
+                    await pushDay(
+                        year,
+                        date,
+                        localValue,
+                        localModified
+                    );
+
+                    continue;
+
+                }
+
+
+                const remoteModified =
+                    remoteRow.modified_at;
+
+
+                if(
+                    new Date(localModified)
+                    >
+                    new Date(remoteModified)
+                ){
+
+                    /*
+                       LOCAL jest nowszy.
+                    */
+
+                    await pushDay(
+                        year,
+                        date,
+                        localValue,
+                        localModified
+                    );
+
+                }else if(
+                    new Date(remoteModified)
+                    >
+                    new Date(localModified)
+                ){
+
+                    /*
+                       SUPABASE jest nowszy.
+                    */
+
+                    if(
+                        remoteRow.data &&
+                        Object.keys(
+                            remoteRow.data
+                        ).length > 0
+                    ){
+
+                        local[date] =
+                            remoteRow.data;
+
+                    }else{
+
+                        delete local[date];
+
+                    }
+
+
+                    meta[date] =
+                        remoteModified;
+
+
+                    writeYear(
+                        year,
+                        local
+                    );
+
+                    writeMeta(
+                        year,
+                        meta
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        /*
+           Teraz sprawdzamy rekordy istniejące
+           w Supabase, których lokalnie nie ma.
+        */
+
+        for(const row of remote){
+
+            const date =
+                row.entry_date;
+
+            const year =
+                Number(
+                    date.slice(0,4)
+                );
+
+
+            if(
+                year < FIRST_YEAR ||
+                year > LAST_YEAR
+            ){
+                continue;
+            }
+
+
+            const local =
+                readYear(year);
+
+            const meta =
+                readMeta(year);
+
+
+            if(
+                !Object.prototype.hasOwnProperty.call(
+                    meta,
+                    date
+                )
+            ){
+
+                /*
+                   Brak lokalnego timestampu.
+                   Jeżeli brak lokalnego rekordu,
+                   pobieramy wersję serwerową.
+                */
+
+                if(
+                    !Object.prototype.hasOwnProperty.call(
+                        local,
+                        date
+                    )
+                ){
+
+                    if(
+                        row.data &&
+                        Object.keys(row.data).length
+                    ){
+
+                        local[date] =
+                            row.data;
+
+                    }
+
+                }
+
+
+                meta[date] =
+                    row.modified_at;
+
+
+                writeYear(
+                    year,
+                    local
+                );
+
+                writeMeta(
+                    year,
+                    meta
+                );
+
+            }
+
+        }
+
+
+        render();
+
+
+        setSyncStatus(
+            "🟢 Zsynchronizowano " +
+            new Date().toLocaleTimeString()
+        );
+
+
+        document.getElementById("saved")
+            .textContent =
+            "Zapisano i zsynchronizowano";
+
+
+    }catch(error){
+
+        console.error(
+            "SYNC ERROR:",
+            error
+        );
+
+
+        setSyncStatus(
+            "🟠 Błąd synchronizacji"
+        );
+
+
+        if(manual){
+
+            showMessage(
+                "Błąd synchronizacji: "
+                +
+                error.message
+            );
+
+        }
+
+    }finally{
+
+        syncRunning = false;
+
+    }
+
+}
+
+
+/* =========================================================
+   AUTOMATYCZNA SYNCHRONIZACJA
+========================================================= */
+
+let syncTimer = null;
+
+
+function scheduleSync(){
+
+    if(syncTimer){
+        return;
+    }
+
+
+    syncTimer =
+        setTimeout(
+            async()=>{
+
+                syncTimer = null;
+
+                await syncAll(false);
+
+            },
+            1200
+        );
+
+}
+
+
+/*
+   Co 30 sekund sprawdzamy Supabase.
+*/
+
+setInterval(
+    ()=>{
+        syncAll(false);
+    },
+    30000
+);
+
+
+/*
+   Powrót internetu.
+*/
+
+window.addEventListener(
+    "online",
+    ()=>{
+        setSyncStatus(
+            "🔄 Internet wrócił..."
+        );
+
+        syncAll(true);
+    }
+);
+
+
+/*
+   Przejście na kartę / powrót do aplikacji.
+*/
 
 document.addEventListener(
-"keydown",
-function(e){
-
-if(e.key==="Escape"){
-
-closeTimeModal();
-
-closeExcelModal();
-
-closeBackupModal();
-
-}
-
-}
+    "visibilitychange",
+    ()=>{
+        if(
+            document.visibilityState ===
+            "visible"
+        ){
+            syncAll(false);
+        }
+    }
 );
 
 
 /* =========================================================
-   WYSOKOŚĆ PRZYKLEJONEJ BELKI
+   STATUS
 ========================================================= */
 
-function updateStickyLayout(){
-  const header=document.querySelector("header");
-  const summary=document.querySelector(".summary");
+function setSyncStatus(text){
 
-  const headerHeight=header ? header.offsetHeight+12 : 150;
-  const summaryHeight=summary ? summary.offsetHeight+12 : 180;
+    document.getElementById(
+        "syncStatus"
+    ).textContent = text;
 
-  document.documentElement.style.setProperty(
-    "--header-height",
-    headerHeight+"px"
-  );
-
-  document.documentElement.style.setProperty(
-    "--summary-height",
-    summaryHeight+"px"
-  );
 }
 
-window.addEventListener("resize",updateStickyLayout);
-updateStickyLayout();
 
-/* =========================================================
-   PRZEWIŃ DO DZISIAJ
-========================================================= */
+function showMessage(text){
 
-function goToToday(){
+    const el =
+        document.getElementById(
+            "statusMessage"
+        );
 
-  const today=new Date();
-  const y=today.getFullYear();
-  const m=today.getMonth();
-  const d=today.getDate();
+    el.textContent = text;
 
-  if(+ys.value!==y){
-    ys.value=y;
-    render();
-  }
+    el.classList.add("show");
 
-  setTimeout(function(){
-    const row=document.getElementById("today-row");
-    if(row){
-      row.scrollIntoView({behavior:"smooth",block:"center"});
-    }
-  },50);
+    setTimeout(
+        ()=>{
+            el.classList.remove("show");
+        },
+        2500
+    );
+
+}
+
+
+function setAuthMessage(
+    text,
+    error=false
+){
+
+    const el =
+        document.getElementById(
+            "authMessage"
+        );
+
+    el.textContent = text;
+
+    el.style.color =
+        error
+            ? "#dc2626"
+            : "#333";
+
 }
 
 
@@ -4301,40 +2835,31 @@ function goToToday(){
    START
 ========================================================= */
 
-render();
+(async()=>{
+
+    const {
+        data:{
+            session
+        }
+    } =
+        await supabase.auth.getSession();
 
 
-/* =========================================================
-   PRZEWIŃ DO DZISIAJ
-========================================================= */
+    if(
+        session &&
+        session.user
+    ){
 
-setTimeout(
-function(){
+        currentUser =
+            session.user;
 
-const row=
-document.getElementById(
-"today-row"
-);
+        await startApplication();
 
+    }
 
-if(row){
-
-row.scrollIntoView({
-
-behavior:"auto",
-
-block:"center"
-
-});
-
-}
-
-},
-100
-);
+})();
 
 </script>
 
 </body>
-
 </html>
