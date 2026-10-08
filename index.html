@@ -54,6 +54,24 @@ body {
     color: white;
 
     box-shadow: 0 2px 6px rgba(0,0,0,.25);
+
+    /*
+       Ważne:
+       belka może być przewijana poziomo na telefonie.
+    */
+    overflow-x: auto;
+    overflow-y: visible;
+
+    scrollbar-width: thin;
+}
+
+.topbar::-webkit-scrollbar {
+    height: 5px;
+}
+
+.topbar::-webkit-scrollbar-thumb {
+    background: #777;
+    border-radius: 5px;
 }
 
 .topbar button,
@@ -81,17 +99,20 @@ body {
 }
 
 .topbar select {
-    min-width: 80px;
+    min-width: 62px;
+    width: 62px;
 }
 
 .topbar-title {
     font-weight: bold;
     margin-right: 5px;
     white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .spacer {
-    flex: 1 1 auto;
+    flex: 1 0 20px;
+    min-width: 20px;
 }
 
 /* =========================================================
@@ -99,14 +120,14 @@ body {
    ========================================================= */
 
 #syncStatus {
-    flex: 0 0 auto;
-
     white-space: nowrap;
 
     font-size: 12px;
     color: #ccc;
 
     padding: 0 5px;
+
+    flex: 0 0 auto;
 }
 
 .sync-ok {
@@ -122,11 +143,22 @@ body {
 }
 
 /* =========================================================
+   INFORMACJA O ZAZNACZENIU
+   ========================================================= */
+
+#selectedInfo {
+    white-space: nowrap;
+    font-size: 12px;
+    color: #ddd;
+    flex: 0 0 auto;
+}
+
+/* =========================================================
    MENU "WIĘCEJ"
    ========================================================= */
 
 .moreMenu {
-    position: relative;
+    position: static;
     display: none;
 
     flex: 0 0 auto;
@@ -136,15 +168,19 @@ body {
     white-space: nowrap;
 }
 
+/*
+   Menu jest fixed względem ekranu.
+   Dzięki temu nie jest obcinane przez poziomy scroll belki.
+*/
 .moreDropdown {
     display: none;
 
-    position: absolute;
+    position: fixed;
 
-    right: 0;
-    top: calc(100% + 5px);
+    right: 8px;
+    top: calc(var(--topbar-height) + 5px);
 
-    min-width: 170px;
+    width: 190px;
 
     padding: 5px;
 
@@ -154,6 +190,8 @@ body {
     border-radius: 6px;
 
     box-shadow: 0 5px 15px rgba(0,0,0,.3);
+
+    z-index: 5000;
 }
 
 .moreDropdown.show {
@@ -390,6 +428,10 @@ td {
     font-size: 13px;
 }
 
+/*
+   UWAGA:
+   Nagłówek tabeli NIE jest sticky.
+*/
 th {
     background: #e8e8e8;
 
@@ -654,42 +696,37 @@ input[type="checkbox"] {
 
 @media (max-width: 700px) {
 
-    /*
-       Belka pozostaje jedną linią.
-       Jeżeli wszystkie elementy nie mieszczą się na ekranie,
-       można przesunąć ją palcem poziomo.
-    */
-
     .topbar {
         min-height: 0;
 
         flex-wrap: nowrap;
 
-        overflow-x: auto;
-        overflow-y: visible;
-
-        -webkit-overflow-scrolling: touch;
-
-        scrollbar-width: none;
-
         padding: 6px;
 
         gap: 5px;
-    }
 
-    .topbar::-webkit-scrollbar {
-        display: none;
+        /*
+           Pozwalamy przewijać całą belkę poziomo.
+        */
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 
     .topbar-title {
         display: none;
     }
 
+    /*
+       Spacer na telefonie nie może rozpychać belki.
+    */
+    .spacer {
+        flex: 0 0 5px;
+        min-width: 5px;
+    }
+
     .topbar button,
     .topbar select {
         height: 34px;
-
-        flex: 0 0 auto;
 
         padding: 0 7px;
 
@@ -697,89 +734,47 @@ input[type="checkbox"] {
     }
 
     /*
-       Na telefonie nie używamy pustego flexa,
-       bo wypychał menu "Więcej" poza ekran.
+       Rok ma być mały.
     */
-
-    .spacer {
-        display: none;
-    }
-
-    /*
-       Najważniejsze przyciski pozostają bezpośrednio na belce.
-    */
-
-    #todayButton {
-        display: inline-block;
-    }
-
     #yearSelect {
-        min-width: 65px;
-    }
-
-    #selectAllButton {
-        display: inline-block;
-    }
-
-    #bulkButton {
-        display: inline-block;
-
-        min-width: 135px;
+        min-width: 58px;
+        width: 58px;
     }
 
     /*
-       Mniej ważne przyciski są wyłącznie w menu.
+       Najważniejsze przyciski zostają na belce.
     */
+    #todayButton,
+    #selectAllButton,
+    #bulkButton,
+    #syncButton {
+        display: inline-block;
+    }
 
+    /*
+       Mniej ważne przyciski są w Więcej.
+    */
     .desktopOnly {
         display: none !important;
     }
 
     .moreMenu {
         display: block;
-
-        flex: 0 0 auto;
     }
 
-    /*
-       Informacja o zaznaczeniu i synchronizacji
-       nie mogą zostać ściśnięte.
-    */
-
     #selectedInfo {
-        flex: 0 0 auto;
-
-        white-space: nowrap;
-
         font-size: 10px;
+        padding: 0 3px;
     }
 
     #syncStatus {
-        flex: 0 0 auto;
+        max-width: 115px;
 
-        max-width: none;
+        overflow: hidden;
 
-        overflow: visible;
-
-        text-overflow: clip;
+        text-overflow: ellipsis;
 
         font-size: 10px;
-
-        white-space: nowrap;
-    }
-
-    /*
-       Dropdown musi wychodzić poza belkę.
-    */
-
-    .moreDropdown {
-        position: fixed;
-
-        top: calc(var(--topbar-height) - 1px);
-
-        right: 5px;
-
-        z-index: 3000;
     }
 
     .yearSummary {
@@ -887,6 +882,10 @@ input[type="checkbox"] {
 
 <body>
 
+<!-- =========================================================
+     LOGIN
+     ========================================================= -->
+
 <div id="loginScreen">
 
     <div class="loginBox">
@@ -922,6 +921,10 @@ input[type="checkbox"] {
 </div>
 
 
+<!-- =========================================================
+     APLIKACJA
+     ========================================================= -->
+
 <div id="application">
 
     <div class="topbar" id="topbar">
@@ -944,7 +947,7 @@ input[type="checkbox"] {
 
         <button
             id="selectAllButton"
-            onclick="selectAllVisible()"
+            onclick="toggleSelectAll()"
         >
             Zaznacz
         </button>
@@ -956,12 +959,20 @@ input[type="checkbox"] {
             Ustaw dla zaznaczonych
         </button>
 
+        <!-- RĘCZNA SYNCHRONIZACJA -->
+        <button
+            id="syncButton"
+            onclick="manualSync()"
+        >
+            🔄 Synchronizuj
+        </button>
+
         <!-- DESKTOP -->
         <button
             class="desktopOnly"
             onclick="clearSelected()"
         >
-            Wyczyść
+            🧹 Wyczyść
         </button>
 
         <button
@@ -975,7 +986,7 @@ input[type="checkbox"] {
             class="desktopOnly"
             onclick="restoreData()"
         >
-            Przywróć
+            📂 Przywróć
         </button>
 
         <button
@@ -989,7 +1000,6 @@ input[type="checkbox"] {
 
         <span
             id="selectedInfo"
-            class="userInfo"
         >
             Zaznaczono: 0
         </span>
@@ -1002,7 +1012,7 @@ input[type="checkbox"] {
             class="desktopOnly"
             onclick="logout()"
         >
-            Wyloguj
+            🚪 Wyloguj
         </button>
 
         <!-- MOBILE MENU -->
@@ -1048,6 +1058,10 @@ input[type="checkbox"] {
     </div>
 
 
+    <!-- =====================================================
+         PODSUMOWANIE ROCZNE
+         ===================================================== -->
+
     <div
         class="yearSummary"
         id="yearSummary"
@@ -1058,38 +1072,94 @@ input[type="checkbox"] {
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Przepracowane</span>
-            <span class="summaryValue" id="sumWork">0:00</span>
+            <span class="summaryLabel">
+                Przepracowane
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumWork"
+            >
+                0:00
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Delegacja</span>
-            <span class="summaryValue" id="sumDelegation">0</span>
+            <span class="summaryLabel">
+                Delegacja
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumDelegation"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Urlop</span>
-            <span class="summaryValue" id="sumVacation">0</span>
+            <span class="summaryLabel">
+                Urlop
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumVacation"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">L4</span>
-            <span class="summaryValue" id="sumSick">0</span>
+            <span class="summaryLabel">
+                L4
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumSick"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Święto</span>
-            <span class="summaryValue" id="sumHoliday">0</span>
+            <span class="summaryLabel">
+                Święto
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumHoliday"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Wolne</span>
-            <span class="summaryValue" id="sumFree">0</span>
+            <span class="summaryLabel">
+                Wolne
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumFree"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Razem</span>
-            <span class="summaryValue" id="sumTotal">0</span>
+            <span class="summaryLabel">
+                Razem
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumTotal"
+            >
+                0
+            </span>
         </div>
 
         <div
@@ -1106,6 +1176,10 @@ input[type="checkbox"] {
 
 </div>
 
+
+<!-- =========================================================
+     MODAL
+     ========================================================= -->
 
 <div
     class="modal"
@@ -1312,6 +1386,10 @@ function toggleMoreMenu(event) {
             "moreDropdown"
         );
 
+    if (!menu) {
+        return;
+    }
+
     menu.classList.toggle("show");
 }
 
@@ -1338,9 +1416,16 @@ document.addEventListener(
                 ".moreMenu"
             );
 
+        const dropdown =
+            document.getElementById(
+                "moreDropdown"
+            );
+
         if (
             menu &&
-            !menu.contains(event.target)
+            dropdown &&
+            !menu.contains(event.target) &&
+            !dropdown.contains(event.target)
         ) {
 
             closeMoreMenu();
@@ -2037,6 +2122,8 @@ function render() {
             }
 
 
+            /* CHECKBOX */
+
             const tdCheck =
                 document.createElement(
                     "td"
@@ -2098,6 +2185,8 @@ function render() {
             );
 
 
+            /* DATA */
+
             const tdDate =
                 document.createElement(
                     "td"
@@ -2114,9 +2203,11 @@ function render() {
             );
 
 
+            /* DZIEŃ */
+
             const tdDay =
                 document.createElement(
-                "td"
+                    "td"
                 );
 
             tdDay.className =
@@ -2131,6 +2222,8 @@ function render() {
                 tdDay
             );
 
+
+            /* OD */
 
             const tdFrom =
                 document.createElement(
@@ -2157,6 +2250,8 @@ function render() {
             );
 
 
+            /* DO */
+
             const tdTo =
                 document.createElement(
                     "td"
@@ -2181,6 +2276,8 @@ function render() {
                 tdTo
             );
 
+
+            /* RODZAJ */
 
             const tdType =
                 document.createElement(
@@ -2243,6 +2340,8 @@ function render() {
             );
 
 
+            /* PROJEKT */
+
             const tdProject =
                 document.createElement(
                     "td"
@@ -2271,6 +2370,8 @@ function render() {
             );
 
 
+            /* UWAGI */
+
             const tdNote =
                 document.createElement(
                     "td"
@@ -2298,6 +2399,8 @@ function render() {
                 tdNote
             );
 
+
+            /* ZAPIS */
 
             function saveRow() {
 
@@ -2408,6 +2511,8 @@ function render() {
     renderSummary();
 
     updateSelectedCount();
+
+    updateSelectAllButton();
 
     setTimeout(
         updateTopLayout,
@@ -2667,21 +2772,77 @@ function updateSelectedCount() {
 }
 
 
-function selectAllVisible() {
+/*
+   Ustala stan przycisku Zaznacz.
+*/
+function updateSelectAllButton() {
+
+    const button =
+        document.getElementById(
+            "selectAllButton"
+        );
+
+    if (!button) {
+        return;
+    }
 
     const rows =
         document.querySelectorAll(
             "#app tbody tr"
         );
 
-    /*
-       Jeżeli wszystkie widoczne dni są już zaznaczone,
-       kliknięcie oznacza ODZNACZENIE wszystkich.
-       W przeciwnym przypadku zaznaczamy wszystkie.
-    */
+    if (rows.length === 0) {
+        button.textContent = "Zaznacz";
+        return;
+    }
 
-    let allSelected =
-        rows.length > 0;
+    let allSelected = true;
+
+    rows.forEach(
+        tr => {
+
+            const checkbox =
+                tr.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+            if (
+                checkbox &&
+                !checkbox.checked
+            ) {
+
+                allSelected = false;
+            }
+        }
+    );
+
+    button.textContent =
+        allSelected
+            ? "Odznacz"
+            : "Zaznacz";
+}
+
+
+/*
+   NOWE DZIAŁANIE:
+
+   Zaznacz -> zaznacza wszystkie
+   Odznacz -> odznacza wszystkie
+*/
+function toggleSelectAll() {
+
+    const rows =
+        document.querySelectorAll(
+            "#app tbody tr"
+        );
+
+    if (rows.length === 0) {
+        return;
+    }
+
+
+    let allSelected = true;
+
 
     rows.forEach(
         tr => {
@@ -2702,45 +2863,55 @@ function selectAllVisible() {
     );
 
 
+    /*
+       Jeżeli wszystko było zaznaczone,
+       teraz wszystko odznaczamy.
+    */
+
     if (allSelected) {
 
-        clearSelected();
+        selectedDates.clear();
 
-        return;
+    } else {
+
+        /*
+           Jeżeli nie wszystko było zaznaczone,
+           zaznaczamy wszystkie dni.
+        */
+
+        rows.forEach(
+            tr => {
+
+                const checkbox =
+                    tr.querySelector(
+                        'input[type="checkbox"]'
+                    );
+
+                if (!checkbox) {
+                    return;
+                }
+
+                const dateCell =
+                    tr.children[1];
+
+                if (!dateCell) {
+                    return;
+                }
+
+                const key =
+                    dateCell.textContent.trim();
+
+                if (key) {
+                    selectedDates.add(key);
+                }
+            }
+        );
     }
 
 
-    rows.forEach(
-        tr => {
-
-            const checkbox =
-                tr.querySelector(
-                    'input[type="checkbox"]'
-                );
-
-            if (!checkbox) {
-                return;
-            }
-
-            checkbox.checked =
-                true;
-
-            const row =
-                checkbox.closest("tr");
-
-            if (row) {
-
-                row.classList.add(
-                    "selectedRow"
-                );
-            }
-        }
-    );
-
-
     /*
-       Nie wywołujemy eventu "change" dla każdego
-       checkboxa, tylko aktualizujemy Set bezpośrednio.
+       Aktualizacja wszystkich checkboxów
+       bez wywoływania eventów change.
     */
 
     rows.forEach(
@@ -2765,17 +2936,23 @@ function selectAllVisible() {
             const key =
                 dateCell.textContent.trim();
 
-            if (checkbox.checked) {
+            const checked =
+                selectedDates.has(key);
 
-                selectedDates.add(
-                    key
-                );
-            }
+            checkbox.checked =
+                checked;
+
+            tr.classList.toggle(
+                "selectedRow",
+                checked
+            );
         }
     );
 
 
     updateSelectedCount();
+
+    updateSelectAllButton();
 }
 
 
@@ -2807,6 +2984,29 @@ function clearSelected() {
         );
 
     updateSelectedCount();
+
+    updateSelectAllButton();
+}
+
+
+/* =========================================================
+   RĘCZNA SYNCHRONIZACJA
+   ========================================================= */
+
+async function manualSync() {
+
+    if (syncing) {
+        return;
+    }
+
+    setSyncPending();
+
+    document.getElementById(
+        "savedInfo"
+    ).textContent =
+        "Ręczna synchronizacja...";
+
+    await syncAll(true);
 }
 
 
