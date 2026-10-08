@@ -3535,7 +3535,7 @@ async function pushDay(
         userResult.data.user;
 
     if (!user) {
-        return;
+        return null;
     }
 
 
@@ -3589,7 +3589,7 @@ async function pushDay(
     };
 
 
-    const { error } =
+    const { data: result, error } =
         await supabaseClient.rpc(
             "sync_worktime_entry",
             payload
@@ -3605,6 +3605,9 @@ async function pushDay(
 
         throw error;
     }
+
+
+    return result;
 }
 
 
@@ -3641,7 +3644,11 @@ async function syncAll(
         }
 
 
-        const years = [];
+        /*
+         * =====================================================
+         * PRZECHODZIMY PO WSZYSTKICH LATACH
+         * =====================================================
+         */
 
         for (
             let year = MIN_YEAR;
@@ -3649,13 +3656,11 @@ async function syncAll(
             year++
         ) {
 
-            years.push(year);
-        }
-
-
-        for (
-            const year of years
-        ) {
+            /*
+             * -------------------------------------------------
+             * POBIERZ AKTUALNE DANE Z SUPABASE
+             * -------------------------------------------------
+             */
 
             const {
                 data: remoteRows,
@@ -3677,11 +3682,11 @@ async function syncAll(
             if (error) {
 
                 console.error(
-                    "Błąd pobierania:",
+                    `Błąd pobierania roku ${year}:`,
                     error
                 );
 
-                continue;
+                throw error;
             }
 
 
@@ -3691,6 +3696,12 @@ async function syncAll(
             const localMeta =
                 loadMeta(year);
 
+
+            /*
+             * -------------------------------------------------
+             * MAPA DANYCH Z SUPABASE
+             * -------------------------------------------------
+             */
 
             const remoteMap = {};
 
@@ -3705,6 +3716,12 @@ async function syncAll(
             );
 
 
+            /*
+             * -------------------------------------------------
+             * NAJPIERW OBSŁUGUJEMY DNI, KTÓRE SĄ LOKALNIE
+             * -------------------------------------------------
+             */
+
             for (
                 const key of Object.keys(
                     localData
@@ -3712,29 +3729,49 @@ async function syncAll(
             ) {
 
                 const localModified =
-                    localMeta[key] || 0;
+                    Number(
+                        localMeta[key] || 0
+                    );
 
                 const remote =
                     remoteMap[key];
 
 
+                /*
+                 * ---------------------------------------------
+                 * BRAK REKORDU W SUPABASE
+                 * ---------------------------------------------
+                 */
+
                 if (!remote) {
 
-                    try {
+                    /*
+                     * Jeżeli lokalny wpis istnieje,
+                     * wysyłamy go na serwer.
+                     */
 
-                        await pushDay(
-                            year,
-                            key
-                        );
+                    await pushDay(
+                        year,
+                        key
+                    );
 
-                    } catch (e) {
-
-                        console.error(e);
-                    }
+                    /*
+                     * Nie mamy tutaj jeszcze pewności,
+                     * jaki dokładnie timestamp nadał serwer.
+                     *
+                     * W kolejnym pobraniu dostaniemy
+                     * rzeczywisty modified_at.
+                     */
 
                     continue;
                 }
 
+
+                /*
+                 * ---------------------------------------------
+                 * PORÓWNANIE CZASÓW
+                 * ---------------------------------------------
+                 */
 
                 const remoteModified =
                     remote.modified_at
@@ -3744,49 +3781,65 @@ async function syncAll(
                         : 0;
 
 
+                /*
+                 * ---------------------------------------------
+                 * LOKALNA WERSJA JEST Nowsza
+                 * ---------------------------------------------
+                 */
+
                 if (
                     localModified >
                     remoteModified
                 ) {
 
-                    try {
+                    await pushDay(
+                        year,
+                        key
+                    );
 
-                        await pushDay(
-                            year,
-                            key
-                        );
-
-                    } catch (e) {
-
-                        console.error(e);
-                    }
-
-                } else {
-
-                    localData[key] = {
-
-                        from:
-                            remote.from_time || "",
-
-                        to:
-                            remote.to_time || "",
-
-                        type:
-                            remote.work_type || "",
-
-                        project:
-                            remote.project || "",
-
-                        note:
-                            remote.note || ""
-                    };
-
-
-                    localMeta[key] =
-                        remoteModified;
+                    continue;
                 }
+
+
+                /*
+                 * ---------------------------------------------
+                 * SUPABASE JEST Nowsze
+                 * LUB CZASY SĄ IDENTYCZNE
+                 * ---------------------------------------------
+                 *
+                 * W tej sytuacji przyjmujemy wersję
+                 * znajdującą się na serwerze.
+                 */
+
+                localData[key] = {
+
+                    from:
+                        remote.from_time || "",
+
+                    to:
+                        remote.to_time || "",
+
+                    type:
+                        remote.work_type || "",
+
+                    project:
+                        remote.project || "",
+
+                    note:
+                        remote.note || ""
+                };
+
+
+                localMeta[key] =
+                    remoteModified;
             }
 
+
+            /*
+             * -------------------------------------------------
+             * DNI, KTÓRE ISTNIEJĄ TYLKO NA SUPABASE
+             * -------------------------------------------------
+             */
 
             for (
                 const key of Object.keys(
@@ -3795,8 +3848,12 @@ async function syncAll(
             ) {
 
                 if (
-                    localData[key]
+                    Object.prototype.hasOwnProperty.call(
+                        localData,
+                        key
+                    )
                 ) {
+
                     continue;
                 }
 
@@ -3833,6 +3890,12 @@ async function syncAll(
             }
 
 
+            /*
+             * -------------------------------------------------
+             * ZAPIS LOKALNY
+             * -------------------------------------------------
+             */
+
             saveYear(
                 year,
                 localData
@@ -3844,6 +3907,137 @@ async function syncAll(
             );
         }
 
+
+        /*
+         * =====================================================
+         * DRUGI ODCZYT
+         * =====================================================
+         *
+         * Jest celowo.
+         *
+         * Jeżeli coś zostało wysłane na Supabase,
+         * pobieramy ponownie dane, żeby urządzenie miało
+         * dokładnie taki stan jak serwer.
+         * =====================================================
+         */
+
+        const {
+            data: finalRows,
+            error: finalError
+        } =
+            await supabaseClient
+                .from("worktime_entries")
+                .select("*")
+                .eq(
+                    "user_id",
+                    user.id
+                );
+
+
+        if (finalError) {
+
+            throw finalError;
+        }
+
+
+        /*
+         * Grupujemy końcowe dane według roku.
+         */
+
+        const finalByYear = {};
+
+
+        (finalRows || []).forEach(
+            row => {
+
+                if (!finalByYear[row.year]) {
+                    finalByYear[row.year] = [];
+                }
+
+                finalByYear[row.year].push(
+                    row
+                );
+            }
+        );
+
+
+        /*
+         * Zapisujemy stan serwera lokalnie.
+         *
+         * UWAGA:
+         * Nie kasujemy lokalnych rekordów, których serwer
+         * nie zwrócił, ponieważ mogły właśnie zostać wysłane.
+         */
+
+        for (
+            let year = MIN_YEAR;
+            year <= MAX_YEAR;
+            year++
+        ) {
+
+            const rows =
+                finalByYear[year] || [];
+
+            const data =
+                loadYear(year);
+
+            const meta =
+                loadMeta(year);
+
+
+            rows.forEach(
+                row => {
+
+                    const key =
+                        row.work_date;
+
+
+                    data[key] = {
+
+                        from:
+                            row.from_time || "",
+
+                        to:
+                            row.to_time || "",
+
+                        type:
+                            row.work_type || "",
+
+                        project:
+                            row.project || "",
+
+                        note:
+                            row.note || ""
+                    };
+
+
+                    meta[key] =
+                        row.modified_at
+                            ? new Date(
+                                row.modified_at
+                              ).getTime()
+                            : Date.now();
+                }
+            );
+
+
+            saveYear(
+                year,
+                data
+            );
+
+            saveMeta(
+                year,
+                meta
+            );
+        }
+
+
+        /*
+         * =====================================================
+         * ODBUDOWANIE EKRANU
+         * =====================================================
+         */
 
         render();
 
@@ -3863,13 +4057,13 @@ async function syncAll(
             e
         );
 
-        setSyncOffline();
+        setSyncError();
 
 
         document.getElementById(
             "savedInfo"
         ).textContent =
-            "Dane lokalne — oczekują na synchronizację";
+            "Błąd synchronizacji — dane lokalne zachowane";
 
 
     } finally {
