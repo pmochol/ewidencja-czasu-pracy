@@ -12,8 +12,6 @@
 <style>
 :root {
     --topbar-height: 58px;
-    --summary-height: 50px;
-    --header-offset: 118px;
 }
 
 * {
@@ -26,7 +24,7 @@ html {
 
 body {
     margin: 0;
-    padding-top: calc(var(--topbar-height) + var(--summary-height) + 10px);
+    padding: 0;
     font-family: Arial, sans-serif;
     background: #f5f5f5;
     color: #222;
@@ -41,13 +39,14 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+
+    z-index: 2000;
 
     min-height: 58px;
 
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 
     padding: 8px 10px;
 
@@ -60,12 +59,18 @@ body {
 .topbar button,
 .topbar select {
     height: 36px;
+
     border: 1px solid #666;
     border-radius: 5px;
+
     background: #333;
     color: white;
+
     padding: 0 10px;
+
     cursor: pointer;
+
+    font-size: 13px;
 }
 
 .topbar button:hover,
@@ -74,43 +79,139 @@ body {
 }
 
 .topbar select {
-    min-width: 100px;
+    min-width: 80px;
+}
+
+.topbar-title {
+    font-weight: bold;
+    margin-right: 5px;
+    white-space: nowrap;
 }
 
 .spacer {
     flex: 1;
 }
 
-.userInfo {
+/* =========================================================
+   STATUS SYNCHRONIZACJI
+   ========================================================= */
+
+#syncStatus {
     white-space: nowrap;
-    font-size: 13px;
-    color: #ddd;
+
+    font-size: 12px;
+    color: #ccc;
+
+    padding: 0 5px;
+}
+
+.sync-ok {
+    color: #81c784 !important;
+}
+
+.sync-offline {
+    color: #ffcc80 !important;
+}
+
+.sync-error {
+    color: #ef9a9a !important;
 }
 
 /* =========================================================
-   PODSUMOWANIE
+   MENU "WIĘCEJ"
    ========================================================= */
 
-.summary {
-    position: fixed;
-    top: var(--topbar-height);
-    left: 0;
+.moreMenu {
+    position: relative;
+    display: none;
+}
+
+.moreButton {
+    white-space: nowrap;
+}
+
+.moreDropdown {
+    display: none;
+
+    position: absolute;
+
     right: 0;
+    top: calc(100% + 5px);
 
-    z-index: 999;
+    min-width: 170px;
 
+    padding: 5px;
+
+    background: #333;
+
+    border: 1px solid #666;
+    border-radius: 6px;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,.3);
+}
+
+.moreDropdown.show {
+    display: block;
+}
+
+.moreDropdown button {
+    display: block;
+
+    width: 100%;
+
+    height: 38px;
+
+    margin: 2px 0;
+
+    text-align: left;
+
+    background: #333;
+    border: 0;
+}
+
+.moreDropdown button:hover {
+    background: #444;
+}
+
+/* =========================================================
+   GŁÓWNA ZAWARTOŚĆ
+   ========================================================= */
+
+#application {
+    padding-top: var(--topbar-height);
+}
+
+#app {
+    width: 100%;
+}
+
+/* =========================================================
+   PODSUMOWANIE ROCZNE
+   NIE JEST FIXED
+   ========================================================= */
+
+.yearSummary {
     display: flex;
     flex-wrap: wrap;
-    align-items: stretch;
 
     gap: 5px;
 
-    padding: 5px 8px;
+    padding: 7px 8px;
 
     background: white;
+
     border-bottom: 1px solid #ccc;
 
-    box-shadow: 0 2px 5px rgba(0,0,0,.12);
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.summaryTitle {
+    width: 100%;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    padding: 2px 3px 4px;
 }
 
 .summaryCard {
@@ -118,7 +219,7 @@ body {
 
     flex: 1 1 85px;
 
-    padding: 4px 8px;
+    padding: 4px 7px;
 
     text-align: center;
 
@@ -132,46 +233,47 @@ body {
 
 .summaryLabel {
     display: block;
-    font-size: 11px;
+
+    font-size: 10px;
+
     color: #666;
 }
 
 .summaryValue {
     display: block;
-    font-size: 16px;
+
+    font-size: 15px;
     font-weight: bold;
 }
 
 .summarySaved {
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    min-width: 110px;
+    min-width: 150px;
 
     padding: 4px 8px;
 
     font-size: 11px;
+
     color: #555;
 }
 
 /* =========================================================
-   GŁÓWNA ZAWARTOŚĆ
+   MIESIĄC
    ========================================================= */
 
-#app {
-    width: 100%;
-}
-
 .monthContainer {
-    margin: 12px 8px 20px 8px;
+    margin: 12px 8px 20px;
 
     background: white;
 
     border: 1px solid #ccc;
     border-radius: 6px;
 
-    overflow: hidden;
+    overflow: visible;
 }
 
 .monthTitle {
@@ -182,6 +284,79 @@ body {
 
     font-size: 16px;
     font-weight: bold;
+
+    border-radius: 5px 5px 0 0;
+}
+
+/* =========================================================
+   PODSUMOWANIE MIESIĘCZNE
+   STICKY DLA DANEGO MIESIĄCA
+   ========================================================= */
+
+.monthSummary {
+    position: sticky;
+
+    top: var(--topbar-height);
+
+    z-index: 1000;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 4px;
+
+    padding: 5px;
+
+    background: white;
+
+    border-bottom: 1px solid #ccc;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,.12);
+}
+
+.monthSummaryTitle {
+    display: flex;
+    align-items: center;
+
+    padding: 3px 7px;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+.monthSummaryCard {
+    min-width: 65px;
+
+    flex: 1 1 65px;
+
+    padding: 3px 5px;
+
+    text-align: center;
+
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+    background: #fafafa;
+
+    line-height: 1.1;
+}
+
+.monthSummaryLabel {
+    display: block;
+
+    font-size: 9px;
+
+    color: #666;
+}
+
+.monthSummaryValue {
+    display: block;
+
+    font-size: 13px;
+
+    font-weight: bold;
 }
 
 /* =========================================================
@@ -190,31 +365,38 @@ body {
 
 .tableWrapper {
     width: 100%;
+
     overflow-x: auto;
 }
 
 table {
     width: 100%;
+
     border-collapse: collapse;
+
     table-layout: fixed;
 }
 
 th,
 td {
     border: 1px solid #ddd;
+
     padding: 4px 5px;
+
     font-size: 13px;
 }
 
 th {
     position: sticky;
-    top: var(--header-offset);
 
-    z-index: 20;
+    top: calc(var(--topbar-height) + 50px);
+
+    z-index: 900;
 
     background: #e8e8e8;
 
     font-weight: bold;
+
     text-align: center;
 }
 
@@ -312,19 +494,10 @@ input[type="checkbox"] {
     background: #fff3cd !important;
 }
 
-.vacationDay.selectedRow td {
-    background: #fff3cd !important;
-}
-
-/* =========================================================
-   ZAZNACZENIE
-   ========================================================= */
-
 .selectedRow td {
     background: #eef5ff !important;
 }
 
-/* Urlop ma mieć priorytet nad zaznaczeniem */
 .selectedRow.vacationDay td {
     background: #fff3cd !important;
 }
@@ -340,6 +513,7 @@ input[type="checkbox"] {
     z-index: 5000;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -361,6 +535,7 @@ input[type="checkbox"] {
 
 .loginBox h2 {
     margin-top: 0;
+
     text-align: center;
 }
 
@@ -397,16 +572,18 @@ input[type="checkbox"] {
 
 .loginMessage {
     min-height: 20px;
+
     margin-top: 10px;
 
     text-align: center;
 
     color: #c00;
+
     font-size: 13px;
 }
 
 /* =========================================================
-   MODALE
+   MODAL
    ========================================================= */
 
 .modal {
@@ -416,6 +593,7 @@ input[type="checkbox"] {
     z-index: 4000;
 
     display: none;
+
     align-items: center;
     justify-content: center;
 
@@ -426,6 +604,7 @@ input[type="checkbox"] {
     width: min(500px, calc(100% - 30px));
 
     max-height: 90vh;
+
     overflow: auto;
 
     padding: 20px;
@@ -441,7 +620,9 @@ input[type="checkbox"] {
 
 .modalButtons {
     display: flex;
+
     gap: 8px;
+
     justify-content: flex-end;
 
     margin-top: 15px;
@@ -479,11 +660,15 @@ input[type="checkbox"] {
     .topbar {
         min-height: 0;
 
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
 
         padding: 6px;
 
         gap: 5px;
+    }
+
+    .topbar-title {
+        display: none;
     }
 
     .topbar button,
@@ -495,22 +680,52 @@ input[type="checkbox"] {
         font-size: 12px;
     }
 
-    .userInfo {
-        width: 100%;
-        order: 20;
+    /* Najważniejsze zostają na belce */
 
-        font-size: 11px;
-        text-align: right;
+    #todayButton {
+        display: inline-block;
     }
 
-    .summary {
-        gap: 3px;
-        padding: 4px;
+    #yearSelect {
+        min-width: 65px;
+    }
+
+    #selectAllButton {
+        display: inline-block;
+    }
+
+    #bulkButton {
+        display: inline-block;
+    }
+
+    /* Mniej ważne trafiają do menu */
+
+    .desktopOnly {
+        display: none !important;
+    }
+
+    .moreMenu {
+        display: block;
+    }
+
+    #syncStatus {
+        max-width: 95px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        font-size: 10px;
+    }
+
+    .yearSummary {
+        padding: 5px;
     }
 
     .summaryCard {
-        min-width: 70px;
-        flex: 1 1 70px;
+        min-width: 65px;
+
+        flex: 1 1 65px;
 
         padding: 3px 4px;
     }
@@ -520,11 +735,12 @@ input[type="checkbox"] {
     }
 
     .summaryValue {
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .summarySaved {
-        min-width: 80px;
+        min-width: 100px;
+
         font-size: 9px;
     }
 
@@ -535,6 +751,34 @@ input[type="checkbox"] {
 
     .monthTitle {
         font-size: 14px;
+    }
+
+    .monthSummary {
+        gap: 2px;
+
+        padding: 4px;
+    }
+
+    .monthSummaryTitle {
+        width: 100%;
+
+        padding: 2px 4px;
+    }
+
+    .monthSummaryCard {
+        min-width: 55px;
+
+        flex: 1 1 55px;
+
+        padding: 2px 3px;
+    }
+
+    .monthSummaryLabel {
+        font-size: 8px;
+    }
+
+    .monthSummaryValue {
+        font-size: 11px;
     }
 
     th,
@@ -580,7 +824,7 @@ input[type="checkbox"] {
 <body>
 
 <!-- =========================================================
-     EKRAN LOGOWANIA
+     LOGIN
      ========================================================= -->
 
 <div id="loginScreen">
@@ -622,98 +866,240 @@ input[type="checkbox"] {
      APLIKACJA
      ========================================================= -->
 
-<div id="application" style="display:none;">
+<div id="application">
 
     <div class="topbar" id="topbar">
 
-        <button onclick="goToday()">
-            Dzisiaj
+        <span class="topbar-title">
+            Ewidencja czasu pracy
+        </span>
+
+        <button
+            id="todayButton"
+            onclick="goToday()"
+        >
+            📅 Dzisiaj
         </button>
 
-        <select id="yearSelect" onchange="changeYear(this.value)">
-        </select>
+        <select
+            id="yearSelect"
+            onchange="changeYear(this.value)"
+        ></select>
 
-        <button onclick="selectAllVisible()">
+        <button
+            id="selectAllButton"
+            onclick="selectAllVisible()"
+        >
             Zaznacz
         </button>
 
-        <button onclick="clearSelected()">
-            Wyczyść
-        </button>
-
-        <button onclick="bulkEdit()">
+        <button
+            id="bulkButton"
+            onclick="bulkEdit()"
+        >
             Ustaw dla zaznaczonych
         </button>
 
-        <button onclick="backupData()">
-            Backup
+        <!-- DESKTOP -->
+        <button
+            class="desktopOnly"
+            onclick="clearSelected()"
+        >
+            Wyczyść
         </button>
 
-        <button onclick="restoreData()">
+        <button
+            class="desktopOnly"
+            onclick="backupData()"
+        >
+            💾 Backup
+        </button>
+
+        <button
+            class="desktopOnly"
+            onclick="restoreData()"
+        >
             Przywróć
         </button>
 
-        <button onclick="exportExcel()">
-            Excel
+        <button
+            class="desktopOnly"
+            onclick="exportExcel()"
+        >
+            📊 Excel
         </button>
 
         <div class="spacer"></div>
 
-        <span id="selectedInfo" class="userInfo">
+        <span
+            id="selectedInfo"
+            class="userInfo"
+        >
             Zaznaczono: 0
         </span>
 
-        <span id="userEmail" class="userInfo"></span>
+        <span id="syncStatus">
+            Offline/local
+        </span>
 
-        <button onclick="logout()">
+        <button
+            class="desktopOnly"
+            onclick="logout()"
+        >
             Wyloguj
         </button>
+
+        <!-- MOBILE MENU -->
+
+        <div class="moreMenu">
+
+            <button
+                class="moreButton"
+                onclick="toggleMoreMenu(event)"
+            >
+                ⋮ Więcej
+            </button>
+
+            <div
+                id="moreDropdown"
+                class="moreDropdown"
+            >
+
+                <button onclick="clearSelected(); closeMoreMenu();">
+                    🧹 Wyczyść
+                </button>
+
+                <button onclick="backupData(); closeMoreMenu();">
+                    💾 Backup
+                </button>
+
+                <button onclick="restoreData(); closeMoreMenu();">
+                    📂 Przywróć
+                </button>
+
+                <button onclick="exportExcel(); closeMoreMenu();">
+                    📊 Excel
+                </button>
+
+                <button onclick="logout(); closeMoreMenu();">
+                    🚪 Wyloguj
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
 
     <!-- =====================================================
-         PODSUMOWANIE
+         PODSUMOWANIE ROCZNE
          ===================================================== -->
 
-    <div class="summary" id="summary">
+    <div
+        class="yearSummary"
+        id="yearSummary"
+    >
 
-        <div class="summaryCard">
-            <span class="summaryLabel">Przepracowane</span>
-            <span class="summaryValue" id="sumWork">0:00</span>
+        <div class="summaryTitle">
+            Podsumowanie roku
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Delegacja</span>
-            <span class="summaryValue" id="sumDelegation">0</span>
+            <span class="summaryLabel">
+                Przepracowane
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumWork"
+            >
+                0:00
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Urlop</span>
-            <span class="summaryValue" id="sumVacation">0</span>
+            <span class="summaryLabel">
+                Delegacja
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumDelegation"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">L4</span>
-            <span class="summaryValue" id="sumSick">0</span>
+            <span class="summaryLabel">
+                Urlop
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumVacation"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Święto</span>
-            <span class="summaryValue" id="sumHoliday">0</span>
+            <span class="summaryLabel">
+                L4
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumSick"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Wolne</span>
-            <span class="summaryValue" id="sumFree">0</span>
+            <span class="summaryLabel">
+                Święto
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumHoliday"
+            >
+                0
+            </span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">Razem</span>
-            <span class="summaryValue" id="sumTotal">0</span>
+            <span class="summaryLabel">
+                Wolne
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumFree"
+            >
+                0
+            </span>
         </div>
 
-        <div class="summarySaved" id="savedInfo">
+        <div class="summaryCard">
+            <span class="summaryLabel">
+                Razem
+            </span>
+
+            <span
+                class="summaryValue"
+                id="sumTotal"
+            >
+                0
+            </span>
+        </div>
+
+        <div
+            class="summarySaved"
+            id="savedInfo"
+        >
             Gotowe
         </div>
 
@@ -726,27 +1112,54 @@ input[type="checkbox"] {
 
 
 <!-- =========================================================
-     MODAL EDYCJI
+     MODAL
      ========================================================= -->
 
-<div class="modal" id="editModal">
+<div
+    class="modal"
+    id="editModal"
+>
 
     <div class="modalBox">
 
-        <h3>Ustaw dla zaznaczonych</h3>
+        <h3>
+            Ustaw dla zaznaczonych
+        </h3>
 
         <label>
             Rodzaj:
         </label>
 
         <select id="bulkType">
-            <option value="">Bez zmiany</option>
-            <option value="Praca">Praca</option>
-            <option value="Delegacja">Delegacja</option>
-            <option value="Urlop">Urlop</option>
-            <option value="L4">L4</option>
-            <option value="Święto">Święto</option>
-            <option value="Wolne">Wolne</option>
+
+            <option value="">
+                Bez zmiany
+            </option>
+
+            <option value="Praca">
+                Praca
+            </option>
+
+            <option value="Delegacja">
+                Delegacja
+            </option>
+
+            <option value="Urlop">
+                Urlop
+            </option>
+
+            <option value="L4">
+                L4
+            </option>
+
+            <option value="Święto">
+                Święto
+            </option>
+
+            <option value="Wolne">
+                Wolne
+            </option>
+
         </select>
 
         <br><br>
@@ -794,6 +1207,7 @@ input[type="checkbox"] {
 
 
 <script>
+
 /* =========================================================
    SUPABASE
    ========================================================= */
@@ -855,13 +1269,16 @@ const types = [
 let currentYear =
     new Date().getFullYear();
 
-let selectedDates = new Set();
+let selectedDates =
+    new Set();
 
 let syncing = false;
 
+let syncTimer = null;
+
 
 /* =========================================================
-   LAYOUT GÓRA + PODSUMOWANIE
+   BELKA - DYNAMICZNA WYSOKOŚĆ
    ========================================================= */
 
 function updateTopLayout() {
@@ -869,35 +1286,16 @@ function updateTopLayout() {
     const topbar =
         document.getElementById("topbar");
 
-    const summary =
-        document.getElementById("summary");
-
-    if (!topbar || !summary) {
+    if (!topbar) {
         return;
     }
 
-    const topbarHeight =
+    const height =
         topbar.offsetHeight;
-
-    const summaryHeight =
-        summary.offsetHeight;
-
-    const headerOffset =
-        topbarHeight + summaryHeight;
 
     document.documentElement.style.setProperty(
         "--topbar-height",
-        topbarHeight + "px"
-    );
-
-    document.documentElement.style.setProperty(
-        "--summary-height",
-        summaryHeight + "px"
-    );
-
-    document.documentElement.style.setProperty(
-        "--header-offset",
-        headerOffset + "px"
+        height + "px"
     );
 }
 
@@ -908,19 +1306,77 @@ window.addEventListener(
 
 
 /* =========================================================
+   MENU MOBILE
+   ========================================================= */
+
+function toggleMoreMenu(event) {
+
+    if (event) {
+        event.stopPropagation();
+    }
+
+    const menu =
+        document.getElementById(
+            "moreDropdown"
+        );
+
+    menu.classList.toggle("show");
+}
+
+
+function closeMoreMenu() {
+
+    const menu =
+        document.getElementById(
+            "moreDropdown"
+        );
+
+    if (menu) {
+        menu.classList.remove("show");
+    }
+}
+
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const menu =
+            document.querySelector(
+                ".moreMenu"
+            );
+
+        if (
+            menu &&
+            !menu.contains(event.target)
+        ) {
+
+            closeMoreMenu();
+        }
+    }
+);
+
+
+/* =========================================================
    LOGIN
    ========================================================= */
 
 async function login() {
 
     const email =
-        document.getElementById("loginEmail").value.trim();
+        document.getElementById(
+            "loginEmail"
+        ).value.trim();
 
     const password =
-        document.getElementById("loginPassword").value;
+        document.getElementById(
+            "loginPassword"
+        ).value;
 
     const message =
-        document.getElementById("loginMessage");
+        document.getElementById(
+            "loginMessage"
+        );
 
     message.textContent = "";
 
@@ -951,13 +1407,19 @@ async function login() {
 async function registerUser() {
 
     const email =
-        document.getElementById("loginEmail").value.trim();
+        document.getElementById(
+            "loginEmail"
+        ).value.trim();
 
     const password =
-        document.getElementById("loginPassword").value;
+        document.getElementById(
+            "loginPassword"
+        ).value;
 
     const message =
-        document.getElementById("loginMessage");
+        document.getElementById(
+            "loginMessage"
+        );
 
     message.textContent = "";
 
@@ -983,7 +1445,8 @@ async function registerUser() {
         return;
     }
 
-    message.style.color = "#2e7d32";
+    message.style.color =
+        "#2e7d32";
 
     message.textContent =
         "Konto zostało utworzone. Sprawdź pocztę, jeśli wymagana jest aktywacja.";
@@ -997,7 +1460,7 @@ async function logout() {
 
 
 /* =========================================================
-   AUTH STATE
+   AUTH
    ========================================================= */
 
 supabaseClient.auth.onAuthStateChange(
@@ -1013,11 +1476,6 @@ supabaseClient.auth.onAuthStateChange(
                 "application"
             ).style.display = "block";
 
-            document.getElementById(
-                "userEmail"
-            ).textContent =
-                session.user.email || "";
-
             await startApplication();
 
         } else {
@@ -1029,19 +1487,18 @@ supabaseClient.auth.onAuthStateChange(
             document.getElementById(
                 "loginScreen"
             ).style.display = "flex";
-
         }
 
         setTimeout(
             updateTopLayout,
-            0
+            50
         );
     }
 );
 
 
 /* =========================================================
-   LOCAL STORAGE
+   STORAGE
    ========================================================= */
 
 function getStorageKey(year) {
@@ -1073,10 +1530,7 @@ function loadYear(year) {
 
     } catch (e) {
 
-        console.error(
-            "Błąd odczytu danych:",
-            e
-        );
+        console.error(e);
 
         return {};
     }
@@ -1109,10 +1563,7 @@ function loadMeta(year) {
 
     } catch (e) {
 
-        console.error(
-            "Błąd odczytu metadanych:",
-            e
-        );
+        console.error(e);
 
         return {};
     }
@@ -1129,7 +1580,7 @@ function saveMeta(year, data) {
 
 
 /* =========================================================
-   NORMALIZACJA DNIA
+   NORMALIZACJA
    ========================================================= */
 
 function normalizeDay(value) {
@@ -1191,18 +1642,133 @@ function daysInMonth(year, month) {
 
 
 /* =========================================================
+   PODSUMOWANIE MIESIĄCA
+   ========================================================= */
+
+function calculateMonthSummary(
+    data,
+    year,
+    month
+) {
+
+    let workMinutes = 0;
+
+    let delegation = 0;
+    let vacation = 0;
+    let sick = 0;
+    let holiday = 0;
+    let free = 0;
+
+    const days =
+        daysInMonth(
+            year,
+            month
+        );
+
+    for (
+        let day = 1;
+        day <= days;
+        day++
+    ) {
+
+        const date =
+            new Date(
+                year,
+                month,
+                day
+            );
+
+        const key =
+            dateKey(date);
+
+        const d =
+            normalizeDay(
+                data[key]
+            );
+
+        if (
+            d.from &&
+            d.to
+        ) {
+
+            const from =
+                timeToMinutes(
+                    d.from
+                );
+
+            const to =
+                timeToMinutes(
+                    d.to
+                );
+
+            if (
+                to >= from
+            ) {
+
+                workMinutes +=
+                    to - from;
+            }
+        }
+
+        switch (d.type) {
+
+            case "Delegacja":
+                delegation++;
+                break;
+
+            case "Urlop":
+                vacation++;
+                break;
+
+            case "L4":
+                sick++;
+                break;
+
+            case "Święto":
+                holiday++;
+                break;
+
+            case "Wolne":
+                free++;
+                break;
+        }
+    }
+
+    return {
+
+        workMinutes,
+        delegation,
+        vacation,
+        sick,
+        holiday,
+        free,
+
+        total:
+            delegation +
+            vacation +
+            sick +
+            holiday +
+            free
+    };
+}
+
+
+/* =========================================================
    RENDER
    ========================================================= */
 
 function render() {
 
     const container =
-        document.getElementById("app");
+        document.getElementById(
+            "app"
+        );
 
     const data =
         loadYear(currentYear);
 
     container.innerHTML = "";
+
 
     for (
         let month = 0;
@@ -1211,13 +1777,22 @@ function render() {
     ) {
 
         const monthContainer =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         monthContainer.className =
             "monthContainer";
 
+
+        /* =================================================
+           TYTUŁ MIESIĄCA
+           ================================================= */
+
         const title =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         title.className =
             "monthTitle";
@@ -1225,25 +1800,148 @@ function render() {
         title.textContent =
             `${monthNames[month]} ${currentYear}`;
 
-        monthContainer.appendChild(title);
+        monthContainer.appendChild(
+            title
+        );
 
+
+        /* =================================================
+           PODSUMOWANIE MIESIĄCA
+           ================================================= */
+
+        const monthSummary =
+            calculateMonthSummary(
+                data,
+                currentYear,
+                month
+            );
+
+
+        const summary =
+            document.createElement(
+                "div"
+            );
+
+        summary.className =
+            "monthSummary";
+
+
+        const summaryTitle =
+            document.createElement(
+                "div"
+            );
+
+        summaryTitle.className =
+            "monthSummaryTitle";
+
+        summaryTitle.textContent =
+            "Podsumowanie miesiąca";
+
+        summary.appendChild(
+            summaryTitle
+        );
+
+
+        function addMonthCard(
+            label,
+            value
+        ) {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "monthSummaryCard";
+
+            card.innerHTML = `
+                <span class="monthSummaryLabel">
+                    ${label}
+                </span>
+                <span class="monthSummaryValue">
+                    ${value}
+                </span>
+            `;
+
+            summary.appendChild(
+                card
+            );
+        }
+
+
+        addMonthCard(
+            "Praca",
+            minutesToTime(
+                monthSummary.workMinutes
+            )
+        );
+
+        addMonthCard(
+            "Delegacja",
+            monthSummary.delegation
+        );
+
+        addMonthCard(
+            "Urlop",
+            monthSummary.vacation
+        );
+
+        addMonthCard(
+            "L4",
+            monthSummary.sick
+        );
+
+        addMonthCard(
+            "Święto",
+            monthSummary.holiday
+        );
+
+        addMonthCard(
+            "Wolne",
+            monthSummary.free
+        );
+
+        addMonthCard(
+            "Razem",
+            monthSummary.total
+        );
+
+
+        monthContainer.appendChild(
+            summary
+        );
+
+
+        /* =================================================
+           TABELA
+           ================================================= */
 
         const wrapper =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         wrapper.className =
             "tableWrapper";
 
 
         const table =
-            document.createElement("table");
+            document.createElement(
+                "table"
+            );
 
 
         const thead =
-            document.createElement("thead");
+            document.createElement(
+                "thead"
+            );
 
         const header =
-            document.createElement("tr");
+            document.createElement(
+                "tr"
+            );
+
 
         const headers = [
             "✓",
@@ -1256,23 +1954,38 @@ function render() {
             "Uwagi"
         ];
 
-        headers.forEach(text => {
 
-            const th =
-                document.createElement("th");
+        headers.forEach(
+            text => {
 
-            th.textContent =
-                text;
+                const th =
+                    document.createElement(
+                        "th"
+                    );
 
-            header.appendChild(th);
-        });
+                th.textContent =
+                    text;
 
-        thead.appendChild(header);
-        table.appendChild(thead);
+                header.appendChild(
+                    th
+                );
+            }
+        );
+
+
+        thead.appendChild(
+            header
+        );
+
+        table.appendChild(
+            thead
+        );
 
 
         const tbody =
-            document.createElement("tbody");
+            document.createElement(
+                "tbody"
+            );
 
 
         const count =
@@ -1305,12 +2018,16 @@ function render() {
 
 
             const tr =
-                document.createElement("tr");
+                document.createElement(
+                    "tr"
+                );
 
 
             if (
                 key ===
-                dateKey(new Date())
+                dateKey(
+                    new Date()
+                )
             ) {
 
                 tr.classList.add(
@@ -1319,12 +2036,9 @@ function render() {
             }
 
 
-            /* ==============================
-               URLOP
-               ============================== */
-
             if (
-                old.type === "Urlop"
+                old.type ===
+                "Urlop"
             ) {
 
                 tr.classList.add(
@@ -1343,19 +2057,21 @@ function render() {
             }
 
 
-            /* ==============================
-               CHECKBOX
-               ============================== */
+            /* CHECKBOX */
 
             const tdCheck =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             tdCheck.className =
                 "center";
 
 
             const checkbox =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
             checkbox.type =
                 "checkbox";
@@ -1372,17 +2088,23 @@ function render() {
                         checkbox.checked
                     ) {
 
-                        selectedDates.add(key);
+                        selectedDates.add(
+                            key
+                        );
 
                     } else {
 
-                        selectedDates.delete(key);
+                        selectedDates.delete(
+                            key
+                        );
                     }
+
 
                     tr.classList.toggle(
                         "selectedRow",
                         checkbox.checked
                     );
+
 
                     updateSelectedCount();
                 }
@@ -1393,15 +2115,17 @@ function render() {
                 checkbox
             );
 
-            tr.appendChild(tdCheck);
+            tr.appendChild(
+                tdCheck
+            );
 
 
-            /* ==============================
-               DATA
-               ============================== */
+            /* DATA */
 
             const tdDate =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             tdDate.className =
                 "center";
@@ -1409,15 +2133,17 @@ function render() {
             tdDate.textContent =
                 key;
 
-            tr.appendChild(tdDate);
+            tr.appendChild(
+                tdDate
+            );
 
 
-            /* ==============================
-               DZIEŃ
-               ============================== */
+            /* DZIEŃ */
 
             const tdDay =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             tdDay.className =
                 "center";
@@ -1427,18 +2153,22 @@ function render() {
                     date.getDay()
                 ];
 
-            tr.appendChild(tdDay);
+            tr.appendChild(
+                tdDay
+            );
 
 
-            /* ==============================
-               OD
-               ============================== */
+            /* OD */
 
             const tdFrom =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             const from =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
             from.type =
                 "time";
@@ -1446,20 +2176,26 @@ function render() {
             from.value =
                 old.from || "";
 
-            tdFrom.appendChild(from);
+            tdFrom.appendChild(
+                from
+            );
 
-            tr.appendChild(tdFrom);
+            tr.appendChild(
+                tdFrom
+            );
 
 
-            /* ==============================
-               DO
-               ============================== */
+            /* DO */
 
             const tdTo =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             const to =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
             to.type =
                 "time";
@@ -1467,27 +2203,38 @@ function render() {
             to.value =
                 old.to || "";
 
-            tdTo.appendChild(to);
+            tdTo.appendChild(
+                to
+            );
 
-            tr.appendChild(tdTo);
+            tr.appendChild(
+                tdTo
+            );
 
 
-            /* ==============================
-               RODZAJ
-               ============================== */
+            /* RODZAJ */
 
             const tdType =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             const type =
-                document.createElement("select");
+                document.createElement(
+                    "select"
+                );
 
 
             const emptyOption =
-                document.createElement("option");
+                document.createElement(
+                    "option"
+                );
 
-            emptyOption.value = "";
-            emptyOption.textContent = "";
+            emptyOption.value =
+                "";
+
+            emptyOption.textContent =
+                "";
 
             type.appendChild(
                 emptyOption
@@ -1523,18 +2270,22 @@ function render() {
                 type
             );
 
-            tr.appendChild(tdType);
+            tr.appendChild(
+                tdType
+            );
 
 
-            /* ==============================
-               PROJEKT
-               ============================== */
+            /* PROJEKT */
 
             const tdProject =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             const project =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
             project.type =
                 "text";
@@ -1549,18 +2300,22 @@ function render() {
                 project
             );
 
-            tr.appendChild(tdProject);
+            tr.appendChild(
+                tdProject
+            );
 
 
-            /* ==============================
-               UWAGI
-               ============================== */
+            /* UWAGI */
 
             const tdNote =
-                document.createElement("td");
+                document.createElement(
+                    "td"
+                );
 
             const note =
-                document.createElement("input");
+                document.createElement(
+                    "input"
+                );
 
             note.type =
                 "text";
@@ -1575,12 +2330,12 @@ function render() {
                 note
             );
 
-            tr.appendChild(tdNote);
+            tr.appendChild(
+                tdNote
+            );
 
 
-            /* ==============================
-               ZAPIS ZMIAN
-               ============================== */
+            /* ZAPIS */
 
             function saveRow() {
 
@@ -1621,21 +2376,18 @@ function render() {
                 );
 
 
-                /* natychmiastowa zmiana tła urlopu */
-
                 tr.classList.toggle(
                     "vacationDay",
-                    current.type === "Urlop"
+                    current.type ===
+                    "Urlop"
                 );
 
 
                 renderSummary();
 
-                document.getElementById(
-                    "savedInfo"
-                ).textContent =
-                    "Niezapisane zmiany";
+                renderMonthlySummaryOnly();
 
+                setSyncPending();
 
                 scheduleSync();
             }
@@ -1667,15 +2419,23 @@ function render() {
             );
 
 
-            tbody.appendChild(tr);
+            tbody.appendChild(
+                tr
+            );
         }
 
 
-        table.appendChild(tbody);
+        table.appendChild(
+            tbody
+        );
 
-        wrapper.appendChild(table);
+        wrapper.appendChild(
+            table
+        );
 
-        monthContainer.appendChild(wrapper);
+        monthContainer.appendChild(
+            wrapper
+        );
 
         container.appendChild(
             monthContainer
@@ -1695,7 +2455,68 @@ function render() {
 
 
 /* =========================================================
-   SUMMARY
+   AKTUALIZACJA PODSUMOWAŃ MIESIĘCZNYCH
+   BEZ PRZEBUDOWYWANIA TABEL
+   ========================================================= */
+
+function renderMonthlySummaryOnly() {
+
+    const data =
+        loadYear(currentYear);
+
+    const months =
+        document.querySelectorAll(
+            ".monthContainer"
+        );
+
+
+    months.forEach(
+        (container, month) => {
+
+            const result =
+                calculateMonthSummary(
+                    data,
+                    currentYear,
+                    month
+                );
+
+            const cards =
+                container.querySelectorAll(
+                    ".monthSummaryCard .monthSummaryValue"
+                );
+
+            if (cards.length >= 7) {
+
+                cards[0].textContent =
+                    minutesToTime(
+                        result.workMinutes
+                    );
+
+                cards[1].textContent =
+                    result.delegation;
+
+                cards[2].textContent =
+                    result.vacation;
+
+                cards[3].textContent =
+                    result.sick;
+
+                cards[4].textContent =
+                    result.holiday;
+
+                cards[5].textContent =
+                    result.free;
+
+                cards[6].textContent =
+                    result.total;
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   PODSUMOWANIE ROCZNE
    ========================================================= */
 
 function renderSummary() {
@@ -1819,14 +2640,12 @@ function renderSummary() {
         sick +
         holiday +
         free;
-
-
-    setTimeout(
-        updateTopLayout,
-        0
-    );
 }
 
+
+/* =========================================================
+   CZAS
+   ========================================================= */
 
 function timeToMinutes(value) {
 
@@ -1875,7 +2694,7 @@ function minutesToTime(minutes) {
 
 
 /* =========================================================
-   SELECT
+   WYBÓR
    ========================================================= */
 
 function updateSelectedCount() {
@@ -1937,7 +2756,8 @@ function clearSelected() {
                     );
 
                 if (checkbox) {
-                    checkbox.checked = false;
+                    checkbox.checked =
+                        false;
                 }
 
                 tr.classList.remove(
@@ -1967,6 +2787,7 @@ function bulkEdit() {
         return;
     }
 
+
     document.getElementById(
         "bulkType"
     ).value = "";
@@ -1979,9 +2800,11 @@ function bulkEdit() {
         "bulkNote"
     ).value = "";
 
+
     document.getElementById(
         "editModal"
-    ).style.display = "flex";
+    ).style.display =
+        "flex";
 }
 
 
@@ -1989,7 +2812,8 @@ function closeBulkModal() {
 
     document.getElementById(
         "editModal"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 }
 
 
@@ -1998,15 +2822,18 @@ function applyBulkEdit() {
     const data =
         loadYear(currentYear);
 
+
     const type =
         document.getElementById(
             "bulkType"
         ).value;
 
+
     const project =
         document.getElementById(
             "bulkProject"
         ).value;
+
 
     const note =
         document.getElementById(
@@ -2057,11 +2884,7 @@ function applyBulkEdit() {
 
     render();
 
-    document.getElementById(
-        "savedInfo"
-    ).textContent =
-        "Niezapisane zmiany";
-
+    setSyncPending();
 
     scheduleSync();
 }
@@ -2124,34 +2947,28 @@ function changeYear(value) {
    DZISIAJ
    ========================================================= */
 
-function scrollToToday(smooth = true) {
+function goToday() {
 
     const today =
         new Date();
 
-    const todayYear =
-        today.getFullYear();
-
 
     if (
-        todayYear >= MIN_YEAR &&
-        todayYear <= MAX_YEAR
+        today.getFullYear() >= MIN_YEAR &&
+        today.getFullYear() <= MAX_YEAR
     ) {
 
         currentYear =
-            todayYear;
+            today.getFullYear();
 
-        const yearSelect =
-            document.getElementById(
-                "yearSelect"
-            );
-
-        if (yearSelect) {
-            yearSelect.value =
-                currentYear;
-        }
+        document.getElementById(
+            "yearSelect"
+        ).value =
+            currentYear;
     }
 
+
+    selectedDates.clear();
 
     render();
 
@@ -2164,21 +2981,17 @@ function scrollToToday(smooth = true) {
                     "#app .today"
                 );
 
-            if (!todayRow) {
-                return;
+            if (todayRow) {
+
+                todayRow.scrollIntoView({
+
+                    behavior:
+                        "smooth",
+
+                    block:
+                        "center"
+                });
             }
-
-
-            todayRow.scrollIntoView({
-
-                behavior:
-                    smooth
-                        ? "smooth"
-                        : "auto",
-
-                block:
-                    "center"
-            });
 
         },
         100
@@ -2186,14 +2999,8 @@ function scrollToToday(smooth = true) {
 }
 
 
-function goToday() {
-
-    scrollToToday(true);
-}
-
-
 /* =========================================================
-   LOCAL CHANGE META
+   META
    ========================================================= */
 
 function markLocalChange(
@@ -2215,11 +3022,104 @@ function markLocalChange(
 
 
 /* =========================================================
-   SYNC
+   STATUS SYNCHRONIZACJI
    ========================================================= */
 
-let syncTimer = null;
+function setSyncPending() {
 
+    const status =
+        document.getElementById(
+            "syncStatus"
+        );
+
+    if (!status) {
+        return;
+    }
+
+    status.className =
+        "sync-offline";
+
+    status.textContent =
+        "⏳ Oczekuje na synchronizację";
+}
+
+
+function setSyncSuccess() {
+
+    const status =
+        document.getElementById(
+            "syncStatus"
+        );
+
+    if (!status) {
+        return;
+    }
+
+
+    const now =
+        new Date();
+
+
+    const time =
+        now.toLocaleTimeString(
+            "pl-PL",
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }
+        );
+
+
+    status.className =
+        "sync-ok";
+
+    status.textContent =
+        `🟢 Zsynchronizowano ${time}`;
+}
+
+
+function setSyncOffline() {
+
+    const status =
+        document.getElementById(
+            "syncStatus"
+        );
+
+    if (!status) {
+        return;
+    }
+
+    status.className =
+        "sync-offline";
+
+    status.textContent =
+        "🟠 Offline/local";
+}
+
+
+function setSyncError() {
+
+    const status =
+        document.getElementById(
+            "syncStatus"
+        );
+
+    if (!status) {
+        return;
+    }
+
+    status.className =
+        "sync-error";
+
+    status.textContent =
+        "🔴 Błąd synchronizacji";
+}
+
+
+/* =========================================================
+   SYNC
+   ========================================================= */
 
 function scheduleSync() {
 
@@ -2421,13 +3321,6 @@ async function syncAll(
             );
 
 
-            /*
-             * LAST CHANGE WINS
-             *
-             * Najpierw porównujemy timestamp
-             * lokalny z modified_at z Supabase.
-             */
-
             for (
                 const key of Object.keys(
                     localData
@@ -2452,9 +3345,7 @@ async function syncAll(
 
                     } catch (e) {
 
-                        console.error(
-                            e
-                        );
+                        console.error(e);
                     }
 
                     continue;
@@ -2483,9 +3374,7 @@ async function syncAll(
 
                     } catch (e) {
 
-                        console.error(
-                            e
-                        );
+                        console.error(e);
                     }
 
                 } else {
@@ -2514,10 +3403,6 @@ async function syncAll(
                 }
             }
 
-
-            /*
-             * Rekordy istniejące tylko online
-             */
 
             for (
                 const key of Object.keys(
@@ -2578,11 +3463,13 @@ async function syncAll(
 
         render();
 
+        setSyncSuccess();
+
 
         document.getElementById(
             "savedInfo"
         ).textContent =
-            "Zapisane";
+            "Dane zapisane i zsynchronizowane";
 
 
     } catch (e) {
@@ -2592,11 +3479,13 @@ async function syncAll(
             e
         );
 
+        setSyncOffline();
+
 
         document.getElementById(
             "savedInfo"
         ).textContent =
-            "Offline / oczekuje na synchronizację";
+            "Dane lokalne — oczekują na synchronizację";
 
 
     } finally {
@@ -2618,7 +3507,6 @@ function backupData() {
             new Date().toISOString(),
 
         years: {}
-
     };
 
 
@@ -2662,9 +3550,12 @@ function backupData() {
 
 
     const a =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
-    a.href = url;
+    a.href =
+        url;
 
     a.download =
         `ewidencja_czasu_backup_${new Date().toISOString().slice(0,10)}.json`;
@@ -2766,11 +3657,7 @@ function restoreData() {
 
                 render();
 
-
-                document.getElementById(
-                    "savedInfo"
-                ).textContent =
-                    "Przywrócono backup";
+                setSyncPending();
 
                 scheduleSync();
 
@@ -2951,9 +3838,12 @@ async function exportExcel() {
 
 
     const a =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
-    a.href = url;
+    a.href =
+        url;
 
     a.download =
         `ewidencja_czasu_${currentYear}.xlsx`;
@@ -2976,6 +3866,7 @@ async function startApplication() {
     const today =
         new Date();
 
+
     if (
         today.getFullYear() >= MIN_YEAR &&
         today.getFullYear() <= MAX_YEAR
@@ -2994,12 +3885,6 @@ async function startApplication() {
 
     updateTopLayout();
 
-
-    /*
-     * Synchronizacja może ponownie wykonać render(),
-     * dlatego przewijamy do dzisiaj dopiero po jej
-     * zakończeniu.
-     */
 
     await syncAll(false);
 
@@ -3022,6 +3907,7 @@ async function startApplication() {
                 });
             }
 
+
             updateTopLayout();
 
         },
@@ -3031,7 +3917,7 @@ async function startApplication() {
 
 
 /* =========================================================
-   STARTOWE SPRAWDZENIE SESJI
+   INIT
    ========================================================= */
 
 (async function init() {
@@ -3048,16 +3934,14 @@ async function startApplication() {
 
         document.getElementById(
             "loginScreen"
-        ).style.display = "none";
+        ).style.display =
+            "none";
 
         document.getElementById(
             "application"
-        ).style.display = "block";
+        ).style.display =
+            "block";
 
-        document.getElementById(
-            "userEmail"
-        ).textContent =
-            session.user.email || "";
 
         await startApplication();
 
@@ -3065,7 +3949,8 @@ async function startApplication() {
 
         document.getElementById(
             "loginScreen"
-        ).style.display = "flex";
+        ).style.display =
+            "flex";
     }
 
 
