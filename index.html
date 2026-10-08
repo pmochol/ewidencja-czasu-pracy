@@ -1,614 +1,802 @@
 <!DOCTYPE html>
-
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Ewidencja czasu pracy</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <style>
-*{
-    box-sizing:border-box;
+:root {
+    --topbar-height: 58px;
+    --summary-height: 50px;
+    --header-offset: 118px;
 }
 
-html,body{
-    margin:0;
-    padding:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f4f6f8;
-    color:#222;
+* {
+    box-sizing: border-box;
 }
 
-body{
-    padding-top:128px;
+html {
+    scroll-behavior: smooth;
 }
 
-button,
-input,
-select{
-    font:inherit;
+body {
+    margin: 0;
+    padding-top: calc(var(--topbar-height) + var(--summary-height) + 10px);
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #222;
 }
 
-button{
-    cursor:pointer;
-}
+/* =========================================================
+   GÓRNA BELKA
+   ========================================================= */
 
-#authScreen{
-    position:fixed;
-    inset:0;
-    background:#f4f6f8;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:10000;
-}
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
 
-.authBox{
-    width:380px;
-    max-width:calc(100vw - 30px);
-    background:white;
-    border-radius:12px;
-    padding:28px;
-    box-shadow:0 5px 30px rgba(0,0,0,.15);
-}
+    min-height: 58px;
 
-.authBox h1{
-    margin:0 0 8px;
-    font-size:25px;
-}
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-.authBox p{
-    color:#666;
-    margin:0 0 20px;
-}
+    padding: 8px 10px;
 
-.authBox input{
-    width:100%;
-    padding:11px 12px;
-    margin-bottom:10px;
-    border:1px solid #ccc;
-    border-radius:6px;
-}
+    background: #222;
+    color: white;
 
-.authButtons{
-    display:flex;
-    gap:8px;
-    margin-top:8px;
-}
-
-.authButtons button{
-    flex:1;
-}
-
-#authMessage{
-    min-height:20px;
-    margin-top:12px;
-    font-size:14px;
-}
-
-#app{
-    display:none;
-}
-
-.topbar{
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    z-index:1000;
-    background:#1f2937;
-    color:white;
-    padding:10px 14px;
-    box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-
-.topbarRow{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
 
 .topbar button,
-.topbar select{
-    border:0;
-    border-radius:5px;
-    padding:7px 10px;
+.topbar select {
+    height: 36px;
+    border: 1px solid #666;
+    border-radius: 5px;
+    background: #333;
+    color: white;
+    padding: 0 10px;
+    cursor: pointer;
 }
 
-.topbar button{
-    background:#374151;
-    color:white;
+.topbar button:hover,
+.topbar select:hover {
+    background: #444;
 }
 
-.topbar button:hover{
-    background:#4b5563;
+.topbar select {
+    min-width: 100px;
 }
 
-.topbar select{
-    background:white;
-    color:#222;
+.spacer {
+    flex: 1;
 }
 
-.title{
-    font-size:18px;
-    font-weight:bold;
-    margin-right:10px;
+.userInfo {
+    white-space: nowrap;
+    font-size: 13px;
+    color: #ddd;
 }
 
-.userInfo{
-    margin-left:auto;
-    font-size:12px;
-    opacity:.9;
+/* =========================================================
+   PODSUMOWANIE
+   ========================================================= */
+
+.summary {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+
+    z-index: 999;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+
+    gap: 5px;
+
+    padding: 5px 8px;
+
+    background: white;
+    border-bottom: 1px solid #ccc;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,.12);
 }
 
-#syncStatus{
-    font-size:12px;
-    padding:5px 8px;
-    border-radius:5px;
-    background:#374151;
+.summaryCard {
+    min-width: 85px;
+
+    flex: 1 1 85px;
+
+    padding: 4px 8px;
+
+    text-align: center;
+
+    border: 1px solid #ddd;
+    border-radius: 5px;
+
+    background: #fafafa;
+
+    line-height: 1.15;
 }
 
-.summary{
-    position:fixed;
-    top:58px;
-    left:0;
-    right:0;
-    z-index:999;
-    background:white;
-    border-bottom:1px solid #ddd;
-    padding:7px 14px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
+.summaryLabel {
+    display: block;
+    font-size: 11px;
+    color: #666;
 }
 
-.card{
-    padding:5px 10px;
-    border:1px solid #ddd;
-    border-radius:5px;
-    background:#fafafa;
-    font-size:13px;
+.summaryValue {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
 }
 
-.card strong{
-    margin-left:4px;
+.summarySaved {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 110px;
+
+    padding: 4px 8px;
+
+    font-size: 11px;
+    color: #555;
 }
 
-.container{
-    padding:15px;
+/* =========================================================
+   GŁÓWNA ZAWARTOŚĆ
+   ========================================================= */
+
+#app {
+    width: 100%;
 }
 
-.month{
-    margin-bottom:24px;
-    background:white;
-    border-radius:8px;
-    box-shadow:0 1px 4px rgba(0,0,0,.12);
-    overflow:hidden;
+.monthContainer {
+    margin: 12px 8px 20px 8px;
+
+    background: white;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    overflow: hidden;
 }
 
-.monthTitle{
-    padding:9px 12px;
-    background:#e5e7eb;
-    font-size:17px;
-    font-weight:bold;
+.monthTitle {
+    padding: 8px 10px;
+
+    background: #333;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:850px;
+/* =========================================================
+   TABELA
+   ========================================================= */
+
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
 }
 
-.tableWrap{
-    overflow-x:auto;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
 th,
-td{
-    border:1px solid #ddd;
-    padding:4px 5px;
-    text-align:center;
-    font-size:13px;
+td {
+    border: 1px solid #ddd;
+    padding: 4px 5px;
+    font-size: 13px;
 }
 
-th{
-    background:#f1f3f5;
-    position:sticky;
-    top:0;
-    z-index:2;
+th {
+    position: sticky;
+    top: var(--header-offset);
+
+    z-index: 20;
+
+    background: #e8e8e8;
+
+    font-weight: bold;
+    text-align: center;
 }
 
-td.date{
-    white-space:nowrap;
+td {
+    background: white;
 }
 
-td.day{
-    width:35px;
+td.center {
+    text-align: center;
 }
 
-td input[type="time"]{
-    width:85px;
-    padding:3px;
-    border:1px solid #ccc;
-    border-radius:4px;
+/* szerokości kolumn */
+
+th:nth-child(1),
+td:nth-child(1) {
+    width: 38px;
 }
 
-td select{
-    padding:3px;
-    width:110px;
-    border:1px solid #ccc;
-    border-radius:4px;
+th:nth-child(2),
+td:nth-child(2) {
+    width: 90px;
 }
 
-td input.project,
-td input.note{
-    width:100%;
-    min-width:120px;
-    padding:4px;
-    border:1px solid #ccc;
-    border-radius:4px;
+th:nth-child(3),
+td:nth-child(3) {
+    width: 75px;
 }
 
-td input.note{
-    min-width:180px;
+th:nth-child(4),
+td:nth-child(4) {
+    width: 70px;
 }
 
-.weekend{
-    background:#fafafa;
+th:nth-child(5),
+td:nth-child(5) {
+    width: 70px;
 }
 
-.today{
-    outline:2px solid #2563eb;
-    outline-offset:-2px;
+th:nth-child(6),
+td:nth-child(6) {
+    width: 110px;
 }
 
-/* Przywrócone tło dni urlopowych */
-.vacationDay{
-    background:#fff3cd !important;
+th:nth-child(7),
+td:nth-child(7) {
+    width: 170px;
 }
 
-.selectedRow{
-    background:#eef5ff !important;
+th:nth-child(8),
+td:nth-child(8) {
+    width: auto;
 }
 
-.emptyDay{
-    color:#aaa;
+/* =========================================================
+   INPUTY
+   ========================================================= */
+
+input[type="time"],
+input[type="text"],
+select {
+    width: 100%;
+    height: 30px;
+
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    padding: 3px 5px;
+
+    font-size: 13px;
 }
 
-.bulkPanel{
-    position:fixed;
-    bottom:12px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:1100;
-    background:white;
-    border:1px solid #ccc;
-    border-radius:8px;
-    padding:8px;
-    box-shadow:0 3px 15px rgba(0,0,0,.2);
-    display:none;
-    align-items:center;
-    gap:7px;
-    flex-wrap:wrap;
+input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
 }
 
-.bulkPanel input,
-.bulkPanel select{
-    padding:6px;
-    border:1px solid #ccc;
-    border-radius:5px;
+/* =========================================================
+   DZISIAJ
+   ========================================================= */
+
+.today {
+    outline: 3px solid #2196f3;
+    outline-offset: -3px;
 }
 
-.bulkPanel button{
-    padding:7px 10px;
-    border:0;
-    border-radius:5px;
-    background:#2563eb;
-    color:white;
+.today td {
+    background: #eaf4ff;
 }
 
-.bulkPanel button.danger{
-    background:#dc2626;
+/* =========================================================
+   URLOP
+   ========================================================= */
+
+.vacationDay td {
+    background: #fff3cd !important;
 }
 
-.statusMessage{
-    position:fixed;
-    right:15px;
-    bottom:15px;
-    background:#111827;
-    color:white;
-    padding:9px 13px;
-    border-radius:6px;
-    opacity:0;
-    pointer-events:none;
-    transition:.2s;
-    z-index:5000;
-    font-size:13px;
+.vacationDay.selectedRow td {
+    background: #fff3cd !important;
 }
 
-.statusMessage.show{
-    opacity:1;
+/* =========================================================
+   ZAZNACZENIE
+   ========================================================= */
+
+.selectedRow td {
+    background: #eef5ff !important;
 }
 
-@media(max-width:700px){
+/* Urlop ma mieć priorytet nad zaznaczeniem */
+.selectedRow.vacationDay td {
+    background: #fff3cd !important;
+}
 
-    body{
-        padding-top:235px;
+/* =========================================================
+   LOGOWANIE
+   ========================================================= */
+
+#loginScreen {
+    position: fixed;
+    inset: 0;
+
+    z-index: 5000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f5f5f5;
+}
+
+.loginBox {
+    width: min(380px, calc(100% - 30px));
+
+    padding: 25px;
+
+    background: white;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+
+.loginBox h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.loginBox input {
+    width: 100%;
+    height: 40px;
+
+    margin-bottom: 10px;
+
+    padding: 8px;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.loginBox button {
+    width: 100%;
+    height: 40px;
+
+    margin-top: 5px;
+
+    border: 0;
+    border-radius: 5px;
+
+    background: #1976d2;
+    color: white;
+
+    cursor: pointer;
+}
+
+.loginBox button:hover {
+    background: #1565c0;
+}
+
+.loginMessage {
+    min-height: 20px;
+    margin-top: 10px;
+
+    text-align: center;
+
+    color: #c00;
+    font-size: 13px;
+}
+
+/* =========================================================
+   MODALE
+   ========================================================= */
+
+.modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 4000;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,.45);
+}
+
+.modalBox {
+    width: min(500px, calc(100% - 30px));
+
+    max-height: 90vh;
+    overflow: auto;
+
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 8px;
+}
+
+.modalBox h3 {
+    margin-top: 0;
+}
+
+.modalButtons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+
+    margin-top: 15px;
+}
+
+.modalButtons button {
+    padding: 8px 14px;
+
+    border: 1px solid #bbb;
+    border-radius: 5px;
+
+    background: #eee;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   PRZYCISKI
+   ========================================================= */
+
+.danger {
+    background: #b71c1c !important;
+}
+
+.success {
+    background: #2e7d32 !important;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .topbar {
+        min-height: 0;
+
+        flex-wrap: wrap;
+
+        padding: 6px;
+
+        gap: 5px;
     }
 
-    .topbar{
-        height:auto;
+    .topbar button,
+    .topbar select {
+        height: 34px;
+
+        padding: 0 7px;
+
+        font-size: 12px;
     }
 
-    .userInfo{
-        margin-left:0;
+    .userInfo {
+        width: 100%;
+        order: 20;
+
+        font-size: 11px;
+        text-align: right;
     }
 
-    .summary{
-        top:105px;
-        min-height:120px;
-        padding:6px 8px;
-        gap:5px;
-        overflow-x:auto;
-        overflow-y:hidden;
-        align-content:flex-start;
+    .summary {
+        gap: 3px;
+        padding: 4px;
     }
 
-    .card{
-        flex:0 0 auto;
-        font-size:12px;
-        padding:5px 7px;
-        white-space:nowrap;
+    .summaryCard {
+        min-width: 70px;
+        flex: 1 1 70px;
+
+        padding: 3px 4px;
     }
 
-    .title{
-        width:100%;
+    .summaryLabel {
+        font-size: 9px;
+    }
+
+    .summaryValue {
+        font-size: 14px;
+    }
+
+    .summarySaved {
+        min-width: 80px;
+        font-size: 9px;
+    }
+
+    .monthContainer {
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+
+    .monthTitle {
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        font-size: 12px;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 80px;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+        width: 60px;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5) {
+        width: 65px;
+    }
+
+    th:nth-child(6),
+    td:nth-child(6) {
+        width: 95px;
+    }
+
+    th:nth-child(7),
+    td:nth-child(7) {
+        width: 140px;
+    }
+
+    th:nth-child(8),
+    td:nth-child(8) {
+        width: 180px;
     }
 }
 </style>
-
 </head>
 
 <body>
 
-<!-- =========================
-     LOGOWANIE
-========================= -->
+<!-- =========================================================
+     EKRAN LOGOWANIA
+     ========================================================= -->
 
-<div id="authScreen">
+<div id="loginScreen">
 
-```
-<div class="authBox">
+    <div class="loginBox">
 
-    <h1>Ewidencja czasu pracy</h1>
+        <h2>Ewidencja czasu pracy</h2>
 
-    <p>
-        Zaloguj się, aby korzystać z synchronizacji.
-    </p>
+        <input
+            id="loginEmail"
+            type="email"
+            placeholder="E-mail"
+            autocomplete="username"
+        >
 
-    <input
-        id="authEmail"
-        type="email"
-        placeholder="Adres e-mail"
-        autocomplete="username"
-    >
-
-    <input
-        id="authPassword"
-        type="password"
-        placeholder="Hasło"
-        autocomplete="current-password"
-    >
-
-    <div class="authButtons">
+        <input
+            id="loginPassword"
+            type="password"
+            placeholder="Hasło"
+            autocomplete="current-password"
+        >
 
         <button onclick="login()">
             Zaloguj
         </button>
 
         <button onclick="registerUser()">
-            Utwórz konto
+            Rejestracja
         </button>
+
+        <div id="loginMessage" class="loginMessage"></div>
 
     </div>
 
-    <div id="authMessage"></div>
-
-</div>
-```
-
 </div>
 
-<!-- =========================
+
+<!-- =========================================================
      APLIKACJA
-========================= -->
+     ========================================================= -->
 
-<div id="app">
+<div id="application" style="display:none;">
 
-```
-<div class="topbar">
-
-    <div class="topbarRow">
-
-        <span class="title">
-            Ewidencja czasu pracy
-        </span>
-
-        <label>Rok:</label>
-
-        <select id="yearSelect"></select>
+    <div class="topbar" id="topbar">
 
         <button onclick="goToday()">
-            📅 Dzisiaj
+            Dzisiaj
         </button>
 
-        <button onclick="showBulkPanel()">
-            ☑ Ustaw dla zaznaczonych
+        <select id="yearSelect" onchange="changeYear(this.value)">
+        </select>
+
+        <button onclick="selectAllVisible()">
+            Zaznacz
         </button>
 
         <button onclick="clearSelected()">
-            🗑 Wyczyść zaznaczone
+            Wyczyść
         </button>
 
-        <button onclick="exportExcel()">
-            📊 Excel
+        <button onclick="bulkEdit()">
+            Ustaw dla zaznaczonych
         </button>
 
         <button onclick="backupData()">
-            💾 Backup
+            Backup
         </button>
 
-        <button onclick="document.getElementById('restoreFile').click()">
-            ♻ Przywróć
+        <button onclick="restoreData()">
+            Przywróć
         </button>
 
-        <input
-            type="file"
-            id="restoreFile"
-            accept=".json"
-            style="display:none"
-            onchange="restoreData(event)"
-        >
-
-        <button onclick="syncAll(true)">
-            🔄 Synchronizuj
+        <button onclick="exportExcel()">
+            Excel
         </button>
+
+        <div class="spacer"></div>
+
+        <span id="selectedInfo" class="userInfo">
+            Zaznaczono: 0
+        </span>
+
+        <span id="userEmail" class="userInfo"></span>
 
         <button onclick="logout()">
             Wyloguj
         </button>
 
-        <span id="userInfo" class="userInfo"></span>
+    </div>
 
-        <span id="syncStatus">
-            Offline/local
-        </span>
+
+    <!-- =====================================================
+         PODSUMOWANIE
+         ===================================================== -->
+
+    <div class="summary" id="summary">
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Przepracowane</span>
+            <span class="summaryValue" id="sumWork">0:00</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Delegacja</span>
+            <span class="summaryValue" id="sumDelegation">0</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Urlop</span>
+            <span class="summaryValue" id="sumVacation">0</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">L4</span>
+            <span class="summaryValue" id="sumSick">0</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Święto</span>
+            <span class="summaryValue" id="sumHoliday">0</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Wolne</span>
+            <span class="summaryValue" id="sumFree">0</span>
+        </div>
+
+        <div class="summaryCard">
+            <span class="summaryLabel">Razem</span>
+            <span class="summaryValue" id="sumTotal">0</span>
+        </div>
+
+        <div class="summarySaved" id="savedInfo">
+            Gotowe
+        </div>
+
+    </div>
+
+
+    <div id="app"></div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL EDYCJI
+     ========================================================= -->
+
+<div class="modal" id="editModal">
+
+    <div class="modalBox">
+
+        <h3>Ustaw dla zaznaczonych</h3>
+
+        <label>
+            Rodzaj:
+        </label>
+
+        <select id="bulkType">
+            <option value="">Bez zmiany</option>
+            <option value="Praca">Praca</option>
+            <option value="Delegacja">Delegacja</option>
+            <option value="Urlop">Urlop</option>
+            <option value="L4">L4</option>
+            <option value="Święto">Święto</option>
+            <option value="Wolne">Wolne</option>
+        </select>
+
+        <br><br>
+
+        <label>
+            Projekt:
+        </label>
+
+        <input
+            type="text"
+            id="bulkProject"
+            placeholder="Bez zmiany"
+        >
+
+        <br><br>
+
+        <label>
+            Uwagi:
+        </label>
+
+        <input
+            type="text"
+            id="bulkNote"
+            placeholder="Bez zmiany"
+        >
+
+        <div class="modalButtons">
+
+            <button onclick="closeBulkModal()">
+                Anuluj
+            </button>
+
+            <button
+                class="success"
+                onclick="applyBulkEdit()"
+            >
+                Zastosuj
+            </button>
+
+        </div>
 
     </div>
 
 </div>
 
-
-<div class="summary">
-
-    <div class="card">
-        Przepracowane:
-        <strong id="sumWork">0:00</strong>
-    </div>
-
-    <div class="card">
-        Delegacja:
-        <strong id="sumTrip">0:00</strong>
-    </div>
-
-    <div class="card">
-        Urlop:
-        <strong id="sumVacation">0:00</strong>
-    </div>
-
-    <div class="card">
-        L4:
-        <strong id="sumSick">0:00</strong>
-    </div>
-
-    <div class="card">
-        Święto:
-        <strong id="sumHoliday">0:00</strong>
-    </div>
-
-    <div class="card">
-        Wolne:
-        <strong id="sumFree">0:00</strong>
-    </div>
-
-    <div class="card">
-        Razem:
-        <strong id="sumTotal">0:00</strong>
-    </div>
-
-    <div class="card">
-        <span id="saved">Gotowe</span>
-    </div>
-
-</div>
-
-
-<div class="container" id="months"></div>
-
-
-<div class="bulkPanel" id="bulkPanel">
-
-    <strong>Zaznaczone:</strong>
-
-    <span id="selectedCount">0</span>
-
-    <label>Od:</label>
-
-    <input
-        type="time"
-        id="bulkFrom"
-        value="07:00"
-    >
-
-    <label>Do:</label>
-
-    <input
-        type="time"
-        id="bulkTo"
-        value="15:00"
-    >
-
-    <label>Rodzaj:</label>
-
-    <select id="bulkType">
-
-        <option>Praca</option>
-        <option>Delegacja</option>
-        <option>Urlop</option>
-        <option>L4</option>
-        <option>Święto</option>
-        <option>Wolne</option>
-
-    </select>
-
-    <label>Projekt:</label>
-
-    <input
-        id="bulkProject"
-        type="text"
-    >
-
-    <button onclick="applyBulk()">
-        Ustaw
-    </button>
-
-    <button
-        class="danger"
-        onclick="hideBulkPanel()"
-    >
-        Zamknij
-    </button>
-
-</div>
-```
-
-</div>
-
-<div
-    id="statusMessage"
-    class="statusMessage"
-></div>
 
 <script>
-
 /* =========================================================
    SUPABASE
-========================================================= */
+   ========================================================= */
 
 const SUPABASE_URL =
     "https://iazvoxejpizdaithkqof.supabase.co";
@@ -617,33 +805,20 @@ const SUPABASE_KEY =
     "sb_publishable_Scpe8NZ9lOyH4asc53h9wQ_1S-fWToe";
 
 const supabaseClient =
-    window.supabase.createClient(
+    supabase.createClient(
         SUPABASE_URL,
-        SUPABASE_KEY,
-        {
-            auth:{
-                persistSession:true,
-                autoRefreshToken:true,
-                detectSessionInUrl:true
-            }
-        }
+        SUPABASE_KEY
     );
 
 
 /* =========================================================
    USTAWIENIA
-========================================================= */
+   ========================================================= */
 
-const FIRST_YEAR = 2024;
-const LAST_YEAR  = 2035;
+const MIN_YEAR = 2024;
+const MAX_YEAR = 2035;
 
-const YEARS = [];
-
-for(let y=FIRST_YEAR; y<=LAST_YEAR; y++){
-    YEARS.push(y);
-}
-
-const MONTHS = [
+const monthNames = [
     "Styczeń",
     "Luty",
     "Marzec",
@@ -658,7 +833,17 @@ const MONTHS = [
     "Grudzień"
 ];
 
-const TYPES = [
+const dayNames = [
+    "Niedziela",
+    "Poniedziałek",
+    "Wtorek",
+    "Środa",
+    "Czwartek",
+    "Piątek",
+    "Sobota"
+];
+
+const types = [
     "Praca",
     "Delegacja",
     "Urlop",
@@ -667,287 +852,290 @@ const TYPES = [
     "Wolne"
 ];
 
-let currentUser = null;
-
 let currentYear =
     new Date().getFullYear();
 
-if(currentYear < FIRST_YEAR){
-    currentYear = FIRST_YEAR;
-}
+let selectedDates = new Set();
 
-if(currentYear > LAST_YEAR){
-    currentYear = LAST_YEAR;
-}
-
-let selectedDays = new Set();
-
-let syncRunning = false;
+let syncing = false;
 
 
 /* =========================================================
-   ELEMENTY
-========================================================= */
+   LAYOUT GÓRA + PODSUMOWANIE
+   ========================================================= */
 
-const ys =
-    document.getElementById("yearSelect");
+function updateTopLayout() {
 
+    const topbar =
+        document.getElementById("topbar");
 
-/* =========================================================
-   INICJALIZACJA ROKÓW
-========================================================= */
+    const summary =
+        document.getElementById("summary");
 
-YEARS.forEach(y=>{
-
-    const o =
-        document.createElement("option");
-
-    o.value = y;
-    o.textContent = y;
-
-    if(y === currentYear){
-        o.selected = true;
+    if (!topbar || !summary) {
+        return;
     }
 
-    ys.appendChild(o);
+    const topbarHeight =
+        topbar.offsetHeight;
 
-});
+    const summaryHeight =
+        summary.offsetHeight;
+
+    const headerOffset =
+        topbarHeight + summaryHeight;
+
+    document.documentElement.style.setProperty(
+        "--topbar-height",
+        topbarHeight + "px"
+    );
+
+    document.documentElement.style.setProperty(
+        "--summary-height",
+        summaryHeight + "px"
+    );
+
+    document.documentElement.style.setProperty(
+        "--header-offset",
+        headerOffset + "px"
+    );
+}
+
+window.addEventListener(
+    "resize",
+    updateTopLayout
+);
 
 
-ys.addEventListener("change",()=>{
+/* =========================================================
+   LOGIN
+   ========================================================= */
 
-    currentYear =
-        Number(ys.value);
+async function login() {
 
-    selectedDays.clear();
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-    render();
+    const password =
+        document.getElementById("loginPassword").value;
 
-});
+    const message =
+        document.getElementById("loginMessage");
+
+    message.textContent = "";
+
+    if (!email || !password) {
+
+        message.textContent =
+            "Podaj e-mail i hasło.";
+
+        return;
+    }
+
+    const { error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if (error) {
+
+        message.textContent =
+            error.message;
+
+        return;
+    }
+}
+
+
+async function registerUser() {
+
+    const email =
+        document.getElementById("loginEmail").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value;
+
+    const message =
+        document.getElementById("loginMessage");
+
+    message.textContent = "";
+
+    if (!email || !password) {
+
+        message.textContent =
+            "Podaj e-mail i hasło.";
+
+        return;
+    }
+
+    const { error } =
+        await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+
+    if (error) {
+
+        message.textContent =
+            error.message;
+
+        return;
+    }
+
+    message.style.color = "#2e7d32";
+
+    message.textContent =
+        "Konto zostało utworzone. Sprawdź pocztę, jeśli wymagana jest aktywacja.";
+}
+
+
+async function logout() {
+
+    await supabaseClient.auth.signOut();
+}
+
+
+/* =========================================================
+   AUTH STATE
+   ========================================================= */
+
+supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
+
+        if (session && session.user) {
+
+            document.getElementById(
+                "loginScreen"
+            ).style.display = "none";
+
+            document.getElementById(
+                "application"
+            ).style.display = "block";
+
+            document.getElementById(
+                "userEmail"
+            ).textContent =
+                session.user.email || "";
+
+            await startApplication();
+
+        } else {
+
+            document.getElementById(
+                "application"
+            ).style.display = "none";
+
+            document.getElementById(
+                "loginScreen"
+            ).style.display = "flex";
+
+        }
+
+        setTimeout(
+            updateTopLayout,
+            0
+        );
+    }
+);
 
 
 /* =========================================================
    LOCAL STORAGE
-========================================================= */
+   ========================================================= */
 
-function dataKey(year){
+function getStorageKey(year) {
 
-    return "worktime_" + year;
-
+    return `worktime_${year}`;
 }
 
 
-function metaKey(year){
+function getMetaKey(year) {
 
-    return "worktime_meta_" + year;
-
+    return `worktime_meta_${year}`;
 }
 
 
-function readYear(year){
+function loadYear(year) {
 
-    try{
+    try {
 
         const raw =
             localStorage.getItem(
-                dataKey(year)
+                getStorageKey(year)
             );
 
-        if(!raw){
+        if (!raw) {
             return {};
         }
 
-        const d =
-            JSON.parse(raw);
+        return JSON.parse(raw);
 
-        return d &&
-               typeof d === "object"
-            ? d
-            : {};
+    } catch (e) {
 
-    }catch(e){
-
-        console.error(e);
+        console.error(
+            "Błąd odczytu danych:",
+            e
+        );
 
         return {};
-
     }
-
 }
 
 
-function writeYear(year,d){
+function saveYear(year, data) {
 
     localStorage.setItem(
-        dataKey(year),
-        JSON.stringify(d)
+        getStorageKey(year),
+        JSON.stringify(data)
     );
-
-    document.getElementById("saved")
-        .textContent =
-        "Zapisano lokalnie";
-
 }
 
 
-function readMeta(year){
+function loadMeta(year) {
 
-    try{
+    try {
 
         const raw =
             localStorage.getItem(
-                metaKey(year)
+                getMetaKey(year)
             );
 
-        if(!raw){
+        if (!raw) {
             return {};
         }
 
-        const m =
-            JSON.parse(raw);
+        return JSON.parse(raw);
 
-        return m &&
-               typeof m === "object"
-            ? m
-            : {};
+    } catch (e) {
 
-    }catch(e){
+        console.error(
+            "Błąd odczytu metadanych:",
+            e
+        );
 
         return {};
-
     }
-
 }
 
 
-function writeMeta(year,m){
+function saveMeta(year, data) {
 
     localStorage.setItem(
-        metaKey(year),
-        JSON.stringify(m)
+        getMetaKey(year),
+        JSON.stringify(data)
     );
-
 }
 
 
 /* =========================================================
-   CZAS ZMIANY
-========================================================= */
+   NORMALIZACJA DNIA
+   ========================================================= */
 
-function nowISO(){
+function normalizeDay(value) {
 
-    return new Date().toISOString();
-
-}
-
-
-/* =========================================================
-   ZAPIS POJEDYNCZEGO DNIA
-========================================================= */
-
-function saveDay(
-    year,
-    date,
-    value
-){
-
-    const d =
-        readYear(year);
-
-    const meta =
-        readMeta(year);
-
-    d[date] = value;
-
-    /*
-       Każda lokalna zmiana dostaje własny timestamp.
-       Dzięki temu możemy później porównać ją
-       z wersją znajdującą się w Supabase.
-    */
-
-    meta[date] =
-        nowISO();
-
-    writeYear(
-        year,
-        d
-    );
-
-    writeMeta(
-        year,
-        meta
-    );
-
-    renderSummary();
-
-    scheduleSync();
-
-}
-
-
-/* =========================================================
-   USUNIĘCIE / WYCZYSZCZENIE DNIA
-========================================================= */
-
-function clearDay(
-    year,
-    date
-){
-
-    const d =
-        readYear(year);
-
-    const meta =
-        readMeta(year);
-
-    delete d[date];
-
-    /*
-       Brak rekordu lokalnie traktujemy jako pusty dzień.
-       Do Supabase wyślemy {} zamiast fizycznego DELETE.
-       Dzięki temu nie potrzebujemy tombstone.
-    */
-
-    meta[date] =
-        nowISO();
-
-    writeYear(
-        year,
-        d
-    );
-
-    writeMeta(
-        year,
-        meta
-    );
-
-    renderSummary();
-
-    scheduleSync();
-
-}
-
-
-/* =========================================================
-   DOMYŚLNE DANE
-========================================================= */
-
-function normalizeDay(value){
-
-    if(
-        !value ||
-        typeof value !== "object"
-    ){
-
-        return {
-            from:"",
-            to:"",
-            type:"",
-            project:"",
-            note:""
-        };
-
-    }
+    value =
+        value || {};
 
     return {
 
@@ -965,67 +1153,68 @@ function normalizeDay(value){
 
         note:
             value.note ?? ""
-
     };
-
 }
 
 
 /* =========================================================
-   AUTOMATYCZNE GODZINY DLA URLOPU
-========================================================= */
+   DATA
+   ========================================================= */
 
-function adjustByType(
-    day,
-    type
-){
+function dateKey(date) {
 
-    if(type === "Urlop"){
+    const y =
+        date.getFullYear();
 
-        day.from = "07:00";
-        day.to   = "15:00";
+    const m =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
-    }
+    const d =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
-    if(
-        type === "Święto" ||
-        type === "Wolne" ||
-        type === "L4"
-    ){
+    return `${y}-${m}-${d}`;
+}
 
-        day.from = "";
-        day.to   = "";
 
-    }
+function daysInMonth(year, month) {
 
-    return day;
-
+    return new Date(
+        year,
+        month + 1,
+        0
+    ).getDate();
 }
 
 
 /* =========================================================
    RENDER
-========================================================= */
+   ========================================================= */
 
-function render(){
+function render() {
 
     const container =
-        document.getElementById("months");
+        document.getElementById("app");
+
+    const data =
+        loadYear(currentYear);
 
     container.innerHTML = "";
 
-    const d =
-        readYear(currentYear);
+    for (
+        let month = 0;
+        month < 12;
+        month++
+    ) {
 
-
-    for(let month=0; month<12; month++){
-
-        const monthBox =
+        const monthContainer =
             document.createElement("div");
 
-        monthBox.className =
-            "month";
-
+        monthContainer.className =
+            "monthContainer";
 
         const title =
             document.createElement("div");
@@ -1034,88 +1223,84 @@ function render(){
             "monthTitle";
 
         title.textContent =
-            MONTHS[month] +
-            " " +
-            currentYear;
+            `${monthNames[month]} ${currentYear}`;
 
-        monthBox.appendChild(title);
+        monthContainer.appendChild(title);
 
 
-        const wrap =
+        const wrapper =
             document.createElement("div");
 
-        wrap.className =
-            "tableWrap";
+        wrapper.className =
+            "tableWrapper";
 
 
         const table =
             document.createElement("table");
 
 
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>✓</th>
-                    <th>Data</th>
-                    <th>Dzień</th>
-                    <th>Od</th>
-                    <th>Do</th>
-                    <th>Rodzaj</th>
-                    <th>Projekt</th>
-                    <th>Uwagi</th>
-                </tr>
-            </thead>
-        `;
+        const thead =
+            document.createElement("thead");
+
+        const header =
+            document.createElement("tr");
+
+        const headers = [
+            "✓",
+            "Data",
+            "Dzień",
+            "Od",
+            "Do",
+            "Rodzaj",
+            "Projekt",
+            "Uwagi"
+        ];
+
+        headers.forEach(text => {
+
+            const th =
+                document.createElement("th");
+
+            th.textContent =
+                text;
+
+            header.appendChild(th);
+        });
+
+        thead.appendChild(header);
+        table.appendChild(thead);
 
 
         const tbody =
             document.createElement("tbody");
 
 
-        const days =
-            new Date(
+        const count =
+            daysInMonth(
                 currentYear,
-                month + 1,
-                0
-            ).getDate();
+                month
+            );
 
 
-        for(
-            let day=1;
-            day<=days;
+        for (
+            let day = 1;
+            day <= count;
             day++
-        ){
+        ) {
 
             const date =
-                `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-
-
-            const jsDate =
                 new Date(
                     currentYear,
                     month,
                     day
                 );
 
-
-            const weekday =
-                jsDate.getDay();
-
-
-            const weekdayNames = [
-                "Nd",
-                "Pn",
-                "Wt",
-                "Śr",
-                "Cz",
-                "Pt",
-                "Sb"
-            ];
-
+            const key =
+                dateKey(date);
 
             const old =
                 normalizeDay(
-                    d[date]
+                    data[key]
                 );
 
 
@@ -1123,130 +1308,137 @@ function render(){
                 document.createElement("tr");
 
 
-            if(
-                weekday === 0 ||
-                weekday === 6
-            ){
-
-                tr.classList.add(
-                    "weekend"
-                );
-
-            }
-
-
-            if(
-                date ===
-                formatDate(new Date())
-            ){
+            if (
+                key ===
+                dateKey(new Date())
+            ) {
 
                 tr.classList.add(
                     "today"
                 );
-
             }
 
 
-            if(
-                selectedDays.has(date)
-            ){
+            /* ==============================
+               URLOP
+               ============================== */
 
-                tr.classList.add(
-                    "selectedRow"
-                );
-
-            }
-
-
-            /* Przywrócone tło urlopu */
-            if(old.type === "Urlop"){
+            if (
+                old.type === "Urlop"
+            ) {
 
                 tr.classList.add(
                     "vacationDay"
                 );
-
             }
 
 
-            const check =
-                document.createElement(
-                    "input"
-                );
+            if (
+                selectedDates.has(key)
+            ) {
 
-            check.type =
+                tr.classList.add(
+                    "selectedRow"
+                );
+            }
+
+
+            /* ==============================
+               CHECKBOX
+               ============================== */
+
+            const tdCheck =
+                document.createElement("td");
+
+            tdCheck.className =
+                "center";
+
+
+            const checkbox =
+                document.createElement("input");
+
+            checkbox.type =
                 "checkbox";
 
-            check.checked =
-                selectedDays.has(date);
+            checkbox.checked =
+                selectedDates.has(key);
 
 
-            check.addEventListener(
+            checkbox.addEventListener(
                 "change",
-                ()=>{
+                () => {
 
-                    if(check.checked){
+                    if (
+                        checkbox.checked
+                    ) {
 
-                        selectedDays.add(
-                            date
-                        );
+                        selectedDates.add(key);
 
-                    }else{
+                    } else {
 
-                        selectedDays.delete(
-                            date
-                        );
-
+                        selectedDates.delete(key);
                     }
-
-                    updateSelectedCount();
 
                     tr.classList.toggle(
                         "selectedRow",
-                        check.checked
+                        checkbox.checked
                     );
 
+                    updateSelectedCount();
                 }
             );
 
 
-            const tdCheck =
-                document.createElement(
-                    "td"
-                );
-
             tdCheck.appendChild(
-                check
+                checkbox
             );
 
+            tr.appendChild(tdCheck);
+
+
+            /* ==============================
+               DATA
+               ============================== */
 
             const tdDate =
-                document.createElement(
-                    "td"
-                );
+                document.createElement("td");
 
             tdDate.className =
-                "date";
+                "center";
 
             tdDate.textContent =
-                date;
+                key;
 
+            tr.appendChild(tdDate);
+
+
+            /* ==============================
+               DZIEŃ
+               ============================== */
 
             const tdDay =
-                document.createElement(
-                    "td"
-                );
+                document.createElement("td");
 
             tdDay.className =
-                "day";
+                "center";
 
             tdDay.textContent =
-                weekdayNames[weekday];
+                dayNames[
+                    date.getDay()
+                ];
 
+            tr.appendChild(tdDay);
+
+
+            /* ==============================
+               OD
+               ============================== */
+
+            const tdFrom =
+                document.createElement("td");
 
             const from =
-                document.createElement(
-                    "input"
-                );
+                document.createElement("input");
 
             from.type =
                 "time";
@@ -1254,45 +1446,20 @@ function render(){
             from.value =
                 old.from || "";
 
+            tdFrom.appendChild(from);
 
-            from.addEventListener(
-                "change",
-                ()=>{
-
-                    const dayData =
-                        normalizeDay(
-                            readYear(
-                                currentYear
-                            )[date]
-                        );
-
-                    dayData.from =
-                        from.value;
-
-                    saveDay(
-                        currentYear,
-                        date,
-                        dayData
-                    );
-
-                }
-            );
+            tr.appendChild(tdFrom);
 
 
-            const tdFrom =
-                document.createElement(
-                    "td"
-                );
+            /* ==============================
+               DO
+               ============================== */
 
-            tdFrom.appendChild(
-                from
-            );
-
+            const tdTo =
+                document.createElement("td");
 
             const to =
-                document.createElement(
-                    "input"
-                );
+                document.createElement("input");
 
             to.type =
                 "time";
@@ -1300,122 +1467,74 @@ function render(){
             to.value =
                 old.to || "";
 
+            tdTo.appendChild(to);
 
-            to.addEventListener(
-                "change",
-                ()=>{
-
-                    const dayData =
-                        normalizeDay(
-                            readYear(
-                                currentYear
-                            )[date]
-                        );
-
-                    dayData.to =
-                        to.value;
-
-                    saveDay(
-                        currentYear,
-                        date,
-                        dayData
-                    );
-
-                }
-            );
+            tr.appendChild(tdTo);
 
 
-            const tdTo =
-                document.createElement(
-                    "td"
-                );
-
-            tdTo.appendChild(
-                to
-            );
-
-
-            const type =
-                document.createElement(
-                    "select"
-                );
-
-
-            TYPES.forEach(t=>{
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value =
-                    t;
-
-                option.textContent =
-                    t;
-
-                if(t === old.type){
-
-                    option.selected =
-                        true;
-
-                }
-
-                type.appendChild(
-                    option
-                );
-
-            });
-
-
-            type.addEventListener(
-                "change",
-                ()=>{
-
-                    const dayData =
-                        normalizeDay(
-                            readYear(
-                                currentYear
-                            )[date]
-                        );
-
-                    dayData.type =
-                        type.value;
-
-                    adjustByType(
-                        dayData,
-                        type.value
-                    );
-
-                    saveDay(
-                        currentYear,
-                        date,
-                        dayData
-                    );
-
-                    render();
-
-                }
-            );
-
+            /* ==============================
+               RODZAJ
+               ============================== */
 
             const tdType =
-                document.createElement(
-                    "td"
-                );
+                document.createElement("td");
+
+            const type =
+                document.createElement("select");
+
+
+            const emptyOption =
+                document.createElement("option");
+
+            emptyOption.value = "";
+            emptyOption.textContent = "";
+
+            type.appendChild(
+                emptyOption
+            );
+
+
+            types.forEach(
+                typeName => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        typeName;
+
+                    option.textContent =
+                        typeName;
+
+                    type.appendChild(
+                        option
+                    );
+                }
+            );
+
+
+            type.value =
+                old.type || "";
+
 
             tdType.appendChild(
                 type
             );
 
+            tr.appendChild(tdType);
+
+
+            /* ==============================
+               PROJEKT
+               ============================== */
+
+            const tdProject =
+                document.createElement("td");
 
             const project =
-                document.createElement(
-                    "input"
-                );
-
-            project.className =
-                "project";
+                document.createElement("input");
 
             project.type =
                 "text";
@@ -1423,48 +1542,25 @@ function render(){
             project.value =
                 old.project || "";
 
-
-            project.addEventListener(
-                "change",
-                ()=>{
-
-                    const dayData =
-                        normalizeDay(
-                            readYear(
-                                currentYear
-                            )[date]
-                        );
-
-                    dayData.project =
-                        project.value;
-
-                    saveDay(
-                        currentYear,
-                        date,
-                        dayData
-                    );
-
-                }
-            );
-
-
-            const tdProject =
-                document.createElement(
-                    "td"
-                );
+            project.placeholder =
+                "Projekt";
 
             tdProject.appendChild(
                 project
             );
 
+            tr.appendChild(tdProject);
+
+
+            /* ==============================
+               UWAGI
+               ============================== */
+
+            const tdNote =
+                document.createElement("td");
 
             const note =
-                document.createElement(
-                    "input"
-                );
-
-            note.className =
-                "note";
+                document.createElement("input");
 
             note.type =
                 "text";
@@ -1472,63 +1568,118 @@ function render(){
             note.value =
                 old.note || "";
 
-
-            note.addEventListener(
-                "change",
-                ()=>{
-
-                    const dayData =
-                        normalizeDay(
-                            readYear(
-                                currentYear
-                            )[date]
-                        );
-
-                    dayData.note =
-                        note.value;
-
-                    saveDay(
-                        currentYear,
-                        date,
-                        dayData
-                    );
-
-                }
-            );
-
-
-            const tdNote =
-                document.createElement(
-                    "td"
-                );
+            note.placeholder =
+                "Uwagi";
 
             tdNote.appendChild(
                 note
             );
 
-
-            tr.appendChild(tdCheck);
-            tr.appendChild(tdDate);
-            tr.appendChild(tdDay);
-            tr.appendChild(tdFrom);
-            tr.appendChild(tdTo);
-            tr.appendChild(tdType);
-            tr.appendChild(tdProject);
             tr.appendChild(tdNote);
 
-            tbody.appendChild(tr);
 
+            /* ==============================
+               ZAPIS ZMIAN
+               ============================== */
+
+            function saveRow() {
+
+                const current =
+                    normalizeDay(
+                        data[key]
+                    );
+
+                current.from =
+                    from.value || "";
+
+                current.to =
+                    to.value || "";
+
+                current.type =
+                    type.value || "";
+
+                current.project =
+                    project.value || "";
+
+                current.note =
+                    note.value || "";
+
+
+                data[key] =
+                    current;
+
+
+                saveYear(
+                    currentYear,
+                    data
+                );
+
+
+                markLocalChange(
+                    currentYear,
+                    key
+                );
+
+
+                /* natychmiastowa zmiana tła urlopu */
+
+                tr.classList.toggle(
+                    "vacationDay",
+                    current.type === "Urlop"
+                );
+
+
+                renderSummary();
+
+                document.getElementById(
+                    "savedInfo"
+                ).textContent =
+                    "Niezapisane zmiany";
+
+
+                scheduleSync();
+            }
+
+
+            from.addEventListener(
+                "change",
+                saveRow
+            );
+
+            to.addEventListener(
+                "change",
+                saveRow
+            );
+
+            type.addEventListener(
+                "change",
+                saveRow
+            );
+
+            project.addEventListener(
+                "change",
+                saveRow
+            );
+
+            note.addEventListener(
+                "change",
+                saveRow
+            );
+
+
+            tbody.appendChild(tr);
         }
 
 
         table.appendChild(tbody);
 
-        wrap.appendChild(table);
+        wrapper.appendChild(table);
 
-        monthBox.appendChild(wrap);
+        monthContainer.appendChild(wrapper);
 
-        container.appendChild(monthBox);
-
+        container.appendChild(
+            monthContainer
+        );
     }
 
 
@@ -1536,55 +1687,180 @@ function render(){
 
     updateSelectedCount();
 
+    setTimeout(
+        updateTopLayout,
+        0
+    );
 }
 
 
 /* =========================================================
-   FORMAT DATE
-========================================================= */
+   SUMMARY
+   ========================================================= */
 
-function formatDate(date){
+function renderSummary() {
 
-    return date.getFullYear()
-        + "-"
-        + String(
-            date.getMonth()+1
-        ).padStart(2,"0")
-        + "-"
-        + String(
-            date.getDate()
-        ).padStart(2,"0");
+    const data =
+        loadYear(currentYear);
 
+
+    let workMinutes = 0;
+
+    let delegation = 0;
+    let vacation = 0;
+    let sick = 0;
+    let holiday = 0;
+    let free = 0;
+
+
+    Object.keys(data).forEach(
+        key => {
+
+            const d =
+                normalizeDay(
+                    data[key]
+                );
+
+
+            if (
+                d.from &&
+                d.to
+            ) {
+
+                const from =
+                    timeToMinutes(
+                        d.from
+                    );
+
+                const to =
+                    timeToMinutes(
+                        d.to
+                    );
+
+                if (
+                    to >= from
+                ) {
+
+                    workMinutes +=
+                        to - from;
+                }
+            }
+
+
+            switch (d.type) {
+
+                case "Delegacja":
+                    delegation++;
+                    break;
+
+                case "Urlop":
+                    vacation++;
+                    break;
+
+                case "L4":
+                    sick++;
+                    break;
+
+                case "Święto":
+                    holiday++;
+                    break;
+
+                case "Wolne":
+                    free++;
+                    break;
+            }
+        }
+    );
+
+
+    document.getElementById(
+        "sumWork"
+    ).textContent =
+        minutesToTime(
+            workMinutes
+        );
+
+
+    document.getElementById(
+        "sumDelegation"
+    ).textContent =
+        delegation;
+
+
+    document.getElementById(
+        "sumVacation"
+    ).textContent =
+        vacation;
+
+
+    document.getElementById(
+        "sumSick"
+    ).textContent =
+        sick;
+
+
+    document.getElementById(
+        "sumHoliday"
+    ).textContent =
+        holiday;
+
+
+    document.getElementById(
+        "sumFree"
+    ).textContent =
+        free;
+
+
+    document.getElementById(
+        "sumTotal"
+    ).textContent =
+        delegation +
+        vacation +
+        sick +
+        holiday +
+        free;
+
+
+    setTimeout(
+        updateTopLayout,
+        0
+    );
 }
 
 
-/* =========================================================
-   PODSUMOWANIE
-========================================================= */
+function timeToMinutes(value) {
 
-function timeToMinutes(value){
-
-    if(!value){
+    if (!value) {
         return 0;
     }
 
     const parts =
         value.split(":");
 
-    if(parts.length !== 2){
+    if (
+        parts.length !== 2
+    ) {
         return 0;
     }
 
-    return (
-        Number(parts[0]) * 60
-        +
-        Number(parts[1])
-    );
+    const h =
+        Number(parts[0]);
 
+    const m =
+        Number(parts[1]);
+
+    if (
+        Number.isNaN(h) ||
+        Number.isNaN(m)
+    ) {
+        return 0;
+    }
+
+    return h * 60 + m;
 }
 
 
-function minutesToTime(minutes){
+function minutesToTime(minutes) {
 
     const h =
         Math.floor(
@@ -1594,458 +1870,773 @@ function minutesToTime(minutes){
     const m =
         minutes % 60;
 
-    return (
-        h
-        + ":"
-        + String(m).padStart(2,"0")
-    );
-
-}
-
-
-function renderSummary(){
-
-    const d =
-        readYear(currentYear);
-
-
-    const sums = {
-
-        Praca:0,
-        Delegacja:0,
-        Urlop:0,
-        L4:0,
-        Święto:0,
-        Wolne:0
-
-    };
-
-
-    Object.values(d).forEach(day=>{
-
-        if(
-            !day ||
-            !day.type
-        ){
-            return;
-        }
-
-
-        let minutes = 0;
-
-
-        if(
-            day.from &&
-            day.to
-        ){
-
-            minutes =
-                timeToMinutes(day.to)
-                -
-                timeToMinutes(day.from);
-
-
-            if(minutes < 0){
-                minutes = 0;
-            }
-
-        }
-
-
-        if(
-            Object.prototype.hasOwnProperty.call(
-                sums,
-                day.type
-            )
-        ){
-
-            sums[day.type] +=
-                minutes;
-
-        }
-
-    });
-
-
-    document.getElementById("sumWork")
-        .textContent =
-        minutesToTime(
-            sums.Praca
-        );
-
-
-    document.getElementById("sumTrip")
-        .textContent =
-        minutesToTime(
-            sums.Delegacja
-        );
-
-
-    document.getElementById("sumVacation")
-        .textContent =
-        minutesToTime(
-            sums.Urlop
-        );
-
-
-    document.getElementById("sumSick")
-        .textContent =
-        minutesToTime(
-            sums.L4
-        );
-
-
-    document.getElementById("sumHoliday")
-        .textContent =
-        minutesToTime(
-            sums.Święto
-        );
-
-
-    document.getElementById("sumFree")
-        .textContent =
-        minutesToTime(
-            sums.Wolne
-        );
-
-
-    const total =
-        Object.values(sums)
-            .reduce(
-                (a,b)=>a+b,
-                0
-            );
-
-
-    document.getElementById("sumTotal")
-        .textContent =
-        minutesToTime(total);
-
+    return `${h}:${String(m).padStart(2, "0")}`;
 }
 
 
 /* =========================================================
-   DZIŚ
-========================================================= */
+   SELECT
+   ========================================================= */
 
-function goToday(){
-
-    const today =
-        new Date();
-
-
-    const year =
-        today.getFullYear();
-
-
-    if(
-        year >= FIRST_YEAR &&
-        year <= LAST_YEAR
-    ){
-
-        currentYear =
-            year;
-
-        ys.value =
-            year;
-
-    }
-
-
-    render();
-
-
-    setTimeout(()=>{
-
-        const el =
-            document.querySelector(
-                ".today"
-            );
-
-
-        if(el){
-
-            el.scrollIntoView({
-                behavior:"smooth",
-                block:"center"
-            });
-
-        }
-
-    },100);
-
-}
-
-
-/* =========================================================
-   ZAZNACZANIE / BULK
-========================================================= */
-
-function updateSelectedCount(){
+function updateSelectedCount() {
 
     document.getElementById(
-        "selectedCount"
+        "selectedInfo"
     ).textContent =
-        selectedDays.size;
-
+        `Zaznaczono: ${selectedDates.size}`;
 }
 
 
-function showBulkPanel(){
+function selectAllVisible() {
 
-    document.getElementById(
-        "bulkPanel"
-    ).style.display =
-        "flex";
+    document
+        .querySelectorAll(
+            "#app tbody tr"
+        )
+        .forEach(
+            tr => {
+
+                const checkbox =
+                    tr.querySelector(
+                        'input[type="checkbox"]'
+                    );
+
+                if (!checkbox) {
+                    return;
+                }
+
+                checkbox.checked =
+                    true;
+
+                checkbox.dispatchEvent(
+                    new Event(
+                        "change"
+                    )
+                );
+            }
+        );
 
     updateSelectedCount();
-
 }
 
 
-function hideBulkPanel(){
+function clearSelected() {
 
-    document.getElementById(
-        "bulkPanel"
-    ).style.display =
-        "none";
+    selectedDates.clear();
 
+    document
+        .querySelectorAll(
+            "#app tbody tr"
+        )
+        .forEach(
+            tr => {
+
+                const checkbox =
+                    tr.querySelector(
+                        'input[type="checkbox"]'
+                    );
+
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+
+                tr.classList.remove(
+                    "selectedRow"
+                );
+            }
+        );
+
+    updateSelectedCount();
 }
 
 
-function applyBulk(){
+/* =========================================================
+   BULK EDIT
+   ========================================================= */
 
-    if(
-        selectedDays.size === 0
-    ){
+function bulkEdit() {
 
-        showMessage(
-            "Nie zaznaczono żadnego dnia."
+    if (
+        selectedDates.size === 0
+    ) {
+
+        alert(
+            "Najpierw zaznacz dni."
         );
 
         return;
-
     }
 
+    document.getElementById(
+        "bulkType"
+    ).value = "";
 
-    const from =
-        document.getElementById(
-            "bulkFrom"
-        ).value;
+    document.getElementById(
+        "bulkProject"
+    ).value = "";
+
+    document.getElementById(
+        "bulkNote"
+    ).value = "";
+
+    document.getElementById(
+        "editModal"
+    ).style.display = "flex";
+}
 
 
-    const to =
-        document.getElementById(
-            "bulkTo"
-        ).value;
+function closeBulkModal() {
 
+    document.getElementById(
+        "editModal"
+    ).style.display = "none";
+}
+
+
+function applyBulkEdit() {
+
+    const data =
+        loadYear(currentYear);
 
     const type =
         document.getElementById(
             "bulkType"
         ).value;
 
-
     const project =
         document.getElementById(
             "bulkProject"
         ).value;
 
-
-    const d =
-        readYear(currentYear);
-
-
-    const meta =
-        readMeta(currentYear);
+    const note =
+        document.getElementById(
+            "bulkNote"
+        ).value;
 
 
-    const timestamp =
-        nowISO();
+    selectedDates.forEach(
+        key => {
+
+            const d =
+                normalizeDay(
+                    data[key]
+                );
 
 
-    selectedDays.forEach(date=>{
+            if (type) {
+                d.type = type;
+            }
 
-        const old =
-            normalizeDay(
-                d[date]
+            if (project !== "") {
+                d.project = project;
+            }
+
+            if (note !== "") {
+                d.note = note;
+            }
+
+
+            data[key] = d;
+
+
+            markLocalChange(
+                currentYear,
+                key
             );
-
-
-        old.from =
-            from;
-
-        old.to =
-            to;
-
-        old.type =
-            type;
-
-        old.project =
-            project;
-
-
-        adjustByType(
-            old,
-            type
-        );
-
-
-        d[date] =
-            old;
-
-        meta[date] =
-            timestamp;
-
-    });
-
-
-    writeYear(
-        currentYear,
-        d
+        }
     );
 
 
-    writeMeta(
+    saveYear(
         currentYear,
-        meta
+        data
     );
 
 
-    selectedDays.clear();
-
+    closeBulkModal();
 
     render();
 
-    hideBulkPanel();
+    document.getElementById(
+        "savedInfo"
+    ).textContent =
+        "Niezapisane zmiany";
+
 
     scheduleSync();
-
 }
 
 
 /* =========================================================
-   CZYSZCZENIE ZAZNACZONYCH
-========================================================= */
+   ROK
+   ========================================================= */
 
-function clearSelected(){
+function fillYears() {
 
-    if(
-        selectedDays.size === 0
-    ){
-
-        showMessage(
-            "Nie zaznaczono żadnego dnia."
+    const select =
+        document.getElementById(
+            "yearSelect"
         );
 
-        return;
+    select.innerHTML = "";
 
+
+    for (
+        let year = MIN_YEAR;
+        year <= MAX_YEAR;
+        year++
+    ) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            year;
+
+        option.textContent =
+            year;
+
+        select.appendChild(
+            option
+        );
     }
 
 
-    if(
-        !confirm(
-            "Czy na pewno wyczyścić zaznaczone dni?"
-        )
-    ){
+    select.value =
+        currentYear;
+}
 
-        return;
 
+function changeYear(value) {
+
+    currentYear =
+        Number(value);
+
+    selectedDates.clear();
+
+    render();
+}
+
+
+/* =========================================================
+   DZISIAJ
+   ========================================================= */
+
+function scrollToToday(smooth = true) {
+
+    const today =
+        new Date();
+
+    const todayYear =
+        today.getFullYear();
+
+
+    if (
+        todayYear >= MIN_YEAR &&
+        todayYear <= MAX_YEAR
+    ) {
+
+        currentYear =
+            todayYear;
+
+        const yearSelect =
+            document.getElementById(
+                "yearSelect"
+            );
+
+        if (yearSelect) {
+            yearSelect.value =
+                currentYear;
+        }
     }
-
-
-    const d =
-        readYear(currentYear);
-
-
-    const meta =
-        readMeta(currentYear);
-
-
-    const timestamp =
-        nowISO();
-
-
-    selectedDays.forEach(date=>{
-
-        delete d[date];
-
-        meta[date] =
-            timestamp;
-
-    });
-
-
-    writeYear(
-        currentYear,
-        d
-    );
-
-
-    writeMeta(
-        currentYear,
-        meta
-    );
-
-
-    selectedDays.clear();
 
 
     render();
 
-    scheduleSync();
 
+    setTimeout(
+        () => {
+
+            const todayRow =
+                document.querySelector(
+                    "#app .today"
+                );
+
+            if (!todayRow) {
+                return;
+            }
+
+
+            todayRow.scrollIntoView({
+
+                behavior:
+                    smooth
+                        ? "smooth"
+                        : "auto",
+
+                block:
+                    "center"
+            });
+
+        },
+        100
+    );
+}
+
+
+function goToday() {
+
+    scrollToToday(true);
+}
+
+
+/* =========================================================
+   LOCAL CHANGE META
+   ========================================================= */
+
+function markLocalChange(
+    year,
+    key
+) {
+
+    const meta =
+        loadMeta(year);
+
+    meta[key] =
+        Date.now();
+
+    saveMeta(
+        year,
+        meta
+    );
+}
+
+
+/* =========================================================
+   SYNC
+   ========================================================= */
+
+let syncTimer = null;
+
+
+function scheduleSync() {
+
+    clearTimeout(
+        syncTimer
+    );
+
+    syncTimer =
+        setTimeout(
+            () => {
+
+                syncAll(false);
+
+            },
+            1000
+        );
+}
+
+
+async function pushDay(
+    year,
+    key
+) {
+
+    const userResult =
+        await supabaseClient.auth.getUser();
+
+    const user =
+        userResult.data.user;
+
+    if (!user) {
+        return;
+    }
+
+
+    const data =
+        loadYear(year);
+
+    const day =
+        normalizeDay(
+            data[key]
+        );
+
+    const meta =
+        loadMeta(year);
+
+
+    const localModified =
+        meta[key] ||
+        Date.now();
+
+
+    const payload = {
+
+        user_id:
+            user.id,
+
+        work_date:
+            key,
+
+        year:
+            year,
+
+        from_time:
+            day.from || null,
+
+        to_time:
+            day.to || null,
+
+        work_type:
+            day.type || null,
+
+        project:
+            day.project || "",
+
+        note:
+            day.note || "",
+
+        modified_at:
+            new Date(
+                localModified
+            ).toISOString()
+    };
+
+
+    const { error } =
+        await supabaseClient.rpc(
+            "sync_worktime_entry",
+            payload
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Błąd synchronizacji:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+async function syncAll(
+    showMessage = true
+) {
+
+    if (syncing) {
+        return;
+    }
+
+    syncing = true;
+
+
+    try {
+
+        const userResult =
+            await supabaseClient.auth.getUser();
+
+        const user =
+            userResult.data.user;
+
+        if (!user) {
+            return;
+        }
+
+
+        if (showMessage) {
+
+            document.getElementById(
+                "savedInfo"
+            ).textContent =
+                "Synchronizacja...";
+        }
+
+
+        const years = [];
+
+        for (
+            let year = MIN_YEAR;
+            year <= MAX_YEAR;
+            year++
+        ) {
+
+            years.push(year);
+        }
+
+
+        for (
+            const year of years
+        ) {
+
+            const {
+                data: remoteRows,
+                error
+            } =
+                await supabaseClient
+                    .from("worktime_entries")
+                    .select("*")
+                    .eq(
+                        "user_id",
+                        user.id
+                    )
+                    .eq(
+                        "year",
+                        year
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    "Błąd pobierania:",
+                    error
+                );
+
+                continue;
+            }
+
+
+            const localData =
+                loadYear(year);
+
+            const localMeta =
+                loadMeta(year);
+
+
+            const remoteMap = {};
+
+
+            (remoteRows || []).forEach(
+                row => {
+
+                    remoteMap[
+                        row.work_date
+                    ] = row;
+                }
+            );
+
+
+            /*
+             * LAST CHANGE WINS
+             *
+             * Najpierw porównujemy timestamp
+             * lokalny z modified_at z Supabase.
+             */
+
+            for (
+                const key of Object.keys(
+                    localData
+                )
+            ) {
+
+                const localModified =
+                    localMeta[key] || 0;
+
+                const remote =
+                    remoteMap[key];
+
+
+                if (!remote) {
+
+                    try {
+
+                        await pushDay(
+                            year,
+                            key
+                        );
+
+                    } catch (e) {
+
+                        console.error(
+                            e
+                        );
+                    }
+
+                    continue;
+                }
+
+
+                const remoteModified =
+                    remote.modified_at
+                        ? new Date(
+                            remote.modified_at
+                          ).getTime()
+                        : 0;
+
+
+                if (
+                    localModified >
+                    remoteModified
+                ) {
+
+                    try {
+
+                        await pushDay(
+                            year,
+                            key
+                        );
+
+                    } catch (e) {
+
+                        console.error(
+                            e
+                        );
+                    }
+
+                } else {
+
+                    localData[key] = {
+
+                        from:
+                            remote.from_time || "",
+
+                        to:
+                            remote.to_time || "",
+
+                        type:
+                            remote.work_type || "",
+
+                        project:
+                            remote.project || "",
+
+                        note:
+                            remote.note || ""
+                    };
+
+
+                    localMeta[key] =
+                        remoteModified;
+                }
+            }
+
+
+            /*
+             * Rekordy istniejące tylko online
+             */
+
+            for (
+                const key of Object.keys(
+                    remoteMap
+                )
+            ) {
+
+                if (
+                    localData[key]
+                ) {
+                    continue;
+                }
+
+
+                const remote =
+                    remoteMap[key];
+
+
+                localData[key] = {
+
+                    from:
+                        remote.from_time || "",
+
+                    to:
+                        remote.to_time || "",
+
+                    type:
+                        remote.work_type || "",
+
+                    project:
+                        remote.project || "",
+
+                    note:
+                        remote.note || ""
+                };
+
+
+                localMeta[key] =
+                    remote.modified_at
+                        ? new Date(
+                            remote.modified_at
+                          ).getTime()
+                        : Date.now();
+            }
+
+
+            saveYear(
+                year,
+                localData
+            );
+
+            saveMeta(
+                year,
+                localMeta
+            );
+        }
+
+
+        render();
+
+
+        document.getElementById(
+            "savedInfo"
+        ).textContent =
+            "Zapisane";
+
+
+    } catch (e) {
+
+        console.error(
+            "Synchronizacja:",
+            e
+        );
+
+
+        document.getElementById(
+            "savedInfo"
+        ).textContent =
+            "Offline / oczekuje na synchronizację";
+
+
+    } finally {
+
+        syncing = false;
+    }
 }
 
 
 /* =========================================================
    BACKUP
-========================================================= */
+   ========================================================= */
 
-function backupData(){
+function backupData() {
 
     const backup = {
 
-        version:2,
-
-        createdAt:
+        created:
             new Date().toISOString(),
 
-        years:{},
-
-        meta:{},
-
-        settings:{
-
-            lastFrom:
-                localStorage.getItem(
-                    "worktime_last_from"
-                ) || "07:00",
-
-            lastTo:
-                localStorage.getItem(
-                    "worktime_last_to"
-                ) || "15:00",
-
-            lastType:
-                localStorage.getItem(
-                    "worktime_last_type"
-                ) || "Praca"
-
-        }
+        years: {}
 
     };
 
 
-    YEARS.forEach(year=>{
+    for (
+        let year = MIN_YEAR;
+        year <= MAX_YEAR;
+        year++
+    ) {
 
-        backup.years[year] =
-            readYear(year);
+        backup.years[year] = {
 
-        backup.meta[year] =
-            readMeta(year);
+            data:
+                loadYear(year),
 
-    });
+            meta:
+                loadMeta(year)
+        };
+    }
 
 
     const blob =
@@ -2058,460 +2649,285 @@ function backupData(){
                 )
             ],
             {
-                type:"application/json"
+                type:
+                    "application/json"
             }
         );
 
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
 
     const a =
         document.createElement("a");
 
-
-    a.href =
-        url;
-
+    a.href = url;
 
     a.download =
-        "ewidencja_czasu_pracy_backup_"
-        +
-        new Date()
-            .toISOString()
-            .slice(0,10)
-        +
-        ".json";
-
+        `ewidencja_czasu_backup_${new Date().toISOString().slice(0,10)}.json`;
 
     a.click();
 
-    URL.revokeObjectURL(url);
 
+    URL.revokeObjectURL(
+        url
+    );
 }
 
 
 /* =========================================================
    RESTORE
-========================================================= */
+   ========================================================= */
 
-function restoreData(event){
+function restoreData() {
 
-    const file =
-        event.target.files[0];
+    const input =
+        document.createElement(
+            "input"
+        );
 
+    input.type =
+        "file";
 
-    if(!file){
-        return;
-    }
-
-
-    const reader =
-        new FileReader();
-
-
-    reader.onload = ()=>{
-
-        try{
-
-            const backup =
-                JSON.parse(
-                    reader.result
-                );
+    input.accept =
+        ".json,application/json";
 
 
-            if(
-                !backup.years ||
-                typeof backup.years !== "object"
-            ){
+    input.onchange =
+        async () => {
 
-                throw new Error(
-                    "Nieprawidłowy plik backupu."
-                );
+            const file =
+                input.files[0];
 
-            }
-
-
-            if(
-                !confirm(
-                    "Przywrócić dane z backupu? Aktualne lokalne dane zostaną zastąpione."
-                )
-            ){
-
+            if (!file) {
                 return;
-
             }
 
 
-            YEARS.forEach(year=>{
+            try {
 
-                const d =
-                    backup.years[year] || {};
+                const text =
+                    await file.text();
+
+                const backup =
+                    JSON.parse(text);
 
 
-                localStorage.setItem(
-                    dataKey(year),
-                    JSON.stringify(d)
+                if (
+                    !backup.years
+                ) {
+
+                    throw new Error(
+                        "Nieprawidłowy plik backupu."
+                    );
+                }
+
+
+                if (
+                    !confirm(
+                        "Przywrócić dane z backupu?"
+                    )
+                ) {
+                    return;
+                }
+
+
+                Object.keys(
+                    backup.years
+                ).forEach(
+                    year => {
+
+                        if (
+                            backup.years[year].data
+                        ) {
+
+                            saveYear(
+                                Number(year),
+                                backup.years[year].data
+                            );
+                        }
+
+
+                        if (
+                            backup.years[year].meta
+                        ) {
+
+                            saveMeta(
+                                Number(year),
+                                backup.years[year].meta
+                            );
+                        }
+                    }
                 );
 
 
-                const oldMeta =
-                    backup.meta &&
-                    backup.meta[year]
-                        ? backup.meta[year]
-                        : {};
+                render();
 
 
-                const meta = {};
+                document.getElementById(
+                    "savedInfo"
+                ).textContent =
+                    "Przywrócono backup";
+
+                scheduleSync();
 
 
-                Object.keys(d).forEach(date=>{
+            } catch (e) {
 
-                    meta[date] =
-                        oldMeta[date] ||
-                        nowISO();
-
-                });
-
-
-                localStorage.setItem(
-                    metaKey(year),
-                    JSON.stringify(meta)
+                alert(
+                    "Nie udało się przywrócić backupu:\n" +
+                    e.message
                 );
-
-            });
-
-
-            if(backup.settings){
-
-                if(
-                    backup.settings.lastFrom
-                ){
-
-                    localStorage.setItem(
-                        "worktime_last_from",
-                        backup.settings.lastFrom
-                    );
-
-                }
-
-
-                if(
-                    backup.settings.lastTo
-                ){
-
-                    localStorage.setItem(
-                        "worktime_last_to",
-                        backup.settings.lastTo
-                    );
-
-                }
-
-
-                if(
-                    backup.settings.lastType
-                ){
-
-                    localStorage.setItem(
-                        "worktime_last_type",
-                        backup.settings.lastType
-                    );
-
-                }
-
             }
+        };
 
 
-            render();
-
-
-            showMessage(
-                "Backup przywrócony lokalnie."
-            );
-
-
-            scheduleSync();
-
-
-        }catch(e){
-
-            console.error(e);
-
-
-            alert(
-                "Nie udało się przywrócić backupu:\n"
-                +
-                e.message
-            );
-
-        }
-
-    };
-
-
-    reader.readAsText(file);
-
-    event.target.value = "";
-
+    input.click();
 }
 
 
 /* =========================================================
    EXCEL
-========================================================= */
+   ========================================================= */
 
-async function exportExcel(){
+async function exportExcel() {
 
     const workbook =
         new ExcelJS.Workbook();
 
+    const data =
+        loadYear(currentYear);
 
-    for(let month=0; month<12; month++){
 
-        const monthName =
-            MONTHS[month];
-
+    for (
+        let month = 0;
+        month < 12;
+        month++
+    ) {
 
         const sheet =
             workbook.addWorksheet(
-                monthName
+                monthNames[month]
             );
 
 
         sheet.columns = [
 
             {
-                header:"Data",
-                key:"date",
-                width:14
+                header: "Data",
+                key: "date",
+                width: 14
             },
 
             {
-                header:"Dzień",
-                key:"day",
-                width:10
+                header: "Dzień",
+                key: "day",
+                width: 15
             },
 
             {
-                header:"Od",
-                key:"from",
-                width:10
+                header: "Od",
+                key: "from",
+                width: 10
             },
 
             {
-                header:"Do",
-                key:"to",
-                width:10
+                header: "Do",
+                key: "to",
+                width: 10
             },
 
             {
-                header:"Rodzaj",
-                key:"type",
-                width:15
+                header: "Rodzaj",
+                key: "type",
+                width: 15
             },
 
             {
-                header:"Projekt",
-                key:"project",
-                width:25
+                header: "Projekt",
+                key: "project",
+                width: 25
             },
 
             {
-                header:"Uwagi",
-                key:"note",
-                width:40
+                header: "Uwagi",
+                key: "note",
+                width: 40
             }
-
         ];
 
 
-        const d =
-            readYear(currentYear);
-
-
-        const days =
-            new Date(
+        const count =
+            daysInMonth(
                 currentYear,
-                month+1,
-                0
-            ).getDate();
+                month
+            );
 
 
-        for(
-            let day=1;
-            day<=days;
+        for (
+            let day = 1;
+            day <= count;
             day++
-        ){
+        ) {
 
             const date =
-                `${currentYear}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-
-
-            const jsDate =
                 new Date(
                     currentYear,
                     month,
                     day
                 );
 
+            const key =
+                dateKey(date);
 
-            const weekdays = [
-                "Nd",
-                "Pn",
-                "Wt",
-                "Śr",
-                "Cz",
-                "Pt",
-                "Sb"
-            ];
-
-
-            const item =
+            const d =
                 normalizeDay(
-                    d[date]
+                    data[key]
                 );
 
 
             sheet.addRow({
 
-                date:date,
+                date:
+                    key,
 
                 day:
-                    weekdays[
-                        jsDate.getDay()
+                    dayNames[
+                        date.getDay()
                     ],
 
                 from:
-                    item.from || "",
+                    d.from,
 
                 to:
-                    item.to || "",
+                    d.to,
 
                 type:
-                    item.type || "",
+                    d.type,
 
                 project:
-                    item.project || "",
+                    d.project,
 
                 note:
-                    item.note || ""
-
+                    d.note
             });
-
         }
 
 
         sheet.getRow(1).font = {
-            bold:true
+            bold: true
         };
 
-    }
-
-
-    const summary =
-        workbook.addWorksheet(
-            "Podsumowanie roku"
-        );
-
-
-    summary.addRow([
-        "Rok",
-        currentYear
-    ]);
-
-    summary.addRow([]);
-
-    summary.addRow([
-        "Rodzaj",
-        "Czas"
-    ]);
-
-
-    const d =
-        readYear(currentYear);
-
-
-    const sums = {
-
-        Praca:0,
-        Delegacja:0,
-        Urlop:0,
-        L4:0,
-        Święto:0,
-        Wolne:0
-
-    };
-
-
-    Object.values(d).forEach(day=>{
-
-        if(
-            !day ||
-            !day.type
-        ){
-
-            return;
-
-        }
-
-
-        let min = 0;
-
-
-        if(
-            day.from &&
-            day.to
-        ){
-
-            min =
-                timeToMinutes(day.to)
-                -
-                timeToMinutes(day.from);
-
-
-            if(min < 0){
-                min = 0;
+        sheet.views = [
+            {
+                state: "frozen",
+                ySplit: 1
             }
-
-        }
-
-
-        if(
-            Object.prototype.hasOwnProperty.call(
-                sums,
-                day.type
-            )
-        ){
-
-            sums[day.type] +=
-                min;
-
-        }
-
-    });
-
-
-    Object.keys(sums).forEach(type=>{
-
-        summary.addRow([
-            type,
-            minutesToTime(
-                sums[type]
-            )
-        ]);
-
-    });
-
-
-    summary.getRow(1).font = {
-        bold:true
-    };
-
-
-    summary.getRow(3).font = {
-        bold:true
-    };
+        ];
+    }
 
 
     const buffer =
@@ -2523,998 +2939,142 @@ async function exportExcel(){
             [buffer],
             {
                 type:
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             }
         );
 
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
 
     const a =
         document.createElement("a");
 
-
-    a.href =
-        url;
-
+    a.href = url;
 
     a.download =
-        "ewidencja_czasu_pracy_"
-        +
-        currentYear
-        +
-        ".xlsx";
-
+        `ewidencja_czasu_${currentYear}.xlsx`;
 
     a.click();
 
 
-    URL.revokeObjectURL(url);
-
-}
-
-
-/* =========================================================
-   SUPABASE AUTH
-========================================================= */
-
-async function login(){
-
-    const email =
-        document.getElementById(
-            "authEmail"
-        ).value.trim();
-
-
-    const password =
-        document.getElementById(
-            "authPassword"
-        ).value;
-
-
-    if(
-        !email ||
-        !password
-    ){
-
-        setAuthMessage(
-            "Podaj e-mail i hasło.",
-            true
-        );
-
-        return;
-
-    }
-
-
-    setAuthMessage(
-        "Logowanie..."
+    URL.revokeObjectURL(
+        url
     );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.signInWithPassword({
-
-            email,
-            password
-
-        });
-
-
-    if(error){
-
-        console.error(error);
-
-
-        setAuthMessage(
-            error.message,
-            true
-        );
-
-        return;
-
-    }
-
-
-    currentUser =
-        data.user;
-
-
-    await startApplication();
-
 }
-
-
-async function registerUser(){
-
-    const email =
-        document.getElementById(
-            "authEmail"
-        ).value.trim();
-
-
-    const password =
-        document.getElementById(
-            "authPassword"
-        ).value;
-
-
-    if(
-        !email ||
-        !password
-    ){
-
-        setAuthMessage(
-            "Podaj e-mail i hasło.",
-            true
-        );
-
-        return;
-
-    }
-
-
-    if(
-        password.length < 6
-    ){
-
-        setAuthMessage(
-            "Hasło musi mieć co najmniej 6 znaków.",
-            true
-        );
-
-        return;
-
-    }
-
-
-    setAuthMessage(
-        "Tworzenie konta..."
-    );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.signUp({
-
-            email,
-            password
-
-        });
-
-
-    if(error){
-
-        console.error(error);
-
-
-        setAuthMessage(
-            error.message,
-            true
-        );
-
-        return;
-
-    }
-
-
-    if(data.session){
-
-        currentUser =
-            data.user;
-
-        await startApplication();
-
-    }else{
-
-        setAuthMessage(
-            "Konto utworzone. Sprawdź e-mail i potwierdź konto."
-        );
-
-    }
-
-}
-
-
-async function logout(){
-
-    await supabaseClient.auth.signOut();
-
-    currentUser = null;
-
-
-    document.getElementById("app")
-        .style.display =
-        "none";
-
-
-    document.getElementById("authScreen")
-        .style.display =
-        "flex";
-
-}
-
-
-/* =========================================================
-   AUTH STATE
-========================================================= */
-
-supabaseClient.auth.onAuthStateChange(
-    async(
-        event,
-        session
-    )=>{
-
-        if(
-            session &&
-            session.user
-        ){
-
-            currentUser =
-                session.user;
-
-            await startApplication();
-
-        }
-
-    }
-);
 
 
 /* =========================================================
    START
-========================================================= */
+   ========================================================= */
 
-async function startApplication(){
-
-    if(!currentUser){
-        return;
-    }
-
-
-    document.getElementById(
-        "authScreen"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "app"
-    ).style.display =
-        "block";
-
-
-    document.getElementById(
-        "userInfo"
-    ).textContent =
-        currentUser.email || "";
-
-
-    /*
-       Zawsze rozpoczynamy na dzisiejszym roku.
-    */
+async function startApplication() {
 
     const today =
         new Date();
 
-
-    const todayYear =
-        today.getFullYear();
-
-
-    if(
-        todayYear >= FIRST_YEAR &&
-        todayYear <= LAST_YEAR
-    ){
+    if (
+        today.getFullYear() >= MIN_YEAR &&
+        today.getFullYear() <= MAX_YEAR
+    ) {
 
         currentYear =
-            todayYear;
-
-        ys.value =
-            todayYear;
-
+            today.getFullYear();
     }
 
+
+    fillYears();
+
+    selectedDates.clear();
 
     render();
 
+    updateTopLayout();
+
 
     /*
-       Po wyrenderowaniu automatycznie
-       przewijamy do dzisiejszego dnia.
-    */
-
-    setTimeout(()=>{
-
-        const el =
-            document.querySelector(
-                ".today"
-            );
-
-
-        if(el){
-
-            el.scrollIntoView({
-                behavior:"auto",
-                block:"center"
-            });
-
-        }
-
-    },100);
-
-
-    setSyncStatus(
-        "Synchronizacja..."
-    );
-
+     * Synchronizacja może ponownie wykonać render(),
+     * dlatego przewijamy do dzisiaj dopiero po jej
+     * zakończeniu.
+     */
 
     await syncAll(false);
 
-}
-
-
-/* =========================================================
-   POBRANIE DANYCH Z SUPABASE
-========================================================= */
-
-async function fetchRemote(){
-
-    if(!currentUser){
-        return null;
-    }
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from("worktime_entries")
-            .select(
-                "entry_date,data,modified_at"
-            )
-            .eq(
-                "user_id",
-                currentUser.id
-            );
-
-
-    if(error){
-
-        console.error(
-            "Supabase fetch error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data || [];
-
-}
-
-
-/* =========================================================
-   SYNCHRONIZACJA JEDNEGO DNIA
-========================================================= */
-
-async function pushDay(
-    year,
-    date,
-    localData,
-    modifiedAt
-){
-
-    if(!currentUser){
-        return;
-    }
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.rpc(
-            "sync_worktime_entry",
-            {
-                p_entry_date:date,
-                p_data:
-                    localData || {},
-                p_modified_at:
-                    modifiedAt
-            }
-        );
-
-
-    if(error){
-
-        console.error(
-            "RPC sync error:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    return data;
-
-}
-
-
-/* =========================================================
-   SYNCHRONIZACJA WSZYSTKICH DANYCH
-========================================================= */
-
-async function syncAll(
-    manual=false
-){
-
-    if(
-        !currentUser ||
-        syncRunning
-    ){
-
-        return;
-
-    }
-
-
-    if(!navigator.onLine){
-
-        setSyncStatus(
-            "⚫ Offline"
-        );
-
-        return;
-
-    }
-
-
-    syncRunning = true;
-
-
-    try{
-
-        if(manual){
-
-            setSyncStatus(
-                "🔄 Synchronizacja..."
-            );
-
-        }
-
-
-        const remote =
-            await fetchRemote();
-
-
-        /*
-           Mapujemy dane z serwera:
-           YYYY-MM-DD -> rekord
-        */
-
-        const remoteMap =
-            new Map();
-
-
-        remote.forEach(row=>{
-
-            remoteMap.set(
-                row.entry_date,
-                row
-            );
-
-        });
-
-
-        /*
-           Najpierw przetwarzamy wszystkie lata,
-           które mamy lokalnie.
-        */
-
-        for(
-            const year of YEARS
-        ){
-
-            const local =
-                readYear(year);
-
-
-            const meta =
-                readMeta(year);
-
-
-            /*
-               Znajdźmy lokalne daty.
-            */
-
-            const localDates =
-                new Set([
-                    ...Object.keys(local),
-                    ...Object.keys(meta)
-                ]);
-
-
-            /*
-               Obsługujemy lokalne rekordy.
-            */
-
-            for(
-                const date of localDates
-            ){
-
-                const localValue =
-                    local[date] || {};
-
-
-                let localModified =
-                    meta[date];
-
-
-                /*
-                   Stary localStorage może nie mieć
-                   timestampów.
-
-                   Jeżeli rekord istnieje tylko lokalnie,
-                   traktujemy go jako nowy.
-                */
-
-                if(!localModified){
-
-                    if(
-                        remoteMap.has(date)
-                    ){
-
-                        /*
-                           Serwer ma dane,
-                           a lokalne nie ma timestampu.
-                           Przy pierwszym połączeniu
-                           bezpieczniej przyjąć wersję
-                           z serwera.
-                        */
-
-                        continue;
-
-                    }else{
-
-                        localModified =
-                            nowISO();
-
-
-                        meta[date] =
-                            localModified;
-
-
-                        writeMeta(
-                            year,
-                            meta
-                        );
-
-                    }
-
-                }
-
-
-                const remoteRow =
-                    remoteMap.get(date);
-
-
-                if(!remoteRow){
-
-                    /*
-                       Nie ma w Supabase.
-                       Wysyłamy lokalną wersję.
-                    */
-
-                    await pushDay(
-                        year,
-                        date,
-                        localValue,
-                        localModified
-                    );
-
-                    continue;
-
-                }
-
-
-                const remoteModified =
-                    remoteRow.modified_at;
-
-
-                if(
-                    new Date(localModified)
-                    >
-                    new Date(remoteModified)
-                ){
-
-                    /*
-                       LOCAL jest nowszy.
-                    */
-
-                    await pushDay(
-                        year,
-                        date,
-                        localValue,
-                        localModified
-                    );
-
-                }else if(
-                    new Date(remoteModified)
-                    >
-                    new Date(localModified)
-                ){
-
-                    /*
-                       SUPABASE jest nowszy.
-                    */
-
-                    if(
-                        remoteRow.data &&
-                        Object.keys(
-                            remoteRow.data
-                        ).length > 0
-                    ){
-
-                        local[date] =
-                            remoteRow.data;
-
-                    }else{
-
-                        delete local[date];
-
-                    }
-
-
-                    meta[date] =
-                        remoteModified;
-
-
-                    writeYear(
-                        year,
-                        local
-                    );
-
-
-                    writeMeta(
-                        year,
-                        meta
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        /*
-           Teraz sprawdzamy rekordy istniejące
-           w Supabase, których lokalnie nie ma.
-        */
-
-        for(
-            const row of remote
-        ){
-
-            const date =
-                row.entry_date;
-
-
-            const year =
-                Number(
-                    date.slice(0,4)
-                );
-
-
-            if(
-                year < FIRST_YEAR ||
-                year > LAST_YEAR
-            ){
-
-                continue;
-
-            }
-
-
-            const local =
-                readYear(year);
-
-
-            const meta =
-                readMeta(year);
-
-
-            if(
-                !Object.prototype.hasOwnProperty.call(
-                    meta,
-                    date
-                )
-            ){
-
-                /*
-                   Brak lokalnego timestampu.
-                   Jeżeli brak lokalnego rekordu,
-                   pobieramy wersję serwerową.
-                */
-
-                if(
-                    !Object.prototype.hasOwnProperty.call(
-                        local,
-                        date
-                    )
-                ){
-
-                    if(
-                        row.data &&
-                        Object.keys(
-                            row.data
-                        ).length
-                    ){
-
-                        local[date] =
-                            row.data;
-
-                    }
-
-                }
-
-
-                meta[date] =
-                    row.modified_at;
-
-
-                writeYear(
-                    year,
-                    local
-                );
-
-
-                writeMeta(
-                    year,
-                    meta
-                );
-
-            }
-
-        }
-
-
-        render();
-
-
-        setSyncStatus(
-            "🟢 Zsynchronizowano " +
-            new Date().toLocaleTimeString()
-        );
-
-
-        document.getElementById(
-            "saved"
-        ).textContent =
-            "Zapisano i zsynchronizowano";
-
-
-    }catch(error){
-
-        console.error(
-            "SYNC ERROR:",
-            error
-        );
-
-
-        setSyncStatus(
-            "🟠 Błąd synchronizacji"
-        );
-
-
-        if(manual){
-
-            showMessage(
-                "Błąd synchronizacji: "
-                +
-                error.message
-            );
-
-        }
-
-    }finally{
-
-        syncRunning = false;
-
-    }
-
-}
-
-
-/* =========================================================
-   AUTOMATYCZNA SYNCHRONIZACJA
-========================================================= */
-
-let syncTimer = null;
-
-
-function scheduleSync(){
-
-    if(syncTimer){
-        return;
-    }
-
-
-    syncTimer =
-        setTimeout(
-            async()=>{
-
-                syncTimer = null;
-
-                await syncAll(false);
-
-            },
-            1200
-        );
-
-}
-
-
-/*
-   Co 30 sekund sprawdzamy Supabase.
-*/
-
-setInterval(
-    ()=>{
-        syncAll(false);
-    },
-    30000
-);
-
-
-/*
-   Powrót internetu.
-*/
-
-window.addEventListener(
-    "online",
-    ()=>{
-
-        setSyncStatus(
-            "🔄 Internet wrócił..."
-        );
-
-        syncAll(true);
-
-    }
-);
-
-
-/*
-   Przejście na kartę / powrót do aplikacji.
-*/
-
-document.addEventListener(
-    "visibilitychange",
-    ()=>{
-
-        if(
-            document.visibilityState ===
-            "visible"
-        ){
-
-            syncAll(false);
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function setSyncStatus(text){
-
-    document.getElementById(
-        "syncStatus"
-    ).textContent =
-        text;
-
-}
-
-
-function showMessage(text){
-
-    const el =
-        document.getElementById(
-            "statusMessage"
-        );
-
-
-    el.textContent =
-        text;
-
-
-    el.classList.add(
-        "show"
-    );
-
 
     setTimeout(
-        ()=>{
+        () => {
 
-            el.classList.remove(
-                "show"
-            );
+            const todayRow =
+                document.querySelector(
+                    "#app .today"
+                );
+
+            if (todayRow) {
+
+                todayRow.scrollIntoView({
+
+                    behavior: "auto",
+
+                    block: "center"
+                });
+            }
+
+            updateTopLayout();
 
         },
-        2500
+        150
     );
-
-}
-
-
-function setAuthMessage(
-    text,
-    error=false
-){
-
-    const el =
-        document.getElementById(
-            "authMessage"
-        );
-
-
-    el.textContent =
-        text;
-
-
-    el.style.color =
-        error
-            ? "#dc2626"
-            : "#333";
-
 }
 
 
 /* =========================================================
-   START
-========================================================= */
+   STARTOWE SPRAWDZENIE SESJI
+   ========================================================= */
 
-(async()=>{
+(async function init() {
 
     const {
-        data:{
+        data: {
             session
         }
     } =
         await supabaseClient.auth.getSession();
 
 
-    if(
-        session &&
-        session.user
-    ){
+    if (session) {
 
-        currentUser =
-            session.user;
+        document.getElementById(
+            "loginScreen"
+        ).style.display = "none";
+
+        document.getElementById(
+            "application"
+        ).style.display = "block";
+
+        document.getElementById(
+            "userEmail"
+        ).textContent =
+            session.user.email || "";
 
         await startApplication();
 
+    } else {
+
+        document.getElementById(
+            "loginScreen"
+        ).style.display = "flex";
     }
 
-})();
 
+    setTimeout(
+        updateTopLayout,
+        100
+    );
+
+})();
 </script>
 
 </body>
