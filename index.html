@@ -3472,6 +3472,12 @@ async function pushDay(
     }
 
 
+    /*
+     * WAŻNE:
+     * Tabela worktime_entries nie posiada kolumny "year".
+     * Rok wynika z work_date.
+     */
+
     const payload = {
 
         user_id:
@@ -3479,9 +3485,6 @@ async function pushDay(
 
         work_date:
             key,
-
-        year:
-            year,
 
         from_time:
             day.from || null,
@@ -3598,12 +3601,18 @@ async function syncAll(
 
             /*
              * -------------------------------------------------
-             * POBIERZ AKTUALNY STAN Z SUPABASE
+             * POBIERZ DANE Z SUPABASE
+             * -------------------------------------------------
+             *
+             * WAŻNE:
+             * worktime_entries nie posiada kolumny "year".
+             * Pobieramy rekordy użytkownika i filtrujemy
+             * lokalnie po work_date.
              * -------------------------------------------------
              */
 
             const {
-                data: remoteRows,
+                data: allRemoteRows,
                 error: remoteError
             } =
                 await supabaseClient
@@ -3612,22 +3621,35 @@ async function syncAll(
                     .eq(
                         "user_id",
                         user.id
-                    )
-                    .eq(
-                        "year",
-                        year
                     );
 
 
             if (remoteError) {
 
                 console.error(
-                    `Błąd pobierania roku ${year}:`,
+                    `Błąd pobierania danych z Supabase:`,
                     remoteError
                 );
 
                 throw remoteError;
             }
+
+
+            const remoteRows =
+                (allRemoteRows || []).filter(
+                    row => {
+
+                        if (!row.work_date) {
+                            return false;
+                        }
+
+                        return Number(
+                            String(
+                                row.work_date
+                            ).substring(0, 4)
+                        ) === year;
+                    }
+                );
 
 
             const localData =
@@ -3642,6 +3664,10 @@ async function syncAll(
 
             (remoteRows || []).forEach(
                 row => {
+
+                    if (!row.work_date) {
+                        return;
+                    }
 
                     remoteMap[
                         row.work_date
@@ -3705,7 +3731,7 @@ async function syncAll(
 
                 /*
                  * ---------------------------------------------
-                 * LOKALNA WERSJA JEST Nowsza
+                 * LOKALNA WERSJA JEST NOWSZA
                  * ---------------------------------------------
                  */
 
@@ -3831,11 +3857,8 @@ async function syncAll(
          * KOŃCOWY ODCZYT
          * =====================================================
          *
-         * Po wszystkich wysłanych zmianach jeszcze raz
-         * pobieramy bazę.
-         *
-         * Dzięki temu urządzenie dostaje dokładnie ten
-         * stan, który faktycznie znajduje się w Supabase.
+         * Pobieramy ponownie cały stan użytkownika.
+         * Rok wyliczamy z work_date.
          * =====================================================
          */
 
@@ -3868,15 +3891,28 @@ async function syncAll(
         (finalRows || []).forEach(
             row => {
 
-                if (
-                    !finalByYear[row.year]
-                ) {
-
-                    finalByYear[row.year] = [];
+                if (!row.work_date) {
+                    return;
                 }
 
 
-                finalByYear[row.year].push(
+                const rowYear =
+                    Number(
+                        String(
+                            row.work_date
+                        ).substring(0, 4)
+                    );
+
+
+                if (
+                    !finalByYear[rowYear]
+                ) {
+
+                    finalByYear[rowYear] = [];
+                }
+
+
+                finalByYear[rowYear].push(
                     row
                 );
             }
@@ -3908,6 +3944,11 @@ async function syncAll(
 
             rows.forEach(
                 row => {
+
+                    if (!row.work_date) {
+                        return;
+                    }
+
 
                     const key =
                         row.work_date;
