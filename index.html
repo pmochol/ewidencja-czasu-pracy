@@ -548,7 +548,7 @@ td input.note{
 ========================================================= */
 
 const SUPABASE_URL =
-    "https://iazvoxejpizdaithkqof.supabaseClient.co";
+    "https://iazvoxejpizdaithkqof.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_Scpe8NZ9lOyH4asc53h9wQ_1S-fWToe";
@@ -2270,7 +2270,7 @@ async function fetchRemote(){
 
 
     const {data,error} =
-        await supabase
+        await supabaseClient
             .from("worktime_entries")
             .select(
                 "entry_date,data,modified_at"
