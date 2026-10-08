@@ -3427,35 +3427,31 @@ async function pushDay(
         userResult.data.user;
 
     if (!user) {
-
         throw new Error(
             "Brak zalogowanego użytkownika."
         );
     }
 
-
-    const data =
+    const yearData =
         loadYear(year);
 
     const day =
         normalizeDay(
-            data[key]
+            yearData[key]
         );
 
     const meta =
         loadMeta(year);
 
-
     /*
-     * Jeżeli wpis nie ma timestampu,
-     * tworzymy go i zapisujemy lokalnie.
+     * Każdy lokalny wpis musi mieć własny timestamp.
+     * Jest on używany do zasady:
+     * "ostatnia zmiana wygrywa".
      */
-
     let localModified =
         Number(
             meta[key] || 0
         );
-
 
     if (!localModified) {
 
@@ -3471,35 +3467,26 @@ async function pushDay(
         );
     }
 
-
     /*
-     * WAŻNE:
-     * Tabela worktime_entries nie posiada kolumny "year".
-     * Rok wynika z work_date.
+     * Tabela Supabase ma strukturę:
+     *
+     * user_id     uuid
+     * entry_date  date
+     * data        jsonb
+     * modified_at timestamptz
+     *
+     * Cały zapis dnia znajduje się w polu "data".
      */
-
     const payload = {
 
         user_id:
             user.id,
 
-        work_date:
+        entry_date:
             key,
 
-        from_time:
-            day.from || null,
-
-        to_time:
-            day.to || null,
-
-        work_type:
-            day.type || null,
-
-        project:
-            day.project || "",
-
-        note:
-            day.note || "",
+        data:
+            day,
 
         modified_at:
             new Date(
@@ -3507,12 +3494,10 @@ async function pushDay(
             ).toISOString()
     };
 
-
     console.log(
         "Wysyłanie do Supabase:",
         payload
     );
-
 
     const {
         data: result,
@@ -3522,7 +3507,6 @@ async function pushDay(
             "sync_worktime_entry",
             payload
         );
-
 
     if (error) {
 
@@ -3534,12 +3518,10 @@ async function pushDay(
         throw error;
     }
 
-
     console.log(
         "RPC zakończone:",
         result
     );
-
 
     return result;
 }
@@ -3559,7 +3541,6 @@ async function syncAll(
 
     syncing = true;
 
-
     try {
 
         const userResult =
@@ -3568,14 +3549,12 @@ async function syncAll(
         const user =
             userResult.data.user;
 
-
         if (!user) {
 
             throw new Error(
                 "Brak zalogowanego użytkownika."
             );
         }
-
 
         if (showMessage) {
 
@@ -3585,11 +3564,74 @@ async function syncAll(
                 "Synchronizacja...";
         }
 
+        /*
+         * Pobieramy wszystkie rekordy użytkownika
+         * JEDNYM zapytaniem.
+         *
+         * Nie filtrujemy po roku w Supabase,
+         * ponieważ rok nie jest osobną kolumną.
+         */
+        const {
+            data: remoteRows,
+            error: remoteError
+        } =
+            await supabaseClient
+                .from("worktime_entries")
+                .select(
+                    "user_id, entry_date, data, modified_at"
+                )
+                .eq(
+                    "user_id",
+                    user.id
+                );
+
+        if (remoteError) {
+
+            console.error(
+                "Błąd pobierania danych z Supabase:",
+                remoteError
+            );
+
+            throw remoteError;
+        }
 
         /*
-         * =====================================================
-         * PRZECHODZIMY PRZEZ WSZYSTKIE LATA
-         * =====================================================
+         * Mapa:
+         * "2026-10-08" -> rekord Supabase
+         */
+        const remoteMap = {};
+
+        (remoteRows || []).forEach(
+            row => {
+
+                if (!row.entry_date) {
+                    return;
+                }
+
+                remoteMap[
+                    row.entry_date
+                ] = row;
+            }
+        );
+
+        /*
+         * -----------------------------------------------------
+         * SCALANIE LOKALNEGO STANU Z SERWEREM
+         * -----------------------------------------------------
+         *
+         * Zasada:
+         *
+         * localModified > remoteModified
+         *     -> wygrywa lokalna zmiana
+         *
+         * remoteModified > localModified
+         *     -> wygrywa serwer
+         *
+         * brak lokalnego rekordu
+         *     -> pobieramy serwer
+         *
+         * brak serwerowego rekordu
+         *     -> wysyłamy lokalny
          */
 
         for (
@@ -3598,90 +3640,17 @@ async function syncAll(
             year++
         ) {
 
-
-            /*
-             * -------------------------------------------------
-             * POBIERZ DANE Z SUPABASE
-             * -------------------------------------------------
-             *
-             * WAŻNE:
-             * worktime_entries nie posiada kolumny "year".
-             * Pobieramy rekordy użytkownika i filtrujemy
-             * lokalnie po work_date.
-             * -------------------------------------------------
-             */
-
-            const {
-                data: allRemoteRows,
-                error: remoteError
-            } =
-                await supabaseClient
-                    .from("worktime_entries")
-                    .select("*")
-                    .eq(
-                        "user_id",
-                        user.id
-                    );
-
-
-            if (remoteError) {
-
-                console.error(
-                    `Błąd pobierania danych z Supabase:`,
-                    remoteError
-                );
-
-                throw remoteError;
-            }
-
-
-            const remoteRows =
-                (allRemoteRows || []).filter(
-                    row => {
-
-                        if (!row.work_date) {
-                            return false;
-                        }
-
-                        return Number(
-                            String(
-                                row.work_date
-                            ).substring(0, 4)
-                        ) === year;
-                    }
-                );
-
-
             const localData =
                 loadYear(year);
 
             const localMeta =
                 loadMeta(year);
 
-
-            const remoteMap = {};
-
-
-            (remoteRows || []).forEach(
-                row => {
-
-                    if (!row.work_date) {
-                        return;
-                    }
-
-                    remoteMap[
-                        row.work_date
-                    ] = row;
-                }
-            );
-
-
             /*
-             * -------------------------------------------------
+             * -----------------------------------------------
              * LOKALNE REKORDY
-             * -------------------------------------------------
+             * -----------------------------------------------
              */
-
             for (
                 const key of Object.keys(
                     localData
@@ -3693,17 +3662,13 @@ async function syncAll(
                         localMeta[key] || 0
                     );
 
-
                 const remote =
                     remoteMap[key];
 
-
                 /*
-                 * ---------------------------------------------
-                 * LOKALNY REKORD NIE ISTNIEJE NA SERWERZE
-                 * ---------------------------------------------
+                 * Lokalny wpis nie istnieje jeszcze
+                 * na serwerze.
                  */
-
                 if (!remote) {
 
                     await pushDay(
@@ -3711,15 +3676,32 @@ async function syncAll(
                         key
                     );
 
+                    /*
+                     * Aktualizujemy mapę, aby dalsza część
+                     * synchronizacji traktowała go jak
+                     * rekord istniejący na serwerze.
+                     */
+                    remoteMap[key] = {
+
+                        user_id:
+                            user.id,
+
+                        entry_date:
+                            key,
+
+                        data:
+                            normalizeDay(
+                                localData[key]
+                            ),
+
+                        modified_at:
+                            new Date(
+                                localModified
+                            ).toISOString()
+                    };
+
                     continue;
                 }
-
-
-                /*
-                 * ---------------------------------------------
-                 * CZAS Z SERWERA
-                 * ---------------------------------------------
-                 */
 
                 const remoteModified =
                     remote.modified_at
@@ -3728,13 +3710,9 @@ async function syncAll(
                           ).getTime()
                         : 0;
 
-
                 /*
-                 * ---------------------------------------------
-                 * LOKALNA WERSJA JEST NOWSZA
-                 * ---------------------------------------------
+                 * LOKALNA ZMIANA JEST NOWSZA
                  */
-
                 if (
                     localModified >
                     remoteModified
@@ -3748,97 +3726,76 @@ async function syncAll(
                     continue;
                 }
 
-
                 /*
-                 * ---------------------------------------------
-                 * SERWER JEST Nowszy
-                 * ---------------------------------------------
+                 * SERWER JEST NOWSZY
+                 * albo timestampy są identyczne.
+                 *
+                 * Przy identycznym czasie wygrywa serwer.
                  */
-
-                localData[key] = {
-
-                    from:
-                        remote.from_time || "",
-
-                    to:
-                        remote.to_time || "",
-
-                    type:
-                        remote.work_type || "",
-
-                    project:
-                        remote.project || "",
-
-                    note:
-                        remote.note || ""
-                };
-
+                localData[key] =
+                    normalizeDay(
+                        remote.data
+                    );
 
                 localMeta[key] =
                     remoteModified;
             }
 
-
             /*
-             * -------------------------------------------------
+             * -----------------------------------------------
              * REKORDY ISTNIEJĄCE TYLKO NA SERWERZE
-             * -------------------------------------------------
+             * -----------------------------------------------
              */
-
             for (
                 const key of Object.keys(
                     remoteMap
                 )
             ) {
 
+                const row =
+                    remoteMap[key];
+
+                if (!row.entry_date) {
+                    continue;
+                }
+
+                const rowYear =
+                    Number(
+                        String(
+                            row.entry_date
+                        ).substring(0, 4)
+                    );
+
                 if (
-                    Object.prototype.hasOwnProperty.call(
+                    rowYear !== year
+                ) {
+                    continue;
+                }
+
+                /*
+                 * Jeżeli wpisu nie było lokalnie,
+                 * pobieramy go z serwera.
+                 */
+                if (
+                    !Object.prototype.hasOwnProperty.call(
                         localData,
                         key
                     )
                 ) {
 
-                    continue;
+                    localData[key] =
+                        normalizeDay(
+                            row.data
+                        );
+
+                    localMeta[key] =
+                        row.modified_at
+                            ? new Date(
+                                row.modified_at
+                              ).getTime()
+                            : Date.now();
                 }
-
-
-                const remote =
-                    remoteMap[key];
-
-
-                localData[key] = {
-
-                    from:
-                        remote.from_time || "",
-
-                    to:
-                        remote.to_time || "",
-
-                    type:
-                        remote.work_type || "",
-
-                    project:
-                        remote.project || "",
-
-                    note:
-                        remote.note || ""
-                };
-
-
-                localMeta[key] =
-                    remote.modified_at
-                        ? new Date(
-                            remote.modified_at
-                          ).getTime()
-                        : Date.now();
             }
-
-
-            /*
-             * -------------------------------------------------
-             * ZAPIS LOKALNY
-             * -------------------------------------------------
-             */
 
             saveYear(
                 year,
@@ -3851,66 +3808,61 @@ async function syncAll(
             );
         }
 
-
         /*
-         * =====================================================
+         * -----------------------------------------------------
          * KOŃCOWY ODCZYT
-         * =====================================================
+         * -----------------------------------------------------
          *
-         * Pobieramy ponownie cały stan użytkownika.
-         * Rok wyliczamy z work_date.
-         * =====================================================
+         * Po wszystkich zapisach pobieramy serwer jeszcze raz.
+         * Dzięki temu lokalny stan końcowo odpowiada temu,
+         * co rzeczywiście zostało zapisane w Supabase.
          */
-
         const {
             data: finalRows,
             error: finalError
         } =
             await supabaseClient
                 .from("worktime_entries")
-                .select("*")
+                .select(
+                    "user_id, entry_date, data, modified_at"
+                )
                 .eq(
                     "user_id",
                     user.id
                 );
 
-
         if (finalError) {
-
             throw finalError;
         }
 
-
-        /*
-         * Grupowanie rekordów według roku.
-         */
-
         const finalByYear = {};
-
 
         (finalRows || []).forEach(
             row => {
 
-                if (!row.work_date) {
+                if (!row.entry_date) {
                     return;
                 }
-
 
                 const rowYear =
                     Number(
                         String(
-                            row.work_date
+                            row.entry_date
                         ).substring(0, 4)
                     );
 
+                if (
+                    rowYear < MIN_YEAR ||
+                    rowYear > MAX_YEAR
+                ) {
+                    return;
+                }
 
                 if (
                     !finalByYear[rowYear]
                 ) {
-
                     finalByYear[rowYear] = [];
                 }
-
 
                 finalByYear[rowYear].push(
                     row
@@ -3918,13 +3870,10 @@ async function syncAll(
             }
         );
 
-
         /*
-         * -------------------------------------------------
-         * USTAWIAMY LOKALNY STAN ZGODNIE Z SERWEREM
-         * -------------------------------------------------
+         * Ustawiamy lokalny cache zgodnie
+         * z końcowym stanem serwera.
          */
-
         for (
             let year = MIN_YEAR;
             year <= MAX_YEAR;
@@ -3934,44 +3883,26 @@ async function syncAll(
             const rows =
                 finalByYear[year] || [];
 
-
             const data =
                 loadYear(year);
 
             const meta =
                 loadMeta(year);
 
-
             rows.forEach(
                 row => {
 
-                    if (!row.work_date) {
+                    if (!row.entry_date) {
                         return;
                     }
 
-
                     const key =
-                        row.work_date;
+                        row.entry_date;
 
-
-                    data[key] = {
-
-                        from:
-                            row.from_time || "",
-
-                        to:
-                            row.to_time || "",
-
-                        type:
-                            row.work_type || "",
-
-                        project:
-                            row.project || "",
-
-                        note:
-                            row.note || ""
-                    };
-
+                    data[key] =
+                        normalizeDay(
+                            row.data
+                        );
 
                     meta[key] =
                         row.modified_at
@@ -3981,7 +3912,6 @@ async function syncAll(
                             : Date.now();
                 }
             );
-
 
             saveYear(
                 year,
@@ -3994,23 +3924,14 @@ async function syncAll(
             );
         }
 
-
-        /*
-         * =====================================================
-         * ODŚWIEŻENIE EKRANU
-         * =====================================================
-         */
-
         render();
 
         setSyncSuccess();
-
 
         document.getElementById(
             "savedInfo"
         ).textContent =
             "Dane zapisane i zsynchronizowane";
-
 
     } catch (e) {
 
@@ -4020,7 +3941,6 @@ async function syncAll(
         );
 
         setSyncError();
-
 
         document.getElementById(
             "savedInfo"
