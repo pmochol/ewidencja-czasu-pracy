@@ -60,6 +60,8 @@ body {
 .topbar select {
     height: 36px;
 
+    flex: 0 0 auto;
+
     border: 1px solid #666;
     border-radius: 5px;
 
@@ -89,7 +91,7 @@ body {
 }
 
 .spacer {
-    flex: 1;
+    flex: 1 1 auto;
 }
 
 /* =========================================================
@@ -97,6 +99,8 @@ body {
    ========================================================= */
 
 #syncStatus {
+    flex: 0 0 auto;
+
     white-space: nowrap;
 
     font-size: 12px;
@@ -124,6 +128,8 @@ body {
 .moreMenu {
     position: relative;
     display: none;
+
+    flex: 0 0 auto;
 }
 
 .moreButton {
@@ -187,7 +193,6 @@ body {
 
 /* =========================================================
    PODSUMOWANIE ROCZNE
-   NIE JEST FIXED
    ========================================================= */
 
 .yearSummary {
@@ -290,7 +295,6 @@ body {
 
 /* =========================================================
    PODSUMOWANIE MIESIĘCZNE
-   STICKY DLA DANEGO MIESIĄCA
    ========================================================= */
 
 .monthSummary {
@@ -650,14 +654,31 @@ input[type="checkbox"] {
 
 @media (max-width: 700px) {
 
+    /*
+       Belka pozostaje jedną linią.
+       Jeżeli wszystkie elementy nie mieszczą się na ekranie,
+       można przesunąć ją palcem poziomo.
+    */
+
     .topbar {
         min-height: 0;
 
         flex-wrap: nowrap;
 
+        overflow-x: auto;
+        overflow-y: visible;
+
+        -webkit-overflow-scrolling: touch;
+
+        scrollbar-width: none;
+
         padding: 6px;
 
         gap: 5px;
+    }
+
+    .topbar::-webkit-scrollbar {
+        display: none;
     }
 
     .topbar-title {
@@ -668,12 +689,25 @@ input[type="checkbox"] {
     .topbar select {
         height: 34px;
 
+        flex: 0 0 auto;
+
         padding: 0 7px;
 
         font-size: 12px;
     }
 
-    /* Najważniejsze zostają na belce */
+    /*
+       Na telefonie nie używamy pustego flexa,
+       bo wypychał menu "Więcej" poza ekran.
+    */
+
+    .spacer {
+        display: none;
+    }
+
+    /*
+       Najważniejsze przyciski pozostają bezpośrednio na belce.
+    */
 
     #todayButton {
         display: inline-block;
@@ -689,9 +723,13 @@ input[type="checkbox"] {
 
     #bulkButton {
         display: inline-block;
+
+        min-width: 135px;
     }
 
-    /* Mniej ważne trafiają do menu */
+    /*
+       Mniej ważne przyciski są wyłącznie w menu.
+    */
 
     .desktopOnly {
         display: none !important;
@@ -699,16 +737,49 @@ input[type="checkbox"] {
 
     .moreMenu {
         display: block;
+
+        flex: 0 0 auto;
+    }
+
+    /*
+       Informacja o zaznaczeniu i synchronizacji
+       nie mogą zostać ściśnięte.
+    */
+
+    #selectedInfo {
+        flex: 0 0 auto;
+
+        white-space: nowrap;
+
+        font-size: 10px;
     }
 
     #syncStatus {
-        max-width: 95px;
+        flex: 0 0 auto;
 
-        overflow: hidden;
+        max-width: none;
 
-        text-overflow: ellipsis;
+        overflow: visible;
+
+        text-overflow: clip;
 
         font-size: 10px;
+
+        white-space: nowrap;
+    }
+
+    /*
+       Dropdown musi wychodzić poza belkę.
+    */
+
+    .moreDropdown {
+        position: fixed;
+
+        top: calc(var(--topbar-height) - 1px);
+
+        right: 5px;
+
+        z-index: 3000;
     }
 
     .yearSummary {
@@ -816,10 +887,6 @@ input[type="checkbox"] {
 
 <body>
 
-<!-- =========================================================
-     LOGIN
-     ========================================================= -->
-
 <div id="loginScreen">
 
     <div class="loginBox">
@@ -854,10 +921,6 @@ input[type="checkbox"] {
 
 </div>
 
-
-<!-- =========================================================
-     APLIKACJA
-     ========================================================= -->
 
 <div id="application">
 
@@ -985,10 +1048,6 @@ input[type="checkbox"] {
     </div>
 
 
-    <!-- =====================================================
-         PODSUMOWANIE ROCZNE
-         ===================================================== -->
-
     <div
         class="yearSummary"
         id="yearSummary"
@@ -999,94 +1058,38 @@ input[type="checkbox"] {
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Przepracowane
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumWork"
-            >
-                0:00
-            </span>
+            <span class="summaryLabel">Przepracowane</span>
+            <span class="summaryValue" id="sumWork">0:00</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Delegacja
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumDelegation"
-            >
-                0
-            </span>
+            <span class="summaryLabel">Delegacja</span>
+            <span class="summaryValue" id="sumDelegation">0</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Urlop
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumVacation"
-            >
-                0
-            </span>
+            <span class="summaryLabel">Urlop</span>
+            <span class="summaryValue" id="sumVacation">0</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                L4
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumSick"
-            >
-                0
-            </span>
+            <span class="summaryLabel">L4</span>
+            <span class="summaryValue" id="sumSick">0</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Święto
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumHoliday"
-            >
-                0
-            </span>
+            <span class="summaryLabel">Święto</span>
+            <span class="summaryValue" id="sumHoliday">0</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Wolne
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumFree"
-            >
-                0
-            </span>
+            <span class="summaryLabel">Wolne</span>
+            <span class="summaryValue" id="sumFree">0</span>
         </div>
 
         <div class="summaryCard">
-            <span class="summaryLabel">
-                Razem
-            </span>
-
-            <span
-                class="summaryValue"
-                id="sumTotal"
-            >
-                0
-            </span>
+            <span class="summaryLabel">Razem</span>
+            <span class="summaryValue" id="sumTotal">0</span>
         </div>
 
         <div
@@ -1103,10 +1106,6 @@ input[type="checkbox"] {
 
 </div>
 
-
-<!-- =========================================================
-     MODAL
-     ========================================================= -->
 
 <div
     class="modal"
@@ -1778,10 +1777,6 @@ function render() {
             "monthContainer";
 
 
-        /* =================================================
-           TYTUŁ MIESIĄCA
-           ================================================= */
-
         const title =
             document.createElement(
                 "div"
@@ -1797,10 +1792,6 @@ function render() {
             title
         );
 
-
-        /* =================================================
-           PODSUMOWANIE MIESIĄCA
-           ================================================= */
 
         const monthSummary =
             calculateMonthSummary(
@@ -1905,10 +1896,6 @@ function render() {
             summary
         );
 
-
-        /* =================================================
-           TABELA
-           ================================================= */
 
         const wrapper =
             document.createElement(
@@ -2050,8 +2037,6 @@ function render() {
             }
 
 
-            /* CHECKBOX */
-
             const tdCheck =
                 document.createElement(
                     "td"
@@ -2113,8 +2098,6 @@ function render() {
             );
 
 
-            /* DATA */
-
             const tdDate =
                 document.createElement(
                     "td"
@@ -2131,11 +2114,9 @@ function render() {
             );
 
 
-            /* DZIEŃ */
-
             const tdDay =
                 document.createElement(
-                    "td"
+                "td"
                 );
 
             tdDay.className =
@@ -2150,8 +2131,6 @@ function render() {
                 tdDay
             );
 
-
-            /* OD */
 
             const tdFrom =
                 document.createElement(
@@ -2178,8 +2157,6 @@ function render() {
             );
 
 
-            /* DO */
-
             const tdTo =
                 document.createElement(
                     "td"
@@ -2204,8 +2181,6 @@ function render() {
                 tdTo
             );
 
-
-            /* RODZAJ */
 
             const tdType =
                 document.createElement(
@@ -2268,8 +2243,6 @@ function render() {
             );
 
 
-            /* PROJEKT */
-
             const tdProject =
                 document.createElement(
                     "td"
@@ -2298,8 +2271,6 @@ function render() {
             );
 
 
-            /* UWAGI */
-
             const tdNote =
                 document.createElement(
                     "td"
@@ -2327,8 +2298,6 @@ function render() {
                 tdNote
             );
 
-
-            /* ZAPIS */
 
             function saveRow() {
 
@@ -2449,7 +2418,6 @@ function render() {
 
 /* =========================================================
    AKTUALIZACJA PODSUMOWAŃ MIESIĘCZNYCH
-   BEZ PRZEBUDOWYWANIA TABEL
    ========================================================= */
 
 function renderMonthlySummaryOnly() {
@@ -2701,32 +2669,111 @@ function updateSelectedCount() {
 
 function selectAllVisible() {
 
-    document
-        .querySelectorAll(
+    const rows =
+        document.querySelectorAll(
             "#app tbody tr"
-        )
-        .forEach(
-            tr => {
+        );
 
-                const checkbox =
-                    tr.querySelector(
-                        'input[type="checkbox"]'
-                    );
+    /*
+       Jeżeli wszystkie widoczne dni są już zaznaczone,
+       kliknięcie oznacza ODZNACZENIE wszystkich.
+       W przeciwnym przypadku zaznaczamy wszystkie.
+    */
 
-                if (!checkbox) {
-                    return;
-                }
+    let allSelected =
+        rows.length > 0;
 
-                checkbox.checked =
-                    true;
+    rows.forEach(
+        tr => {
 
-                checkbox.dispatchEvent(
-                    new Event(
-                        "change"
-                    )
+            const checkbox =
+                tr.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+            if (
+                checkbox &&
+                !checkbox.checked
+            ) {
+
+                allSelected = false;
+            }
+        }
+    );
+
+
+    if (allSelected) {
+
+        clearSelected();
+
+        return;
+    }
+
+
+    rows.forEach(
+        tr => {
+
+            const checkbox =
+                tr.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+            if (!checkbox) {
+                return;
+            }
+
+            checkbox.checked =
+                true;
+
+            const row =
+                checkbox.closest("tr");
+
+            if (row) {
+
+                row.classList.add(
+                    "selectedRow"
                 );
             }
-        );
+        }
+    );
+
+
+    /*
+       Nie wywołujemy eventu "change" dla każdego
+       checkboxa, tylko aktualizujemy Set bezpośrednio.
+    */
+
+    rows.forEach(
+        tr => {
+
+            const checkbox =
+                tr.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+            if (!checkbox) {
+                return;
+            }
+
+            const dateCell =
+                tr.children[1];
+
+            if (!dateCell) {
+                return;
+            }
+
+            const key =
+                dateCell.textContent.trim();
+
+            if (checkbox.checked) {
+
+                selectedDates.add(
+                    key
+                );
+            }
+        }
+    );
+
 
     updateSelectedCount();
 }
