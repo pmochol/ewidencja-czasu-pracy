@@ -3499,24 +3499,23 @@ async function pushDay(
         payload
     );
 
-    const {
-        data: result,
-        error
-    } =
-        await supabaseClient.rpc(
-            "sync_worktime_entry",
-            payload
-        );
 
-    if (error) {
-
-        console.error(
-            "Błąd RPC sync_worktime_entry:",
-            error
-        );
-
-        throw error;
+const { data: result, error } = await supabaseClient.rpc(
+    "sync_worktime_entry",
+    {
+        p_entry_date: key,
+        p_data: day,
+        p_modified_at: new Date(localModified).toISOString()
     }
+);
+
+if (error) {
+    console.error(
+        "Błąd RPC sync_worktime_entry:",
+        JSON.stringify(error, null, 2)
+    );
+    throw error;
+}
 
     console.log(
         "RPC zakończone:",
