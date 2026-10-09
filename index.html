@@ -1136,10 +1136,6 @@ input[type="checkbox"] {
 
         <select id="bulkType">
 
-            <option value="">
-                Bez zmiany
-            </option>
-
             <option value="Praca">
                 Praca
             </option>
@@ -1168,6 +1164,17 @@ input[type="checkbox"] {
 
         <br><br>
 
+        
+        <label for="bulkFrom">Godzina od:</label>
+        <input type="time" id="bulkFrom">
+
+        <br><br>
+
+        <label for="bulkTo">Godzina do:</label>
+        <input type="time" id="bulkTo">
+
+        <br><br>
+        
         <label>
             Projekt:
         </label>
@@ -3059,6 +3066,8 @@ function bulkEdit() {
         return;
     }
 
+    document.getElementById("bulkFrom").value = "";
+    document.getElementById("bulkTo").value = "";
 
     document.getElementById(
         "bulkType"
@@ -3100,6 +3109,11 @@ function applyBulkEdit() {
             "bulkType"
         ).value;
 
+    const from =
+    document.getElementById("bulkFrom").value;
+
+    const to =
+    document.getElementById("bulkTo").value;
 
     const project =
         document.getElementById(
@@ -3124,6 +3138,14 @@ function applyBulkEdit() {
 
             if (type) {
                 d.type = type;
+            }
+
+            if (from !== "") {
+                d.from = from;
+            }
+
+            if (to !== "") {
+                 d.to = to;
             }
 
             if (project !== "") {
