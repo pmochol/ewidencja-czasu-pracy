@@ -628,6 +628,34 @@ input[type="checkbox"] {
     background: #2e7d32 !important;
 }
 
+
+.noteEditorBox {
+    width: min(650px, calc(100% - 24px));
+    max-height: 90vh;
+    overflow: auto;
+    padding: 18px;
+    background: white;
+    border-radius: 8px;
+}
+
+.noteEditorBox textarea {
+    display: block;
+    width: 100%;
+    min-height: 180px;
+    max-height: 60vh;
+    resize: vertical;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font: 15px/1.5 Arial, sans-serif;
+}
+
+.noteEditorDate {
+    margin: -5px 0 12px;
+    color: #666;
+    font-size: 13px;
+}
+    
 @media (max-width: 700px) {
 
     .topbar {
@@ -1908,6 +1936,68 @@ function calculateMonthSummary(
 
 
 /* =========================================================
+   EDYCJA DŁUGICH UWAG
+   ========================================================= */
+
+let editingNoteKey = null;
+
+function openNoteEditor(key, currentNote) {
+    editingNoteKey = key;
+
+    document.getElementById("noteEditorDate").textContent =
+        "Data: " + key;
+
+    document.getElementById("noteEditorText").value =
+        currentNote || "";
+
+    document.getElementById("noteModal").style.display = "flex";
+}
+
+function closeNoteEditor() {
+    document.getElementById("noteModal").style.display = "none";
+    editingNoteKey = null;
+}
+
+function saveNoteEditor() {
+    if (!editingNoteKey) {
+        closeNoteEditor();
+        return;
+    }
+
+    const key = editingNoteKey;
+    const noteValue =
+        document.getElementById("noteEditorText").value;
+
+    const data = loadYear(currentYear);
+    const day = normalizeDay(data[key]);
+
+    day.note = noteValue;
+    data[key] = day;
+
+    saveYear(currentYear, data);
+    markLocalChange(currentYear, key);
+
+    // Aktualizujemy widoczne pole bez przebudowy całej tabeli.
+    const rows = document.querySelectorAll("#app tbody tr");
+
+    rows.forEach(tr => {
+        const dateCell = tr.children[1];
+
+        if (dateCell && dateCell.textContent.trim() === key) {
+            const noteInput = tr.children[7]?.querySelector("input");
+
+            if (noteInput) {
+                noteInput.value = noteValue;
+            }
+        }
+    });
+
+    closeNoteEditor();
+    setSyncPending();
+    scheduleSync();
+}
+    
+/* =========================================================
    RENDER
    ========================================================= */
 
@@ -2452,6 +2542,12 @@ function render() {
 
             note.placeholder =
                 "Uwagi";
+
+            note.title = note.value;
+
+            note.addEventListener("click", () => {
+                openNoteEditor(key, note.value);
+            });
 
             tdNote.appendChild(
                 note
@@ -4442,6 +4538,35 @@ async function startApplication() {
     );
 
 })();
+
+    
+<div class="modal" id="noteModal">
+    <div class="noteEditorBox">
+        <h3>Uwagi — pełny tekst</h3>
+
+        <div class="noteEditorDate" id="noteEditorDate"></div>
+
+        <textarea
+            id="noteEditorText"
+            placeholder="Wpisz uwagi..."
+        ></textarea>
+
+        <div class="modalButtons">
+            <button type="button" onclick="closeNoteEditor()">
+                Anuluj
+            </button>
+
+            <button
+                type="button"
+                class="success"
+                onclick="saveNoteEditor()"
+            >
+                Zapisz uwagi
+            </button>
+        </div>
+    </div>
+</div>
+    
 </script>
 
 </body>
