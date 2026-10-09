@@ -911,11 +911,11 @@ input[type="checkbox"] {
         >
             Ustaw dla zaznaczonych
         </button>
-
+        
         <button
             type="button"
             id="syncButton"
-            onclick="manualSync()"
+            onclick="clearSelected()"
         >
             🧹 Wyczyść
         </button>
@@ -923,7 +923,7 @@ input[type="checkbox"] {
         <button
             type="button"
             class="desktopOnly"
-            onclick="backupData()"
+            onclick="manualSync()"
         >
             🔄 Synchronizuj
         </button>
@@ -931,12 +931,11 @@ input[type="checkbox"] {
         <button
             type="button"
             class="desktopOnly"
-            onclick="clearSelected()"
+            onclick="backupData()"
         >
-        
             💾 Backup
         </button>
-
+        
         <button
             type="button"
             class="desktopOnly"
