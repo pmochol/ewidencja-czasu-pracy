@@ -1834,7 +1834,7 @@ function calculateMonthSummary(
 ) {
 
     let workMinutes = 0;
-
+    let workDays = 0;
     let delegation = 0;
     let vacation = 0;
     let sick = 0;
@@ -1891,7 +1891,9 @@ function calculateMonthSummary(
                     to - from;
             }
         }
-
+        if (d.type === "Praca" || d.type === "Delegacja") {
+            workDays++;
+        }
         switch (d.type) {
 
             case "Delegacja":
@@ -1919,19 +1921,14 @@ function calculateMonthSummary(
     return {
 
         workMinutes,
+        workDays,
         delegation,
         vacation,
         sick,
         holiday,
         free,
-
-        total:
-            delegation +
-            vacation +
-            sick +
-            holiday +
-            free
-    };
+        total: workDays
+        };
 }
 
 
@@ -2755,8 +2752,8 @@ function renderSummary() {
     let sick = 0;
     let holiday = 0;
     let free = 0;
-
-
+    let workDays = 0;
+    
     Object.keys(data).forEach(
         key => {
 
@@ -2790,7 +2787,9 @@ function renderSummary() {
                 }
             }
 
-
+            if (d.type === "Praca" || d.type === "Delegacja") {
+            workDays++;
+            }
             switch (d.type) {
 
                 case "Delegacja":
@@ -2858,11 +2857,7 @@ function renderSummary() {
     document.getElementById(
         "sumTotal"
     ).textContent =
-        delegation +
-        vacation +
-        sick +
-        holiday +
-        free;
+        workdays;
 }
 
 
